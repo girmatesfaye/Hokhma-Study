@@ -50,7 +50,7 @@ export default function Resources() {
       
       {/* Page Hero */}
       <div className="text-center max-w-2xl mx-auto space-y-4">
-        <span className="text-xs uppercase tracking-widest text-gold font-bold">{getTranslatedText('Recommended Study', 'የሚመከር ጥናት')}</span>
+        <span className="text-xs tracking-widest text-gold font-bold">{getTranslatedText('Recommended Study', 'የሚመከር ጥናት')}</span>
         <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-nearblack dark:text-white">
           {getTranslatedText('Curated External Resources', 'የተመረጡ የውጭ መጽሐፍትና ግብዓቶች')}
         </h1>
@@ -69,7 +69,7 @@ export default function Resources() {
           <button
             key={cat}
             onClick={() => setActiveCategoryFilter(cat)}
-            className={`px-4 py-2 text-xs font-bold rounded-full uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+            className={`px-4 py-2 text-xs font-bold rounded-full tracking-wider transition-all duration-200 cursor-pointer ${
               activeCategoryFilter === cat
                 ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-sm'
                 : 'bg-white hover:bg-black/5 dark:bg-slate-900 dark:hover:bg-slate-800 text-nearblack dark:text-gray-200 border border-black/5'
@@ -91,7 +91,7 @@ export default function Resources() {
               <div className="flex justify-between items-center bg-offwhite dark:bg-slate-950/45 p-2 rounded border border-black/5">
                 <div className="flex items-center gap-2">
                   {getCategoryIcon(res.category)}
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-mediumgrey dark:text-gray-400 font-sans">
+                  <span className="text-[10px] tracking-wider font-semibold text-mediumgrey dark:text-gray-400 font-sans">
                     {getCategoryLabel(res.category)}
                   </span>
                 </div>
@@ -102,7 +102,7 @@ export default function Resources() {
                 <h3 className="font-serif text-base font-bold text-nearblack dark:text-white group-hover:text-gold transition-colors leading-snug">
                   {getTranslatedText(res.title, res.titleAm)}
                 </h3>
-                <p className="text-xs uppercase font-semibold text-gold font-sans tracking-wide">
+                <p className="text-xs font-semibold text-gold font-sans tracking-wide">
                   {getTranslatedText('By', 'በ')}: {getTranslatedText(res.author, res.authorAm)}
                 </p>
               </div>

@@ -78,7 +78,7 @@ export default function AdminDashboard() {
           </p>
           <button
             onClick={() => navigateTo('/admin/login')}
-            className="px-6 py-2 bg-gold text-slate-950 text-xs font-bold tracking-wider rounded cursor-pointer font-sans uppercase"
+            className="px-6 py-2 bg-gold text-slate-950 text-xs font-bold tracking-wider rounded cursor-pointer font-sans"
           >
             {getTranslatedText('Authenticate Profile', 'ማንነትዎን ያረጋግጡ')}
           </button>
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigateTo('/')}
-              className="text-xs font-semibold text-mediumgrey hover:text-navy dark:hover:text-white transition-colors tracking-wider block cursor-pointer font-sans uppercase"
+              className="text-xs font-semibold text-mediumgrey hover:text-navy dark:hover:text-white transition-colors tracking-wider block cursor-pointer font-sans"
             >
               {getTranslatedText('Public Hub', 'ይፋዊ ድረ-ገጽ')}
             </button>
@@ -304,28 +304,28 @@ export default function AdminDashboard() {
                   {/* Card 1: Total articles */}
                   <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-black/5 shadow-sm text-center space-y-1">
                     <FileText className="text-gold h-5 w-5 mx-auto" />
-                    <span className="text-[10px] font-bold text-mediumgrey block uppercase tracking-wider">{getTranslatedText('Total Articles', 'ጠቅላላ ጽሑፎች')}</span>
+                    <span className="text-[10px] font-bold text-mediumgrey block tracking-wider">{getTranslatedText('Total Articles', 'ጠቅላላ ጽሑፎች')}</span>
                     <strong className="text-2xl font-serif text-nearblack dark:text-white block">{metricTotalArticles}</strong>
                   </div>
 
                   {/* Card 2: Total views */}
                   <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-black/5 shadow-sm text-center space-y-1">
                     <TrendingUp className="text-gold h-5 w-5 mx-auto" />
-                    <span className="text-[10px] font-bold text-mediumgrey block uppercase tracking-wider">{getTranslatedText('Monthly Reads', 'የወር ንባቦች')}</span>
+                    <span className="text-[10px] font-bold text-mediumgrey block tracking-wider">{getTranslatedText('Monthly Reads', 'የወር ንባቦች')}</span>
                     <strong className="text-2xl font-serif text-nearblack dark:text-white block">{metricTotalViews}</strong>
                   </div>
 
                   {/* Card 3: Pending comments */}
                   <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-black/5 shadow-sm text-center space-y-1">
                     <MessageSquare className="text-gold h-5 w-5 mx-auto" />
-                    <span className="text-[10px] font-bold text-mediumgrey block uppercase tracking-wider">{getTranslatedText('Pending Comments', 'ያልጸደቁ')}</span>
+                    <span className="text-[10px] font-bold text-mediumgrey block tracking-wider">{getTranslatedText('Pending Comments', 'ያልጸደቁ')}</span>
                     <strong className="text-2xl font-serif text-nearblack dark:text-white block">{metricPendingComments}</strong>
                   </div>
 
                   {/* Card 4: Newsletter Subscribers */}
                   <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-black/5 shadow-sm text-center space-y-1">
                     <Users className="text-gold h-5 w-5 mx-auto" />
-                    <span className="text-[10px] font-bold text-mediumgrey block uppercase tracking-wider">{getTranslatedText('Newsletter Subs', 'የፈጣን ወሬ')}</span>
+                    <span className="text-[10px] font-bold text-mediumgrey block tracking-wider">{getTranslatedText('Newsletter Subs', 'የፈጣን ወሬ')}</span>
                     <strong className="text-2xl font-serif text-nearblack dark:text-white block">{metricNewsletterTotal}</strong>
                   </div>
                 </div>
@@ -385,11 +385,11 @@ export default function AdminDashboard() {
                             </td>
                             <td className="py-3 px-3">
                               {art.isPublished ? (
-                                <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 text-[10px] font-bold tracking-wider uppercase">
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 text-[10px] font-bold tracking-wider">
                                   {getTranslatedText('Published', 'የታተመ')}
                                 </span>
                               ) : (
-                                <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-755 dark:bg-slate-800 dark:text-slate-400 text-[10px] font-bold tracking-wider uppercase">
+                                <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-755 dark:bg-slate-800 dark:text-slate-400 text-[10px] font-bold tracking-wider">
                                   {getTranslatedText('Draft', 'ረቂቅ')}
                                 </span>
                               )}
@@ -598,9 +598,9 @@ export default function AdminDashboard() {
                           <div className="flex items-center gap-2">
                             <strong className="text-[13px]">{com.authorName}</strong>
                             {com.isApproved ? (
-                              <span className="px-1 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-200 text-[9px] font-bold uppercase">{getTranslatedText('Approved', 'የጸደቀ')}</span>
+                              <span className="px-1 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-200 text-[9px] font-bold">{getTranslatedText('Approved', 'የጸደቀ')}</span>
                             ) : (
-                              <span className="px-1 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-200 text-[9px] font-bold uppercase">{getTranslatedText('Pending Moderation', 'በግምገማ ላይ')}</span>
+                              <span className="px-1 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-200 text-[9px] font-bold">{getTranslatedText('Pending Moderation', 'በግምገማ ላይ')}</span>
                             )}
                           </div>
                           <p className="font-serif text-nearblack dark:text-gray-300 italic">"{com.text}"</p>

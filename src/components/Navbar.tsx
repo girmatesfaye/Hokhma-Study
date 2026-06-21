@@ -94,13 +94,13 @@ export default function Navbar() {
           </a>
 
           {/* DESKTOP NAV LINKS */}
-          <nav id="desktop-nav-menu" className="hidden md:flex items-center gap-8">
+          <nav id="desktop-nav-menu" className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
                <a
                 key={link.label}
                  id={`nav-link-${link.page}`}
                  href={`#${link.hash}`}
-                className={`text-[13px] font-medium tracking-wide transition-colors duration-200 capitalise ${
+                className={`text-[13px] font-medium tracking-wide transition-colors duration-200 ${
                   isActive(link.page)
                     ? 'text-navy dark:text-gold border-b-2 border-navy dark:border-gold pb-1 font-semibold'
                      : 'text-mediumgrey dark:text-gray-300 hover:text-navy dark:hover:text-gold'
@@ -121,7 +121,7 @@ export default function Navbar() {
                   placeholder={t('nav.search')}
                   value={localSearchVal}
                   onChange={(e) => setLocalSearchVal(e.target.value)}
-                  className="w-48 bg-white dark:bg-slate-800 text-sm py-1.5 pl-3 pr-8 rounded-[4px] border border-black/10 dark:border-white/10 focus:outline-none focus:border-gold text-nearblack dark:text-white"
+                  className="w-28 sm:w-48 bg-white dark:bg-slate-800 text-sm py-1.5 pl-3 pr-8 rounded-[4px] border border-black/10 dark:border-white/10 focus:outline-none focus:border-gold text-nearblack dark:text-white"
                   autoFocus
                 />
                 <button type="submit" className="absolute right-2 px-1 text-nearblack/60 dark:text-white/60 hover:text-gold">
@@ -136,7 +136,7 @@ export default function Navbar() {
                 </button>
               </form>
             ) : (
-              <button
+               <button
                 id="search-btn-trigger"
                 onClick={() => setShowSearchInput(true)}
                 className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors"
@@ -153,12 +153,12 @@ export default function Navbar() {
               title={language === 'en' ? 'Switch to Amharic / አማርኛ' : 'Switch to English / እንግሊዝኛ'}
             >
               <Globe size={13} className="text-gold" />
-              <span>{language === 'en' ? 'ENG' : 'አማርኛ'}</span>
+              <span>{language === 'en' ? 'English' : 'አማርኛ'}</span>
             </button>
 
             {/* DARK MODE TOGGLE */}
             <button
-              id="theme-toggle-btn"
+               id="theme-toggle-btn"
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors"
               title={darkMode ? 'Light Theme' : 'Dark Theme'}
@@ -192,7 +192,7 @@ export default function Navbar() {
             <button
               id="mobile-drawer-btn"
               onClick={() => setIsDrawerOpen(true)}
-              className="md:hidden p-2 text-nearblack/85 dark:text-white/85 hover:text-gold dark:hover:text-gold transition-colors"
+              className="lg:hidden p-2 text-nearblack/85 dark:text-white/85 hover:text-gold dark:hover:text-gold transition-colors"
             >
               <Menu size={22} />
             </button>
@@ -214,7 +214,7 @@ export default function Navbar() {
                 className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold border border-black/10 dark:border-white/10 rounded-[4px] bg-slate-50 dark:bg-slate-950 text-nearblack dark:text-white"
               >
                 <Globe size={13} className="text-gold" />
-                <span>{language === 'en' ? 'ENG' : 'አማርኛ'}</span>
+                <span>{language === 'en' ? 'English' : 'አማርኛ'}</span>
               </button>
 
               {/* Mobile theme switch button */}

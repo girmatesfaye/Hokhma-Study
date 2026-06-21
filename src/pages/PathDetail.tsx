@@ -20,7 +20,7 @@ export default function PathDetail() {
       <div className="max-w-[1140px] mx-auto px-4 py-20 text-center animate-fade-in">
         <h2 className="font-serif text-2xl font-bold">{getTranslatedText('Learning Path Not Found', 'የጥናት ጉዞ አልተገኘም')}</h2>
         <p className="text-mediumgrey text-sm mt-2">{getTranslatedText('The path you are looking for does not exist in our curriculum index.', 'የፈለጉት የጥናት ጉዞ በስርዓተ ትምህርታችን ማውጫ ውስጥ የለም።')}</p>
-        <button onClick={() => navigateTo('/paths')} className="mt-6 px-4 py-2 bg-navy text-white text-xs font-bold uppercase tracking-wider rounded">
+        <button onClick={() => navigateTo('/paths')} className="mt-6 px-4 py-2 bg-navy text-white text-xs font-bold tracking-wider rounded">
           {getTranslatedText('Return To Paths', 'ወደ ጥናት መንገዶች ይመለሱ')}
         </button>
       </div>
@@ -49,7 +49,7 @@ export default function PathDetail() {
       {/* Back to Paths */}
       <button
         onClick={() => navigateTo('/paths')}
-        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors cursor-pointer"
+        className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors cursor-pointer"
       >
         <ArrowLeft size={14} /> {getTranslatedText('Back To Paths', 'ወደ ጥናት መንገዶች ይመለሱ')}
       </button>
@@ -58,7 +58,7 @@ export default function PathDetail() {
       <div className="bg-navy text-white rounded-2xl p-8 md:p-12 border border-white/5 relative overflow-hidden shadow-md">
         <div className="absolute top-0 right-0 h-48 w-48 bg-gold rounded-full opacity-5 blur-3xl" />
         <div className="space-y-4 max-w-3xl relative z-10">
-          <div className="flex flex-wrap gap-2.5 items-center text-xs text-gold font-bold uppercase tracking-wider">
+          <div className="flex flex-wrap gap-2.5 items-center text-xs text-gold font-bold tracking-wider">
             <span>{getTranslatedText('Structured Curriculum', 'የተዋቀረ ስርዓተ ትምህርት')}</span>
             <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
             <span>{getTranslatedText(path.difficultyRange, path.difficultyRangeAm)}</span>
@@ -77,7 +77,7 @@ export default function PathDetail() {
           </p>
 
           <div className="bg-white/5 p-4 rounded border border-white/10 text-xs">
-            <span className="text-gold font-bold uppercase tracking-wider text-[10px] block mb-1">
+            <span className="text-gold font-bold tracking-wider text-[10px] block mb-1">
               {getTranslatedText('Final Learning Milestone', 'የመጨረሻው የትምህርት አበይት ግብ')}
             </span>
             <p className="text-gray-200 leading-relaxed">{getTranslatedText(path.goal, path.goalAm)}</p>
@@ -94,7 +94,7 @@ export default function PathDetail() {
             <h2 className="font-serif text-xl font-bold text-nearblack dark:text-white">
               {getTranslatedText('Curriculum Sequence', 'የስርዓተ ትምህርት ቅደም ተከተል')}
             </h2>
-            <span className="text-xs text-mediumgrey font-bold uppercase tracking-wider">
+            <span className="text-xs text-mediumgrey font-bold tracking-wider">
               {pathArticles.length} {getTranslatedText('Sequential Steps', 'ቅደም ተከተላዊ ደረጃዎች')}
             </span>
           </div>
@@ -178,7 +178,7 @@ export default function PathDetail() {
           
           {/* Progress Tracker Widget */}
           <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-6 space-y-5 shadow-sm sticky top-24">
-            <h3 className="font-serif text-md font-bold text-nearblack dark:text-white uppercase tracking-wider text-[12px] border-b border-black/5 pb-2">
+            <h3 className="font-serif text-md font-bold text-nearblack dark:text-white tracking-wider text-[12px] border-b border-black/5 pb-2">
               {getTranslatedText('Your Course Progress', 'የትምህርት ሂደትዎ')}
             </h3>
 
@@ -229,7 +229,7 @@ export default function PathDetail() {
             {/* CTA action */}
             <button
               onClick={handleStartPath}
-              className="w-full py-2.5 bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold uppercase tracking-wider text-xs rounded shadow hover:bg-navy/90 inline-flex items-center justify-center gap-2 group cursor-pointer"
+              className="w-full py-2.5 bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold tracking-wider text-xs rounded shadow hover:bg-navy/90 inline-flex items-center justify-center gap-2 group cursor-pointer"
             >
               <Play size={12} fill="currentColor" />
               <span>{getTranslatedText('Start Step 1', 'ደረጃ 1 ይጀምሩ')}</span>

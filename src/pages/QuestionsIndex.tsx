@@ -85,7 +85,7 @@ export default function QuestionsIndex() {
       {/* 1. HERO WITH SEARCH BAR */}
       <section className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-2xl p-8 md:p-12 text-center space-y-6 shadow-sm">
         <div className="max-w-xl mx-auto space-y-3">
-          <span className="text-xs uppercase tracking-widest text-gold font-bold bg-gold/10 px-3 py-1.5 rounded-full inline-block">
+          <span className="text-xs tracking-widest text-gold font-bold bg-gold/10 px-3 py-1.5 rounded-full inline-block">
             {getTranslatedText('Objection Mapping Index', 'የተቃውሞዎች እና ጥያቄዎች ማውጫ')}
           </span>
           <h1 className="font-serif text-3xl md:text-4xl font-extrabold text-nearblack dark:text-white">
@@ -115,7 +115,7 @@ export default function QuestionsIndex() {
           {searchVal && (
             <button
               onClick={() => setSearchVal('')}
-              className="absolute right-4 top-3.5 text-xs text-mediumgrey hover:text-nearblack dark:hover:text-white uppercase font-bold"
+              className="absolute right-4 top-3.5 text-xs text-mediumgrey hover:text-nearblack dark:hover:text-white font-bold"
             >
               {getTranslatedText('Clear', 'አጽዳ')}
             </button>
@@ -131,7 +131,7 @@ export default function QuestionsIndex() {
           
           {/* Topic Filters */}
           <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-3 shadow-sm">
-            <h3 className="font-sans text-[11px] uppercase tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
+            <h3 className="font-sans text-[11px] tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
               {getTranslatedText('Filter By Field', 'በባህሪ ይለዩ')}
             </h3>
             <div className="flex flex-col gap-1 text-xs">
@@ -169,7 +169,7 @@ export default function QuestionsIndex() {
 
           {/* Difficulty Filter */}
           <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-3 shadow-sm">
-            <h3 className="font-sans text-[11px] uppercase tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
+            <h3 className="font-sans text-[11px] tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
               {getTranslatedText('Depth Level', 'የጥልቀት ደረጃ')}
             </h3>
             <div className="flex flex-col gap-1 text-xs">
@@ -229,7 +229,7 @@ export default function QuestionsIndex() {
               <div className="inline-flex rounded-md border border-black/10 dark:border-white/10 overflow-hidden">
                 <button
                   onClick={() => setSortBy('common')}
-                  className={`px-2.5 py-1.5 font-bold uppercase tracking-wider text-[10px] ${
+                  className={`px-2.5 py-1.5 font-bold tracking-wider text-[10px] ${
                     sortBy === 'common'
                       ? 'bg-navy text-white dark:bg-gold dark:text-slate-950'
                       : 'bg-offwhite hover:bg-black/5 text-nearblack dark:bg-slate-800 dark:text-gray-200'
@@ -239,7 +239,7 @@ export default function QuestionsIndex() {
                 </button>
                 <button
                   onClick={() => setSortBy('az')}
-                  className={`px-2.5 py-1.5 font-bold uppercase tracking-wider text-[10px] ${
+                  className={`px-2.5 py-1.5 font-bold tracking-wider text-[10px] ${
                     sortBy === 'az'
                       ? 'bg-navy text-white dark:bg-gold dark:text-slate-950'
                       : 'bg-offwhite hover:bg-black/5 text-nearblack dark:bg-slate-800 dark:text-gray-200'
@@ -249,7 +249,7 @@ export default function QuestionsIndex() {
                 </button>
                 <button
                   onClick={() => setSortBy('recent')}
-                  className={`px-2.5 py-1.5 font-bold uppercase tracking-wider text-[10px] ${
+                  className={`px-2.5 py-1.5 font-bold tracking-wider text-[10px] ${
                     sortBy === 'recent'
                       ? 'bg-navy text-white dark:bg-gold dark:text-slate-950'
                       : 'bg-offwhite hover:bg-black/5 text-nearblack dark:bg-slate-800 dark:text-gray-200'
@@ -274,7 +274,7 @@ export default function QuestionsIndex() {
                     {/* Header grouping */}
                     <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2">
                       <div className="text-gold"><TopicIcon name={topic.icon} size={18} /></div>
-                      <h2 className="font-serif text-lg font-bold text-nearblack dark:text-white uppercase tracking-wide">
+                      <h2 className="font-serif text-lg font-bold text-nearblack dark:text-white tracking-wide">
                         {getTranslatedText(topic.name, topic.nameAm)}
                       </h2>
                     </div>
@@ -370,7 +370,7 @@ export default function QuestionsIndex() {
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-navy text-white dark:bg-gold dark:text-slate-950 text-xs font-bold uppercase tracking-wider rounded inline-flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 bg-navy text-white dark:bg-gold dark:text-slate-950 text-xs font-bold tracking-wider rounded inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   <Send size={11} />
                   <span>{getTranslatedText('Submit Question', 'ጥያቄዎን ይላኩ')}</span>

@@ -87,7 +87,7 @@ export default function ArticleDetail() {
             ? 'The apologetic paper you requested is unavailable or has been archived.'
             : 'የጠየቁት የክርስትና መከላከያ ጽሑፍ የለም ወይም ከማህደር ወጥቷል።'}
         </p>
-        <button onClick={() => navigateTo('/')} className="mt-6 px-4 py-2 bg-navy text-white hover:opacity-90 text-xs font-bold uppercase tracking-wider rounded cursor-pointer">
+        <button onClick={() => navigateTo('/')} className="mt-6 px-4 py-2 bg-navy text-white hover:opacity-90 text-xs font-bold tracking-wider rounded cursor-pointer">
           {language === 'en' ? 'Return to Home Page' : 'ወደ መነሻ ገጽ ተመለስ'}
         </button>
       </div>
@@ -262,7 +262,7 @@ export default function ArticleDetail() {
         <div className="bg-amber-50/50 dark:bg-slate-900 border border-gold/30 rounded-lg p-5 space-y-4 shadow-sm text-xs">
           <div className="flex gap-2 items-center">
             <BookMarked size={16} className="text-gold" />
-            <h4 className="font-serif text-[12px] font-bold text-navy dark:text-gold uppercase tracking-wider">
+            <h4 className="font-serif text-[12px] font-bold text-navy dark:text-gold tracking-wider">
               {language === 'en' ? 'Part of learning path' : 'የጥናት መንገድ አካል'}
             </h4>
           </div>
@@ -271,7 +271,7 @@ export default function ArticleDetail() {
             <p className="font-serif font-semibold text-nearblack dark:text-white leading-snug">
               {getTranslatedText(currentPath.title, currentPath.titleAm)}
             </p>
-            <p className="text-[10px] text-mediumgrey uppercase tracking-wide">
+            <p className="text-[10px] text-mediumgrey tracking-wide">
               {language === 'en' ? 'Step' : 'ደረጃ'} {article.partInPath.position} {language === 'en' ? 'of' : 'ከ'} {currentPath.articleCount}
             </p>
           </div>
@@ -279,7 +279,7 @@ export default function ArticleDetail() {
           <div className="pt-2 flex flex-col gap-2">
             <button
               onClick={() => toggleStepProgress(pSlug, article.slug)}
-              className={`w-full py-1.5 rounded text-[11px] font-bold uppercase tracking-wider border transition-all flex items-center justify-center gap-1 cursor-pointer ${
+              className={`w-full py-1.5 rounded text-[11px] font-bold tracking-wider border transition-all flex items-center justify-center gap-1 cursor-pointer ${
                 isDone
                   ? 'bg-gold border-gold text-slate-950'
                   : 'bg-white hover:bg-slate-50 border-black/10 dark:bg-slate-800 text-nearblack dark:text-white'
@@ -292,7 +292,7 @@ export default function ArticleDetail() {
             {nextArticle && (
               <button
                 onClick={() => navigateTo(`/articles/${nextArticle.slug}`)}
-                className="w-full py-1.5 bg-navy text-white hover:opacity-90 rounded text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer"
+                className="w-full py-1.5 bg-navy text-white hover:opacity-90 rounded text-[11px] font-bold tracking-wider flex items-center justify-center gap-1 cursor-pointer"
               >
                 <span>{language === 'en' ? 'Read next step' : 'ቀጣዩን ደረጃ አንብብ'}</span>
                 <ChevronRight size={12} />
@@ -308,14 +308,14 @@ export default function ArticleDetail() {
           className="bg-navy text-white p-6 rounded-lg border border-white/5 flex flex-col sm:flex-row justify-between sm:items-center gap-4 cursor-pointer hover:bg-navy/95 transition-colors shadow"
         >
           <div className="space-y-1 bg-white/5 sm:bg-transparent p-4 sm:p-0 rounded">
-            <span className="text-gold font-bold uppercase tracking-wider text-[10px] block font-sans">
+            <span className="text-gold font-bold tracking-wider text-[10px] block font-sans">
               {language === 'en' ? 'Up Next on' : 'ቀጣይ በ'}: "{getTranslatedText(currentPath.title, currentPath.titleAm)}"
             </span>
             <h4 className="font-serif text-lg font-bold">
               {getTranslatedText(nextArticle.title, nextArticle.titleAm)}
             </h4>
           </div>
-          <button className="px-4 py-2 bg-gold text-slate-950 font-bold uppercase tracking-wider text-xs rounded shadow flex items-center gap-1 group shrink-0">
+          <button className="px-4 py-2 bg-gold text-slate-950 font-bold tracking-wider text-xs rounded shadow flex items-center gap-1 group shrink-0">
             <span>{language === 'en' ? 'Continue path' : 'ጥናቱን ቀጥል'}</span>
             <ChevronRight size={14} className="group-hover:translate-x-0.5" />
           </button>
@@ -349,7 +349,7 @@ export default function ArticleDetail() {
                 navigateTo('/topics');
               }
             }}
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors cursor-pointer"
           >
             <ArrowLeft size={14} /> {language === 'en' ? `Back to ${topic ? getTranslatedText(topic.name, topic.nameAm) : 'topics'}` : `ወደ ${topic ? getTranslatedText(topic.name, topic.nameAm) : 'አርእስቶች'} ተመለስ`}
           </button>
@@ -360,7 +360,7 @@ export default function ArticleDetail() {
               {topic && (
                 <button
                   onClick={() => navigateTo(`/topics/${topic.slug}`)}
-                  className="uppercase font-bold tracking-wider text-gold hover:underline cursor-pointer font-sans"
+                  className="font-bold tracking-wider text-gold hover:underline cursor-pointer font-sans"
                 >
                   {getTranslatedText(topic.name, topic.nameAm)}
                 </button>
@@ -524,7 +524,7 @@ export default function ArticleDetail() {
             {/* 7b. Footnotes Section */}
             {article.footnotes.length > 0 && (
               <div id="article-footnotes-area" className="border-t border-black/10 dark:border-white/10 pt-8 mt-12 space-y-3">
-                <h4 className="font-serif text-[12px] uppercase tracking-wider font-bold text-nearblack dark:text-white">
+                <h4 className="font-serif text-[12px] tracking-wider font-bold text-nearblack dark:text-white">
                   {t('article.footnote')}
                 </h4>
                 <ol className="list-decimal pl-5 space-y-2 text-xs md:text-sm text-mediumgrey dark:text-gray-400 font-sans leading-relaxed">
@@ -599,7 +599,7 @@ export default function ArticleDetail() {
                           {rel.title}
                         </h4>
                       </div>
-                      <span className="text-[10px] text-lightgrey uppercase tracking-wider font-semibold group-hover:text-gold flex items-center gap-0.5 pt-3">
+                      <span className="text-[10px] text-lightgrey tracking-wider font-semibold group-hover:text-gold flex items-center gap-0.5 pt-3">
                         Read <ChevronRight size={10} />
                       </span>
                     </div>
@@ -626,7 +626,7 @@ export default function ArticleDetail() {
                   
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                     <div className="sm:col-span-4">
-                      <label className="text-[10px] uppercase font-bold text-mediumgrey mb-1 block">Your Name</label>
+                      <label className="text-[10px] font-bold text-mediumgrey mb-1 block">Your Name</label>
                       <input
                         type="text"
                         required
@@ -637,7 +637,7 @@ export default function ArticleDetail() {
                       />
                     </div>
                     <div className="sm:col-span-8">
-                      <label className="text-[10px] uppercase font-bold text-mediumgrey mb-1 block">Comment reflection</label>
+                      <label className="text-[10px] font-bold text-mediumgrey mb-1 block">Comment reflection</label>
                       <input
                         type="text"
                         required
@@ -653,7 +653,7 @@ export default function ArticleDetail() {
                     <span className="text-lightgrey">Comments are strictly moderated for logical validity and academic decorum.</span>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-navy text-white dark:bg-gold dark:text-slate-950 hover:bg-navy/90 text-xs font-bold uppercase tracking-wider rounded inline-flex items-center gap-1.5"
+                      className="px-4 py-2 bg-navy text-white dark:bg-gold dark:text-slate-950 hover:bg-navy/90 text-xs font-bold tracking-wider rounded inline-flex items-center gap-1.5"
                     >
                       <Send size={11} />
                       <span>Post Reflection</span>
@@ -716,7 +716,7 @@ export default function ArticleDetail() {
             {/* 1. TEXT TABLE OF CONTENTS DESKTOP */}
             {headings.length > 0 && (
               <div className="hidden lg:block bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-3 shadow-sm sticky top-24">
-                <h4 className="font-serif text-[12px] uppercase tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
+                <h4 className="font-serif text-[12px] tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
                   Table of Contents
                 </h4>
                 <ul className="space-y-2.5 text-xs text-mediumgrey pr-2 max-h-[220px] overflow-y-auto">
@@ -744,7 +744,7 @@ export default function ArticleDetail() {
 
             {/* Share and Print Panel */}
             <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-4 shadow-sm text-xs">
-              <h4 className="font-serif text-[11px] uppercase tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
+              <h4 className="font-serif text-[11px] tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
                 Actions & Distribution
               </h4>
               
@@ -820,7 +820,7 @@ export default function ArticleDetail() {
             {/* TAGS PILLS */}
             {article.tags.length > 0 && (
               <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-3 shadow-sm text-xs">
-                <h4 className="font-serif text-[11px] uppercase tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
+                <h4 className="font-serif text-[11px] tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
                   Paper Subject Tags
                 </h4>
                 <div className="flex flex-wrap gap-1.5">
