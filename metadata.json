@@ -1,0 +1,6 @@
+{
+  "name": "Hokhma Study",
+  "description": "An apologetics platform of long-form articles defending and explaining the Christian faith.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

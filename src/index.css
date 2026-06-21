@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Lora", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  
+  --color-navy: #40513B;
+  --color-gold: #609966;
+  --color-sage: #9DC08B;
+  --color-offwhite: #FFFFFF;
+  --color-nearblack: #263223;
+  --color-mediumgrey: #5D6D58;
+  --color-lightgrey: #8E9E8A;
+  
+  --color-dark-bg: #0F1115;
+  --color-dark-card: #151820;
+  --color-dark-input: #1D212B;
+  --color-dark-border: #222733;
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply font-sans bg-offwhite text-nearblack dark:bg-dark-bg dark:text-gray-100 antialiased transition-colors duration-200;
+  }
+  
+  /* Auto-style standard inputs, selects, and textareas to look completely elegant */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]), 
+  textarea, 
+  select {
+    @apply bg-white border border-black/10 text-nearblack focus:border-[#609966] focus:ring-1 focus:ring-[#609966] focus:outline-none placeholder:text-lightgrey transition-colors duration-200
+           dark:bg-dark-input dark:border-dark-border dark:text-gray-100 dark:focus:border-[#609966] dark:focus:ring-[#609966];
+  }
+}
