@@ -5,10 +5,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { Search, Menu, X, Sun, Moon, ShieldAlert, BadgeInfo } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { Search, Menu, X, Sun, Moon, ShieldAlert, BadgeInfo, Globe } from 'lucide-react';
 
 export default function Navbar() {
   const { currentRoute, navigateTo, darkMode, setDarkMode, isAdmin } = useApp();
+  const { language, setLanguage, t } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showSearchInput, setShowSearchInput] = useState(false);
@@ -49,11 +51,11 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { label: 'Topics', hash: '/topics', page: 'topics' },
-    { label: 'Questions', hash: '/questions', page: 'questions' },
-    { label: 'Paths', hash: '/paths', page: 'paths' },
-    { label: 'Resources', hash: '/resources', page: 'resources' },
-    { label: 'About', hash: '/about', page: 'about' },
+    { label: t('nav.topics'), hash: '/topics', page: 'topics' },
+    { label: t('nav.questions'), hash: '/questions', page: 'questions' },
+    { label: t('nav.paths'), hash: '/paths', page: 'paths' },
+    { label: t('nav.resources'), hash: '/resources', page: 'resources' },
+    { label: t('nav.about'), hash: '/about', page: 'about' },
   ];
 
   const handleNewsletterClick = () => {
@@ -82,12 +84,12 @@ export default function Navbar() {
           <a
             id="nav-logo"
             href="#/"
-            className="flex items-center gap-2 text-navy dark:text-white transition-opacity hover:opacity-90"
+            className="flex items-center gap-2 text-navy dark:text-white transition-opacity hover:opacity-90 animate-fade-in"
           >
-            <span className="font-serif text-2xl font-bold tracking-tight">Hokhma Study</span>
+            <span className="font-serif text-2xl font-bold tracking-tight">{t('brand.name')}</span>
             <span className="h-4 w-px bg-gold/50" />
             <span className="font-sans text-[11px] tracking-widest text-gold font-semibold hidden sm:inline-block">
-              Apologetics
+              {language === 'en' ? 'Apologetics' : 'መከላከያ'}
             </span>
           </a>
 
@@ -98,7 +100,7 @@ export default function Navbar() {
                 key={link.label}
                  id={`nav-link-${link.page}`}
                  href={`#${link.hash}`}
-                className={`text-[13px] font-medium tracking-wide transition-colors duration-200 capitalize ${
+                className={`text-[13px] font-medium tracking-wide transition-colors duration-200 capitalise ${
                   isActive(link.page)
                     ? 'text-navy dark:text-gold border-b-2 border-navy dark:border-gold pb-1 font-semibold'
                      : 'text-mediumgrey dark:text-gray-300 hover:text-navy dark:hover:text-gold'
@@ -113,10 +115,10 @@ export default function Navbar() {
           <div className="flex items-center gap-3.5">
             {/* SEARCH EXPANDABLE */}
             {showSearchInput ? (
-              <form onSubmit={handleSearchSubmit} className="relative flex items-center animate-fade-in">
+               <form onSubmit={handleSearchSubmit} className="relative flex items-center animate-fade-in">
                 <input
                   type="text"
-                  placeholder="Search articles..."
+                  placeholder={t('nav.search')}
                   value={localSearchVal}
                   onChange={(e) => setLocalSearchVal(e.target.value)}
                   className="w-48 bg-white dark:bg-slate-800 text-sm py-1.5 pl-3 pr-8 rounded-[4px] border border-black/10 dark:border-white/10 focus:outline-none focus:border-gold text-nearblack dark:text-white"
@@ -143,6 +145,16 @@ export default function Navbar() {
                 <Search size={19} />
               </button>
             )}
+
+            {/* INTEGRATED PERSISTENT LANGUAGE SWITCHER (🇺🇸 / 🇪🇹) */}
+            <button
+              onClick={() => setLanguage(language === 'en' ? 'am' : 'en')}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold tracking-wider border border-black/10 dark:border-white/10 text-nearblack dark:text-white hover:text-gold dark:hover:text-gold rounded-[4px] cursor-pointer transition-all bg-white/40 dark:bg-slate-900/40"
+              title={language === 'en' ? 'Switch to Amharic / አማርኛ' : 'Switch to English / እንግሊዝኛ'}
+            >
+              <Globe size={13} className="text-gold" />
+              <span>{language === 'en' ? 'ENG' : 'አማርኛ'}</span>
+            </button>
 
             {/* DARK MODE TOGGLE */}
             <button
@@ -173,7 +185,7 @@ export default function Navbar() {
               onClick={handleNewsletterClick}
               className="hidden sm:inline-flex items-center justify-center px-4 py-2 text-[13px] font-semibold tracking-wider bg-navy text-white hover:bg-navy/90 dark:bg-gold dark:text-slate-950 dark:hover:bg-gold/90 rounded-[4px] transition-colors"
             >
-              Subscribe
+              {language === 'en' ? 'Subscribe' : 'ይመዝገቡ'}
             </button>
 
             {/* MOBILE DRAWER TOGGLE */}
@@ -192,8 +204,19 @@ export default function Navbar() {
       {isDrawerOpen && (
         <div className="fixed inset-0 z-[100] bg-white dark:bg-dark-bg flex flex-col p-6 animate-fade-in overflow-hidden">
           <div className="flex items-center justify-between col-span-2">
-            <span className="font-serif text-2xl font-bold tracking-tight text-navy dark:text-white flex items-center gap-1">Hokhma Study</span>
+            <span className="font-serif text-2xl font-bold tracking-tight text-navy dark:text-white flex items-center gap-1">
+              {t('brand.name')}
+            </span>
             <div className="flex items-center gap-3">
+              {/* Mobile language switch button */}
+              <button
+                onClick={() => setLanguage(language === 'en' ? 'am' : 'en')}
+                className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold border border-black/10 dark:border-white/10 rounded-[4px] bg-slate-50 dark:bg-slate-950 text-nearblack dark:text-white"
+              >
+                <Globe size={13} className="text-gold" />
+                <span>{language === 'en' ? 'ENG' : 'አማርኛ'}</span>
+              </button>
+
               {/* Mobile theme switch button */}
               <button
                 id="theme-toggle-btn-mobile"
@@ -236,7 +259,7 @@ export default function Navbar() {
                 className="flex items-center gap-1.5 px-4 py-2 rounded bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200 text-sm font-semibold mt-4"
               >
                 <ShieldAlert size={16} />
-                Author Panel
+                {language === 'en' ? 'Author Panel' : 'የጸሐፊ ክፍል'}
               </a>
             )}
           </div>
@@ -249,10 +272,10 @@ export default function Navbar() {
               }}
               className="w-full py-3 text-center text-sm font-bold tracking-wider bg-navy text-white dark:bg-gold dark:text-slate-950 rounded-md shadow-sm"
             >
-              Get Article Updates
+              {language === 'en' ? 'Get Article Updates' : 'ጽሑፎችን በኢሜይል ያግኙ'}
             </button>
             <p className="text-xs text-mediumgrey dark:text-gray-400 font-sans">
-              Hokhma Study Apologetics · Pure academic defense.
+              {t('brand.name')} {language === 'en' ? 'Apologetics · Pure academic defense.' : 'የክርስትና መከላከያ · አካዳሚያዊ ጥናት።'}
             </p>
           </div>
         </div>

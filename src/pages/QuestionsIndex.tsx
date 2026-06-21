@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 import DifficultyBadge from '../components/DifficultyBadge';
 import TopicIcon from '../components/TopicIcon';
 import { Question, Difficulty } from '../types';
@@ -14,6 +15,7 @@ type SortOption = 'common' | 'az' | 'recent';
 
 export default function QuestionsIndex() {
   const { questions, topics, navigateTo } = useApp();
+  const { language, getTranslatedText } = useLanguage();
   
   // States
   const [searchVal, setSearchVal] = useState('');
@@ -28,9 +30,11 @@ export default function QuestionsIndex() {
   // Filter & search questions
   const filteredQuestions = questions.filter((q) => {
     // Search
+    const qText = getTranslatedText(q.text, q.textAm);
+    const qArticleTitle = getTranslatedText(q.articleTitle, q.articleTitleAm);
     const matchSearch =
-      q.text.toLowerCase().includes(searchVal.toLowerCase()) ||
-      q.articleTitle.toLowerCase().includes(searchVal.toLowerCase()) ||
+      qText.toLowerCase().includes(searchVal.toLowerCase()) ||
+      qArticleTitle.toLowerCase().includes(searchVal.toLowerCase()) ||
       q.tags.some((t) => t.toLowerCase().includes(searchVal.toLowerCase()));
 
     // Topic
@@ -48,7 +52,9 @@ export default function QuestionsIndex() {
       return b.commonScore - a.commonScore; // highest score first
     }
     if (sortBy === 'az') {
-      return a.text.localeCompare(b.text);
+      const aText = getTranslatedText(a.text, a.textAm);
+      const bText = getTranslatedText(b.text, b.textAm);
+      return aText.localeCompare(bText);
     }
     if (sortBy === 'recent') {
       return new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime();
@@ -80,13 +86,16 @@ export default function QuestionsIndex() {
       <section className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-2xl p-8 md:p-12 text-center space-y-6 shadow-sm">
         <div className="max-w-xl mx-auto space-y-3">
           <span className="text-xs uppercase tracking-widest text-gold font-bold bg-gold/10 px-3 py-1.5 rounded-full inline-block">
-            Objection Mapping Index
+            {getTranslatedText('Objection Mapping Index', 'የተቃውሞዎች እና ጥያቄዎች ማውጫ')}
           </span>
           <h1 className="font-serif text-3xl md:text-4xl font-extrabold text-nearblack dark:text-white">
-            What are you wondering about?
+            {getTranslatedText('What Are You Wondering About?', 'ምን ማወቅ ይፈልጋሉ?')}
           </h1>
           <p className="text-xs md:text-sm text-mediumgrey dark:text-gray-300 font-serif leading-relaxed">
-            We map universal intellectual concerns, doubts, and common cultural objections directly to Dr. Sterling’s comprehensive apologetic articles.
+            {getTranslatedText(
+              'We map universal intellectual concerns, doubts, and common cultural objections directly to Dr. Sterling’s comprehensive apologetic articles.',
+              'ሁለንተናዊ አእምሯዊ ጥያቄዎችን፣ ጥርጣሬዎችን እና የተለመዱ ባህላዊ ተቃውሞዎችን በቀጥታ ከዶክተር ስተርሊንግ ሰፊ የአፖሎጂቲክስ ጽሑፎች ጋር እናገናኛለን።'
+            )}
           </p>
         </div>
 
@@ -94,7 +103,10 @@ export default function QuestionsIndex() {
         <div className="max-w-2xl mx-auto relative">
           <input
             type="text"
-            placeholder="Type your doubt or question (e.g., 'suffering', 'empty tomb')..."
+            placeholder={getTranslatedText(
+              "Type your doubt or question (e.g., 'suffering', 'empty tomb')...",
+              "እባክዎ ጥያቄዎን ወይም ጥርጣሬዎን እዚህ ይጻፉ..."
+            )}
             value={searchVal}
             onChange={(e) => setSearchVal(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-offwhite dark:bg-slate-950 border border-black/10 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold text-nearblack dark:text-white"
@@ -105,7 +117,7 @@ export default function QuestionsIndex() {
               onClick={() => setSearchVal('')}
               className="absolute right-4 top-3.5 text-xs text-mediumgrey hover:text-nearblack dark:hover:text-white uppercase font-bold"
             >
-              Clear
+              {getTranslatedText('Clear', 'አጽዳ')}
             </button>
           )}
         </div>
@@ -120,7 +132,7 @@ export default function QuestionsIndex() {
           {/* Topic Filters */}
           <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-3 shadow-sm">
             <h3 className="font-sans text-[11px] uppercase tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
-              Filter by Field
+              {getTranslatedText('Filter By Field', 'በባህሪ ይለዩ')}
             </h3>
             <div className="flex flex-col gap-1 text-xs">
               <button
@@ -131,7 +143,7 @@ export default function QuestionsIndex() {
                     : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-nearblack/80 dark:text-gray-200'
                 }`}
               >
-                <span>All Topics</span>
+                <span>{getTranslatedText('All Topics', 'ሁሉም አርዕስቶች')}</span>
                 <span className="opacity-75">{questions.length}</span>
               </button>
               
@@ -147,7 +159,7 @@ export default function QuestionsIndex() {
                         : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-nearblack/80 dark:text-gray-200'
                     }`}
                   >
-                    <span className="truncate pr-1">{t.name}</span>
+                    <span className="truncate pr-1">{getTranslatedText(t.name, t.nameAm)}</span>
                     <span className="opacity-75">{count}</span>
                   </button>
                 );
@@ -158,7 +170,7 @@ export default function QuestionsIndex() {
           {/* Difficulty Filter */}
           <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-3 shadow-sm">
             <h3 className="font-sans text-[11px] uppercase tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
-              Depth Level
+              {getTranslatedText('Depth Level', 'የጥልቀት ደረጃ')}
             </h3>
             <div className="flex flex-col gap-1 text-xs">
               <button
@@ -168,7 +180,7 @@ export default function QuestionsIndex() {
                 }`}
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
-                <span>All Levels</span>
+                <span>{getTranslatedText('All Levels', 'ሁሉም ደረጃዎች')}</span>
               </button>
               <button
                 onClick={() => setSelectedDifficulty('beginner')}
@@ -177,7 +189,7 @@ export default function QuestionsIndex() {
                 }`}
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-teal-505 bg-[#0F9E7B]" />
-                <span>Beginner</span>
+                <span>{getTranslatedText('Beginner', 'ጀማሪ')}</span>
               </button>
               <button
                 onClick={() => setSelectedDifficulty('intermediate')}
@@ -186,16 +198,16 @@ export default function QuestionsIndex() {
                 }`}
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-gold" />
-                <span>Intermediate</span>
+                <span>{getTranslatedText('Intermediate', 'መካከለኛ')}</span>
               </button>
               <button
                 onClick={() => setSelectedDifficulty('deep-dive')}
                 className={`flex items-center gap-2 py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 ${
-                  selectedDifficulty === 'deep-dive' ? 'text-indigo-500 font-bold' : 'text-mediumgrey dark:text-gray-300'
+                  selectedDifficulty === 'deep-dive' ? 'text-indigo-505 font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-[#534AB7]" />
-                <span>Deep Dive</span>
+                <span>{getTranslatedText('Deep Dive', 'ጥልቅ ጥናት')}</span>
               </button>
             </div>
           </div>
@@ -208,12 +220,12 @@ export default function QuestionsIndex() {
           {/* Toolbar with sort control and search info */}
           <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 text-xs shadow-sm">
             <span className="text-mediumgrey dark:text-gray-400 font-medium">
-              Showing <strong className="text-nearblack dark:text-white">{sortedQuestions.length}</strong> matched question{sortedQuestions.length === 1 ? '' : 's'}
+              {getTranslatedText('Showing', 'እየታዩ ያሉ')} <strong className="text-nearblack dark:text-white">{sortedQuestions.length}</strong> {getTranslatedText(`matched question${sortedQuestions.length === 1 ? '' : 's'}`, 'የሚዛመዱ ጥያቄዎች')}
             </span>
             
             {/* Sort options */}
             <div className="flex items-center gap-2">
-              <span className="text-mediumgrey">Sort by:</span>
+              <span className="text-mediumgrey">{getTranslatedText('Sort By:', 'ደርድር፦')}</span>
               <div className="inline-flex rounded-md border border-black/10 dark:border-white/10 overflow-hidden">
                 <button
                   onClick={() => setSortBy('common')}
@@ -223,7 +235,7 @@ export default function QuestionsIndex() {
                       : 'bg-offwhite hover:bg-black/5 text-nearblack dark:bg-slate-800 dark:text-gray-200'
                   }`}
                 >
-                  Most Common
+                  {getTranslatedText('Most Common', 'በብዛት የሚጠየቁ')}
                 </button>
                 <button
                   onClick={() => setSortBy('az')}
@@ -233,7 +245,7 @@ export default function QuestionsIndex() {
                       : 'bg-offwhite hover:bg-black/5 text-nearblack dark:bg-slate-800 dark:text-gray-200'
                   }`}
                 >
-                  A–Z Index
+                  {getTranslatedText('A–Z Index', 'ሀ-ፖ ማውጫ')}
                 </button>
                 <button
                   onClick={() => setSortBy('recent')}
@@ -243,7 +255,7 @@ export default function QuestionsIndex() {
                       : 'bg-offwhite hover:bg-black/5 text-nearblack dark:bg-slate-800 dark:text-gray-200'
                   }`}
                 >
-                  Recently Added
+                  {getTranslatedText('Recently Added', 'በቅርቡ የገቡ')}
                 </button>
               </div>
             </div>
@@ -263,7 +275,7 @@ export default function QuestionsIndex() {
                     <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2">
                       <div className="text-gold"><TopicIcon name={topic.icon} size={18} /></div>
                       <h2 className="font-serif text-lg font-bold text-nearblack dark:text-white uppercase tracking-wide">
-                        {topic.name}
+                        {getTranslatedText(topic.name, topic.nameAm)}
                       </h2>
                     </div>
 
@@ -277,7 +289,7 @@ export default function QuestionsIndex() {
                         >
                           <div className="space-y-2 flex-1">
                             <h3 className="text-sm md:text-md font-bold text-nearblack dark:text-white group-hover:text-gold transition-colors leading-snug">
-                              {q.text}
+                              {getTranslatedText(q.text, q.textAm)}
                             </h3>
                             
                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
@@ -289,7 +301,7 @@ export default function QuestionsIndex() {
                               {/* Target Link */}
                               <span className="text-lightgrey dark:text-gray-400 flex items-center gap-1">
                                 <CornerDownRight size={12} className="text-gold" />
-                                <span>Answer: <strong className="text-mediumgrey dark:text-gray-300 font-medium group-hover:underline">{q.articleTitle}</strong></span>
+                                <span>{getTranslatedText('Answer:', 'መልስ፦')} <strong className="text-mediumgrey dark:text-gray-300 font-medium group-hover:underline">{getTranslatedText(q.articleTitle, q.articleTitleAm)}</strong></span>
                               </span>
                             </div>
 
@@ -319,9 +331,12 @@ export default function QuestionsIndex() {
           ) : (
             <div className="p-12 text-center rounded-lg border border-dashed border-black/10 dark:border-white/5 bg-white dark:bg-slate-900 flex flex-col items-center justify-center gap-2 leading-relaxed">
               <HelpCircle size={36} className="text-gold" />
-              <p className="text-lg font-serif font-bold text-nearblack dark:text-white">Objection not mapped yet</p>
+              <p className="text-lg font-serif font-bold text-nearblack dark:text-white">{getTranslatedText('Objection Not Mapped Yet', 'ተቃውሞው አልተመዘገበም')}</p>
               <p className="text-xs text-mediumgrey max-w-sm mx-auto leading-relaxed">
-                No articles matches '<strong>{searchVal}</strong>' in our current index. Rev. Dr. Sterling accepts custom submissions directly below.
+                {getTranslatedText(
+                  `No articles matches '${searchVal}' in our current index. Rev. Dr. Sterling accepts custom submissions directly below.`,
+                  `‘${searchVal}’ የሚል ቃል በምናውቃቸው ጽሑፎች ውስጥ አልተገኘም። ከታች ባለው ቅጽ ጥያቄዎን ማስገባት ይችላሉ።`
+                )}
               </p>
             </div>
           )}
@@ -329,33 +344,36 @@ export default function QuestionsIndex() {
           {/* SUBMIT A CUSTOM OBJECTION */}
           <div className="bg-[#FAF9F6] dark:bg-slate-900/40 p-6 rounded-lg border border-black/5 shadow-inner">
             <h3 className="font-serif text-lg font-bold text-nearblack dark:text-white mb-2">
-              Have an intellectual objection not cataloged here?
+              {getTranslatedText('Have An Intellectual Objection Not Cataloged Here?', 'እዚህ ያልተካተተ ጥያቄ ወይም ተቃውሞ አለዎት?')}
             </h3>
             <p className="text-xs text-mediumgrey dark:text-gray-300 leading-relaxed mb-4">
-              Rev. Dr. Sterling frequently maps new articles based on community submissions from seekers and scholars. Submit your hard question below to request a detailed analysis.
+              {getTranslatedText(
+                'Rev. Dr. Sterling frequently maps new articles based on community submissions from seekers and scholars. Submit your hard question below to request a detailed analysis.',
+                'ዶ/ር ስተርሊንግ ለአጥኚዎችና ለጠያቂዎች አዳዲስ የአፖሎጂቲክስ ምላሾችን ያዘጋጃሉ። ከባድ የሚሉትን ጥያቄ ከታች ባለው ቅጽ ያቅርቡ።'
+              )}
             </p>
 
             {showSubmitSuccess ? (
               <div className="p-4 bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 rounded text-xs flex items-center justify-center gap-2 animate-fade-in">
                 <Check size={14} />
-                <span>Question Submitted. Your query has been prioritized in Rev. Dr. Sterling's research queue.</span>
+                <span>{getTranslatedText("Question Submitted. Your query has been prioritized in Rev. Dr. Sterling's research queue.", 'ጥያቄዎ ገብቷል፤ ለዶክተር ስተርሊንግ የምርምር ዝርዝር ይተላለፋል።')}</span>
               </div>
             ) : (
               <form onSubmit={handleCustomQuestionSubmit} className="flex gap-2">
                 <input
                   type="text"
                   required
-                  placeholder="Type your question or intellectual concern..."
+                  placeholder={getTranslatedText('Type your question or intellectual concern...', 'ጥያቄዎን ወይም ምሁራዊ ሀሳብዎን እዚህ ያስገቡ...')}
                   value={customQuestionForm}
                   onChange={(e) => setCustomQuestionForm(e.target.value)}
                   className="flex-1 px-3 py-2 text-xs bg-white dark:bg-slate-950 border border-black/10 dark:border-white/10 rounded focus:outline-none focus:border-gold text-nearblack dark:text-white"
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-navy text-white dark:bg-gold dark:text-slate-950 text-xs font-bold uppercase tracking-wider rounded inline-flex items-center gap-1.5"
+                  className="px-4 py-2 bg-navy text-white dark:bg-gold dark:text-slate-950 text-xs font-bold uppercase tracking-wider rounded inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   <Send size={11} />
-                  <span>Submit Question</span>
+                  <span>{getTranslatedText('Submit Question', 'ጥያቄዎን ይላኩ')}</span>
                 </button>
               </form>
             )}

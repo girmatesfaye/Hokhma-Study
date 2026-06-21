@@ -5,12 +5,14 @@
 
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 import DifficultyBadge from '../components/DifficultyBadge';
 import { Difficulty } from '../types';
 import { ArrowLeft, BookOpen, Clock, ChevronRight, Hash } from 'lucide-react';
 
 export default function TopicDetail() {
   const { currentRoute, topics, articles, navigateTo } = useApp();
+  const { language, getTranslatedText } = useLanguage();
   const [difficultyFilter, setDifficultyFilter] = useState<Difficulty | 'all'>('all');
 
   const topicSlug = currentRoute.slug || '';
@@ -19,10 +21,10 @@ export default function TopicDetail() {
   if (!topic) {
     return (
       <div className="max-w-[1140px] mx-auto px-4 py-20 text-center animate-fade-in">
-        <h2 className="font-serif text-2xl font-bold">Topic Not Found</h2>
-        <p className="text-mediumgrey text-sm mt-2">The topic you are looking for does not exist in our writing database.</p>
+        <h2 className="font-serif text-2xl font-bold">{getTranslatedText('Topic Not Found', 'ርዕሰ ጉዳዩ አልተገኘም')}</h2>
+        <p className="text-mediumgrey text-sm mt-2">{getTranslatedText('The topic you are looking for does not exist in our writing database.', 'የፈለጉት ርዕሰ ጉዳይ በጽሑፎቻችን ማውጫ ውስጥ የለም።')}</p>
         <button onClick={() => navigateTo('/topics')} className="mt-6 px-4 py-2 bg-navy text-white text-xs font-bold uppercase tracking-wider rounded">
-          Return to Topics
+          {getTranslatedText('Return To Topics', 'ወደ ርዕሶች ይመለሱ')}
         </button>
       </div>
     );
@@ -48,10 +50,10 @@ export default function TopicDetail() {
   const relatedTopics = topics.filter((t) => t.slug !== topic.slug);
 
   const filters: { label: string; value: Difficulty | 'all' }[] = [
-    { label: 'All Articles', value: 'all' },
-    { label: 'Beginner', value: 'beginner' },
-    { label: 'Intermediate', value: 'intermediate' },
-    { label: 'Deep Dive', value: 'deep-dive' },
+    { label: getTranslatedText('All Articles', 'ሁሉም ጽሑፎች'), value: 'all' },
+    { label: getTranslatedText('Beginner', 'ጀማሪ'), value: 'beginner' },
+    { label: getTranslatedText('Intermediate', 'መካከለኛ'), value: 'intermediate' },
+    { label: getTranslatedText('Deep Dive', 'ጥልቅ ጥናት'), value: 'deep-dive' },
   ];
 
   return (
@@ -60,25 +62,25 @@ export default function TopicDetail() {
       {/* Back button */}
       <button
         onClick={() => navigateTo('/topics')}
-        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors cursor-pointer"
       >
-        <ArrowLeft size={14} /> Back to all topics
+        <ArrowLeft size={14} /> {getTranslatedText('Back To All Topics', 'ወደ ሁሉም አርዕስቶች ይመለሱ')}
       </button>
 
       {/* Page Header */}
       <div className="border-b border-black/5 dark:border-white/5 pb-8 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs uppercase tracking-widest text-gold font-bold">Category Archive</span>
-          <span className="text-xs bg-navy/5 dark:bg-white/5 text-navy dark:text-gray-300 px-3 py-1 rounded font-semibold">
-            {topicArticles.length} {topicArticles.length === 1 ? 'Article' : 'Articles'}
+          <span className="text-xs uppercase tracking-widest text-gold font-bold">{getTranslatedText('Category Archive', 'የምድብ ማህደር')}</span>
+          <span className="text-xs bg-navy/5 dark:bg-white/5 text-navy dark:text-gray-300 px-3 py-1 rounded font-semibold font-sans">
+            {topicArticles.length} {getTranslatedText(topicArticles.length === 1 ? 'Article' : 'Articles', 'ጽሑፎች')}
           </span>
         </div>
         
         <h1 className="font-serif text-3xl md:text-4xl font-extrabold text-nearblack dark:text-white">
-          {topic.name}
+          {getTranslatedText(topic.name, topic.nameAm)}
         </h1>
         <p className="text-sm md:text-base text-mediumgrey dark:text-gray-300 leading-relaxed font-serif italic max-w-3xl">
-          {topic.description}
+          {getTranslatedText(topic.description, topic.descriptionAm)}
         </p>
       </div>
 
@@ -90,12 +92,12 @@ export default function TopicDetail() {
           
           {/* Difficulty Filter Bar */}
           <div className="flex flex-wrap items-center gap-2 border-b border-black/5 dark:border-white/5 pb-4">
-            <span className="text-xs font-semibold text-mediumgrey dark:text-gray-400 font-sans mr-2">Filter difficulty:</span>
+            <span className="text-xs font-semibold text-mediumgrey dark:text-gray-400 font-sans mr-2">{getTranslatedText('Filter difficulty:', 'የደረጃ ማጣሪያ፦')}</span>
             {filters.map((fil) => (
               <button
                 key={fil.value}
                 onClick={() => setDifficultyFilter(fil.value)}
-                className={`px-3 py-1.5 text-xs font-bold rounded uppercase tracking-wider transition-all duration-200 ${
+                className={`px-3 py-1.5 text-xs font-bold rounded uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                   difficultyFilter === fil.value
                     ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-sm'
                     : 'bg-black/4 dark:bg-white/5 hover:bg-black/7 dark:hover:bg-white/10 text-nearblack dark:text-gray-200'
@@ -119,20 +121,20 @@ export default function TopicDetail() {
                     <div className="flex items-center justify-between">
                       <DifficultyBadge difficulty={art.difficulty} />
                       <span className="text-[11px] text-lightgrey flex items-center gap-1">
-                        <Clock size={11} /> {art.readingTime}m read
+                        <Clock size={11} /> {art.readingTime}{getTranslatedText('m read', ' ደቂቃ ንባብ')}
                       </span>
                     </div>
 
                     <h3 className="font-serif text-lg font-bold text-nearblack dark:text-white leading-snug group-hover:text-gold transition-colors">
-                      {art.title}
+                      {getTranslatedText(art.title, art.titleAm)}
                     </h3>
                     
                     <p className="text-xs text-mediumgrey dark:text-gray-350 line-clamp-3 leading-relaxed">
-                      {art.excerpt}
+                      {getTranslatedText(art.excerpt, art.excerptAm)}
                     </p>
                   </div>
 
-                  <div className="pt-4 mt-4 border-t border-black/5 dark:border-white/5 flex flex-col gap-3">
+                  <div className="pt-4 mt-4 border-t border-black/5 dark:border-white/5 flex flex-col gap-3 font-sans">
                     {/* Tags pill chips */}
                     <div className="flex flex-wrap gap-1.5">
                       {art.tags.slice(0, 3).map((tag) => (
@@ -146,9 +148,9 @@ export default function TopicDetail() {
                     </div>
 
                     <div className="flex justify-between items-center text-[11px] font-sans pt-1">
-                      <span className="text-lightgrey">Published {art.publishDate}</span>
+                      <span className="text-lightgrey">{getTranslatedText('Published', 'የታተመበት ቀን')} {art.publishDate}</span>
                       <span className="font-bold uppercase tracking-wider text-navy dark:text-gold group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
-                        Read <ChevronRight size={11} />
+                        {getTranslatedText('Read', 'ያንብቡ')} <ChevronRight size={11} />
                       </span>
                     </div>
                   </div>
@@ -158,20 +160,20 @@ export default function TopicDetail() {
           ) : (
             <div className="p-12 text-center rounded-lg border border-dashed border-black/10 dark:border-white/5 bg-white dark:bg-slate-900 flex flex-col items-center justify-center gap-2">
               <BookOpen size={32} className="text-gold" />
-              <p className="text-base font-serif font-bold text-nearblack dark:text-white">No articles match your selection</p>
-              <p className="text-xs text-mediumgrey max-w-xs leading-relaxed">Try adjusting your filters or browsing other topics in Dr. Sterling's archive.</p>
+              <p className="text-base font-serif font-bold text-nearblack dark:text-white">{getTranslatedText('No articles match your selection', 'ከማጣሪያዎ ጋር የሚዛመድ ጽሑፍ አልተገኘም')}</p>
+              <p className="text-xs text-mediumgrey max-w-xs leading-relaxed">{getTranslatedText("Try adjusting your filters or browsing other topics in Dr. Sterling's archive.", 'የተባዛ ማጣሪያዎችዎን በመቀየር ወይም ሌሎች የአፖሎጂቲክስ ጽሑፎችን በመመልከት ይሞክሩ።')}</p>
             </div>
           )}
 
         </div>
 
         {/* Sidebar (4 cols - Desktop only, screen hidden on mobile as specified) */}
-        <aside className="hidden lg:col-span-4 lg:block space-y-8">
+        <aside className="hidden lg:col-span-4 lg:block space-y-8 font-serif">
           
           {/* Related topics */}
           <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-6 space-y-4 shadow-sm">
             <h4 className="font-serif text-md font-bold text-nearblack dark:text-white uppercase tracking-wider text-[12px] border-b border-black/5 dark:border-white/5 pb-2">
-              Related Fields
+              {getTranslatedText('Related Fields', 'ተዛማጅ አውዶች')}
             </h4>
             <div className="space-y-3">
               {relatedTopics.map((rel) => (
@@ -181,9 +183,9 @@ export default function TopicDetail() {
                   className="flex justify-between items-center text-sm p-1 cursor-pointer group hover:text-gold transition-colors"
                 >
                   <span className="text-nearblack/85 dark:text-gray-300 font-medium group-hover:text-gold">
-                    {rel.name}
+                    {getTranslatedText(rel.name, rel.nameAm)}
                   </span>
-                  <span className="text-xs bg-black/5 dark:bg-white/5 hover:bg-gold/20 px-2.5 py-0.5 rounded text-mediumgrey">
+                  <span className="text-xs bg-black/5 dark:bg-white/5 hover:bg-gold/20 px-2.5 py-0.5 rounded text-mediumgrey font-sans">
                     {rel.articleCount}
                   </span>
                 </div>
@@ -195,14 +197,14 @@ export default function TopicDetail() {
           {tagCloud.length > 0 && (
             <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-6 space-y-4 shadow-sm">
               <h4 className="font-serif text-md font-bold text-nearblack dark:text-white uppercase tracking-wider text-[12px] border-b border-black/5 dark:border-white/5 pb-2">
-                Topic Tags
+                {getTranslatedText('Topic Tags', 'የርዕሰ ጉዳይ መለዮዎች')}
               </h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 font-sans">
                 {tagCloud.map((tag) => (
                   <button
                     key={tag}
                     onClick={() => navigateTo(`/tags/${tag}`)}
-                    className="inline-flex items-center gap-0.5 text-xs bg-offwhite hover:bg-gold/10 dark:bg-slate-800 dark:hover:bg-slate-700 text-mediumgrey dark:text-gray-200 px-3 py-1 rounded border border-black/5 dark:border-white/5 group transition-colors"
+                    className="inline-flex items-center gap-0.5 text-xs bg-offwhite hover:bg-gold/10 dark:bg-slate-800 dark:hover:bg-slate-700 text-mediumgrey dark:text-gray-200 px-3 py-1 rounded border border-black/5 dark:border-white/5 group transition-colors cursor-pointer"
                   >
                     <Hash size={10} className="text-gold" />
                     <span>{tag}</span>

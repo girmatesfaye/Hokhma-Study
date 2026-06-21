@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 import DifficultyBadge from '../components/DifficultyBadge';
 import ScriptureBlock from '../components/ScriptureBlock';
 import { Comment } from '../types';
@@ -41,6 +42,7 @@ export default function ArticleDetail() {
     toggleStepProgress,
     navigateTo
   } = useApp();
+  const { language, t, getTranslatedText } = useLanguage();
 
   const slug = currentRoute.slug || '';
   const article = articles.find((a) => a.slug === slug);
@@ -79,10 +81,14 @@ export default function ArticleDetail() {
   if (!article) {
     return (
       <div className="max-w-[1140px] mx-auto px-4 py-20 text-center animate-fade-in">
-        <h2 className="font-serif text-2xl font-bold">Article Not Found</h2>
-        <p className="text-mediumgrey text-sm mt-2">The apologetic paper you requested is unavailable or has been archived.</p>
-        <button onClick={() => navigateTo('/')} className="mt-6 px-4 py-2 bg-navy text-white text-xs font-bold uppercase tracking-wider rounded">
-          Return to Home Page
+        <h2 className="font-serif text-2xl font-bold">{language === 'en' ? 'Article Not Found' : 'ጥናታዊ ጽሑፉ አልተገኘም'}</h2>
+        <p className="text-mediumgrey text-sm mt-2">
+          {language === 'en'
+            ? 'The apologetic paper you requested is unavailable or has been archived.'
+            : 'የጠየቁት የክርስትና መከላከያ ጽሑፍ የለም ወይም ከማህደር ወጥቷል።'}
+        </p>
+        <button onClick={() => navigateTo('/')} className="mt-6 px-4 py-2 bg-navy text-white hover:opacity-90 text-xs font-bold uppercase tracking-wider rounded cursor-pointer">
+          {language === 'en' ? 'Return to Home Page' : 'ወደ መነሻ ገጽ ተመለስ'}
         </button>
       </div>
     );
@@ -99,11 +105,14 @@ export default function ArticleDetail() {
   // Auto-generate headings for Table of Contents
   const headings = article.content
     .filter((sec) => sec.type === 'header')
-    .map((sec) => ({
-      text: sec.text,
-      id: sec.text.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      level: sec.level || 2
-    }));
+    .map((sec) => {
+      const headingText = getTranslatedText(sec.text, sec.textAm);
+      return {
+        text: headingText,
+        id: headingText.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        level: sec.level || 2
+      };
+    });
 
   // Reaction Click
   const handleReactionClick = (type: string) => {
@@ -254,16 +263,16 @@ export default function ArticleDetail() {
           <div className="flex gap-2 items-center">
             <BookMarked size={16} className="text-gold" />
             <h4 className="font-serif text-[12px] font-bold text-navy dark:text-gold uppercase tracking-wider">
-              Part of learning path
+              {language === 'en' ? 'Part of learning path' : 'የጥናት መንገድ አካል'}
             </h4>
           </div>
 
           <div className="space-y-1">
             <p className="font-serif font-semibold text-nearblack dark:text-white leading-snug">
-              {currentPath.title}
+              {getTranslatedText(currentPath.title, currentPath.titleAm)}
             </p>
             <p className="text-[10px] text-mediumgrey uppercase tracking-wide">
-              Step {article.partInPath.position} of {currentPath.articleCount}
+              {language === 'en' ? 'Step' : 'ደረጃ'} {article.partInPath.position} {language === 'en' ? 'of' : 'ከ'} {currentPath.articleCount}
             </p>
           </div>
 
@@ -277,15 +286,15 @@ export default function ArticleDetail() {
               }`}
             >
               <BadgeCheck size={13} />
-              <span>{isDone ? 'Marked Completed' : 'Mark as Completed'}</span>
+              <span>{isDone ? (language === 'en' ? 'Marked Completed' : 'ተጠናቋል') : (language === 'en' ? 'Mark as Completed' : 'እንደተጠናቀቀ ምልክት አድርግ')}</span>
             </button>
 
             {nextArticle && (
               <button
                 onClick={() => navigateTo(`/articles/${nextArticle.slug}`)}
-                className="w-full py-1.5 bg-navy text-white hover:bg-navy/95 rounded text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1"
+                className="w-full py-1.5 bg-navy text-white hover:opacity-90 rounded text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer"
               >
-                <span>Read next step</span>
+                <span>{language === 'en' ? 'Read next step' : 'ቀጣዩን ደረጃ አንብብ'}</span>
                 <ChevronRight size={12} />
               </button>
             )}
@@ -300,14 +309,14 @@ export default function ArticleDetail() {
         >
           <div className="space-y-1 bg-white/5 sm:bg-transparent p-4 sm:p-0 rounded">
             <span className="text-gold font-bold uppercase tracking-wider text-[10px] block font-sans">
-              Up Next on "{currentPath.title}"
+              {language === 'en' ? 'Up Next on' : 'ቀጣይ በ'}: "{getTranslatedText(currentPath.title, currentPath.titleAm)}"
             </span>
             <h4 className="font-serif text-lg font-bold">
-              {nextArticle.title}
+              {getTranslatedText(nextArticle.title, nextArticle.titleAm)}
             </h4>
           </div>
           <button className="px-4 py-2 bg-gold text-slate-950 font-bold uppercase tracking-wider text-xs rounded shadow flex items-center gap-1 group shrink-0">
-            <span>Continue path</span>
+            <span>{language === 'en' ? 'Continue path' : 'ጥናቱን ቀጥል'}</span>
             <ChevronRight size={14} className="group-hover:translate-x-0.5" />
           </button>
         </div>
@@ -340,9 +349,9 @@ export default function ArticleDetail() {
                 navigateTo('/topics');
               }
             }}
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors cursor-pointer"
           >
-            <ArrowLeft size={14} /> Back to {topic ? topic.name : 'topics'}
+            <ArrowLeft size={14} /> {language === 'en' ? `Back to ${topic ? getTranslatedText(topic.name, topic.nameAm) : 'topics'}` : `ወደ ${topic ? getTranslatedText(topic.name, topic.nameAm) : 'አርእስቶች'} ተመለስ`}
           </button>
 
           {/* Core Info Row */}
@@ -351,16 +360,16 @@ export default function ArticleDetail() {
               {topic && (
                 <button
                   onClick={() => navigateTo(`/topics/${topic.slug}`)}
-                  className="uppercase font-bold tracking-wider text-gold hover:underline"
+                  className="uppercase font-bold tracking-wider text-gold hover:underline cursor-pointer font-sans"
                 >
-                  {topic.name}
+                  {getTranslatedText(topic.name, topic.nameAm)}
                 </button>
               )}
               <span className="w-1.5 h-1.5 rounded-full bg-lightgrey/50" />
               <DifficultyBadge difficulty={article.difficulty} />
               <span className="w-1.5 h-1.5 rounded-full bg-lightgrey/50" />
               <span className="text-xs text-lightgrey dark:text-gray-400 flex items-center gap-1 font-sans">
-                <Clock size={12} /> {article.readingTime} min read
+                <Clock size={12} /> {article.readingTime} {t('common.minuteRead')}
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-lightgrey/50" />
               <span className="text-xs text-lightgrey dark:text-gray-400 flex items-center gap-1 font-sans">
@@ -369,7 +378,7 @@ export default function ArticleDetail() {
             </div>
 
             <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight text-nearblack dark:text-white max-w-4xl">
-              {article.title}
+              {getTranslatedText(article.title, article.titleAm)}
             </h1>
           </div>
         </div>
@@ -379,7 +388,7 @@ export default function ArticleDetail() {
           <div className="w-full max-h-[440px] rounded-xl overflow-hidden mb-12 border border-black/5 shadow-inner">
             <img
               src={article.coverImage}
-              alt={article.title}
+              alt={getTranslatedText(article.title, article.titleAm)}
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover max-h-[440px]"
             />
@@ -397,7 +406,7 @@ export default function ArticleDetail() {
               <div className="lg:hidden bg-slate-50 dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5">
                 <details className="group">
                   <summary className="font-serif font-bold text-sm text-nearblack dark:text-white cursor-pointer select-none list-none flex justify-between items-center whitespace-nowrap">
-                    <span>Table of Contents</span>
+                    <span>{language === 'en' ? 'Table of Contents' : 'የይዘት ማውጫ'}</span>
                     <ChevronRight size={16} className="group-open:rotate-90 transition-transform text-gold" />
                   </summary>
                   <ul className="mt-3.5 space-y-2.5 text-xs pl-2.5 border-l border-gold/30">
@@ -419,7 +428,8 @@ export default function ArticleDetail() {
             {/* Render article contents paragraph, header, scripture blocks */}
             <div className="font-sans text-[17px] md:text-[18px] leading-[1.8] text-nearblack/90 dark:text-gray-200 font-normal space-y-6">
               {article.content.map((sec, idx) => {
-                const headingId = sec.text.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                const secText = getTranslatedText(sec.text, sec.textAm);
+                const headingId = secText.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
                 if (sec.type === 'header') {
                   if (sec.level === 3) {
@@ -429,7 +439,7 @@ export default function ArticleDetail() {
                         id={headingId}
                         className="font-serif text-lg font-bold text-nearblack dark:text-white pt-6"
                       >
-                        {sec.text}
+                        {secText}
                       </h3>
                     );
                   }
@@ -439,7 +449,7 @@ export default function ArticleDetail() {
                       id={headingId}
                       className="font-serif text-xl md:text-2xl font-bold text-nearblack dark:text-white border-b border-black/5 dark:border-white/5 pb-2 pt-6"
                     >
-                      {sec.text}
+                      {secText}
                     </h2>
                   );
                 }
@@ -448,16 +458,17 @@ export default function ArticleDetail() {
                   return (
                     <ScriptureBlock
                       key={idx}
-                      text={sec.text}
-                      reference={sec.reference}
+                      text={secText}
+                      reference={getTranslatedText(sec.reference, sec.referenceAm)}
                     />
                   );
                 }
 
-                if (sec.type === 'list' && sec.items) {
+                if (sec.type === 'list') {
+                  const listItems = language === 'am' ? (sec.itemsAm || sec.items || []) : (sec.items || sec.itemsAm || []);
                   return (
                     <ul key={idx} className="list-disc pl-6 space-y-2 text-sm leading-relaxed font-sans">
-                      {sec.items.map((item, i) => (
+                      {listItems.map((item, i) => (
                         <li key={i}>{item}</li>
                       ))}
                     </ul>
@@ -465,8 +476,7 @@ export default function ArticleDetail() {
                 }
 
                 // Render paragraphs. Swap footnote superscript inline markers dynamically if needed
-                // E.g., replace [1] with a styled offset link
-                let paragraphElement = sec.text;
+                let paragraphElement = secText;
                 const footnoteRegex = /\[(\d+)\]/g;
                 const matches = [...paragraphElement.matchAll(footnoteRegex)];
                 
@@ -505,7 +515,7 @@ export default function ArticleDetail() {
 
                 return (
                   <p key={idx} className="leading-relaxed font-serif text-nearblack/90 dark:text-gray-200">
-                    {sec.text}
+                    {secText}
                   </p>
                 );
               })}
@@ -515,12 +525,12 @@ export default function ArticleDetail() {
             {article.footnotes.length > 0 && (
               <div id="article-footnotes-area" className="border-t border-black/10 dark:border-white/10 pt-8 mt-12 space-y-3">
                 <h4 className="font-serif text-[12px] uppercase tracking-wider font-bold text-nearblack dark:text-white">
-                  Academic Citations & Footnotes
+                  {t('article.footnote')}
                 </h4>
                 <ol className="list-decimal pl-5 space-y-2 text-xs md:text-sm text-mediumgrey dark:text-gray-400 font-sans leading-relaxed">
                   {article.footnotes.map((fn) => (
                     <li key={fn.id} id={`fn-${fn.id}`} className="hover:text-gold transition-colors">
-                      {fn.text}
+                      {getTranslatedText(fn.text, fn.textAm)}
                     </li>
                   ))}
                 </ol>

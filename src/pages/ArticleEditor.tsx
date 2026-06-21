@@ -100,8 +100,10 @@ export default function ArticleEditor() {
     const newBlock: ContentSection = {
       type,
       text: type === 'scripture' ? 'Enter scripture quote here...' : 'Enter new block paragraph...',
+      textAm: type === 'scripture' ? 'የጥቅስ ቃል እዚህ ይጻፉ...' : 'አዲስ አንቀጽ እዚህ ይጻፉ...',
       level,
-      reference: type === 'scripture' ? 'Book 0:0' : undefined
+      reference: type === 'scripture' ? 'Book 0:0' : undefined,
+      referenceAm: type === 'scripture' ? 'መጽሐፍ 0:0' : undefined
     };
 
     updateField('content', [...editedArticle.content, newBlock]);
@@ -116,10 +118,26 @@ export default function ArticleEditor() {
     updateField('content', updatedContent);
   };
 
+  const handleEditBlockTextAm = (idx: number, textAm: string) => {
+    if (!editedArticle) return;
+    const updatedContent = editedArticle.content.map((sec, i) =>
+      i === idx ? { ...sec, textAm } : sec
+    );
+    updateField('content', updatedContent);
+  };
+
   const handleEditScriptureReference = (idx: number, reference: string) => {
     if (!editedArticle) return;
     const updatedContent = editedArticle.content.map((sec, i) =>
       i === idx ? { ...sec, reference } : sec
+    );
+    updateField('content', updatedContent);
+  };
+
+  const handleEditScriptureReferenceAm = (idx: number, referenceAm: string) => {
+    if (!editedArticle) return;
+    const updatedContent = editedArticle.content.map((sec, i) =>
+      i === idx ? { ...sec, referenceAm } : sec
     );
     updateField('content', updatedContent);
   };
@@ -292,28 +310,52 @@ export default function ArticleEditor() {
             {/* LEFT COLUMN: Main Editor (70% approximate) */}
             <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-6">
               
-              {/* Large Paper Title Input */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold text-mediumgrey font-sans">Document Paper Title</label>
-                <input
-                  type="text"
-                  placeholder="Enter article title (e.g., The Historical Resurrection)..."
-                  value={editedArticle.title}
-                  onChange={(e) => updateField('title', e.target.value)}
-                  className="w-full text-lg md:text-xl font-serif font-bold text-nearblack dark:text-white bg-transparent border-b border-black/10 focus:outline-none focus:border-gold pb-2"
-                />
+              {/* Dual-Language Title Inputs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold text-mediumgrey font-sans">Document Paper Title (English)</label>
+                  <input
+                    type="text"
+                    placeholder="Enter article title (e.g., The Historical Resurrection)..."
+                    value={editedArticle.title}
+                    onChange={(e) => updateField('title', e.target.value)}
+                    className="w-full text-base font-serif font-bold text-nearblack dark:text-white bg-transparent border-b border-black/10 focus:outline-none focus:border-gold pb-2"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold text-amber-600 dark:text-gold font-sans">Document Paper Title (Amharic / አማርኛ)</label>
+                  <input
+                    type="text"
+                    placeholder="የጽሑፉ አርዕስት እዚህ ያስገቡ..."
+                    value={editedArticle.titleAm || ''}
+                    onChange={(e) => updateField('titleAm', e.target.value)}
+                    className="w-full text-base font-serif font-bold text-nearblack dark:text-white bg-transparent border-b border-gold/20 focus:outline-none focus:border-gold pb-2"
+                  />
+                </div>
               </div>
 
-              {/* Excerpt Expose */}
-              <div className="space-y-1.5 pt-1">
-                <label className="text-[10px] uppercase font-bold text-mediumgrey font-sans">One line summary (Excerpt)</label>
-                <textarea
-                  rows={2}
-                  value={editedArticle.excerpt}
-                  onChange={(e) => updateField('excerpt', e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-offwhite dark:bg-slate-950 border border-black/10 rounded focus:outline-none font-serif leading-relaxed text-nearblack"
-                  placeholder="A one-sentence summary mapping the Core arguments answered by this paper..."
-                />
+              {/* Dual-Language Excerpt Inputs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold text-mediumgrey font-sans">One line summary (English Excerpt)</label>
+                  <textarea
+                    rows={2}
+                    value={editedArticle.excerpt}
+                    onChange={(e) => updateField('excerpt', e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-offwhite dark:bg-slate-950 border border-black/10 rounded focus:outline-none font-serif leading-relaxed text-nearblack"
+                    placeholder="A one-sentence summary mapping the Core arguments answered by this paper..."
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold text-amber-600 dark:text-gold font-sans">One line summary (Amharic Excerpt / አማርኛ)</label>
+                  <textarea
+                    rows={2}
+                    value={editedArticle.excerptAm || ''}
+                    onChange={(e) => updateField('excerptAm', e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-offwhite dark:bg-slate-950 border border-gold/15 rounded focus:outline-none font-serif leading-relaxed text-nearblack"
+                    placeholder="ለጽሑፉ አጭር ማጠቃለያ መግለጫ እዚህ ያስገቡ..."
+                  />
+                </div>
               </div>
 
               {/* WYSIWYG TOOLBAR SIMULATOR (Paragraph · H2 · Scripture block visual adds) */}
@@ -400,25 +442,52 @@ export default function ArticleEditor() {
                         </div>
 
                         {/* Text inputs based on type */}
-                        <textarea
-                          rows={sec.type === 'paragraph' ? 3 : 1}
-                          value={sec.text}
-                          onChange={(e) => handleEditBlockText(idx, e.target.value)}
-                          className="w-full bg-white dark:bg-slate-950 text-xs px-2.5 py-1.5 focus:outline-none border border-black/5 hover:border-gold/30 rounded focus:border-gold text-nearblack font-serif"
-                        />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
+                          <div className="space-y-1">
+                            <span className="text-[9px] uppercase font-bold text-mediumgrey block font-sans">English text</span>
+                            <textarea
+                              rows={sec.type === 'paragraph' ? 3 : 1}
+                              value={sec.text}
+                              onChange={(e) => handleEditBlockText(idx, e.target.value)}
+                              className="w-full bg-white dark:bg-slate-950 text-xs px-2.5 py-1.5 focus:outline-none border border-black/5 hover:border-gold/30 rounded focus:border-gold text-nearblack font-serif"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <span className="text-[9px] uppercase font-bold text-amber-600 dark:text-gold block font-sans">Amharic / አማርኛ</span>
+                            <textarea
+                              rows={sec.type === 'paragraph' ? 3 : 1}
+                              value={sec.textAm || ''}
+                              onChange={(e) => handleEditBlockTextAm(idx, e.target.value)}
+                              className="w-full bg-white dark:bg-slate-950 text-xs px-2.5 py-1.5 focus:outline-none border border-gold/15 hover:border-gold/35 rounded focus:border-gold text-nearblack font-serif"
+                              placeholder="ትርጉም እዚህ ይጻፉ..."
+                            />
+                          </div>
+                        </div>
 
                         {/* Citation for scripture */}
                         {sec.type === 'scripture' && (
-                          <div className="flex justify-end gap-2 items-center text-xs">
-                            <span className="text-[10px] text-lightgrey">Reference:</span>
-                            <input
-                              type="text"
-                              required
-                              value={sec.reference || ''}
-                              onChange={(e) => handleEditScriptureReference(idx, e.target.value)}
-                              placeholder="E.g., Romans 1:16"
-                              className="px-2 py-0.5 max-w-xs text-xs bg-white dark:bg-slate-950 text-gold border focus:border-gold rounded font-semibold font-sans"
-                            />
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-1 border-t border-black/5">
+                            <div className="flex justify-end gap-2 items-center">
+                              <span className="text-[9px] text-lightgrey">Reference (EN):</span>
+                              <input
+                                type="text"
+                                required
+                                value={sec.reference || ''}
+                                onChange={(e) => handleEditScriptureReference(idx, e.target.value)}
+                                placeholder="E.g., Romans 1:16"
+                                className="px-2 py-0.5 w-full text-xs bg-white dark:bg-slate-950 text-gold border focus:border-gold rounded font-semibold font-sans"
+                              />
+                            </div>
+                            <div className="flex justify-end gap-2 items-center">
+                              <span className="text-[9px] text-lightgrey">Reference (AM):</span>
+                              <input
+                                type="text"
+                                value={sec.referenceAm || ''}
+                                onChange={(e) => handleEditScriptureReferenceAm(idx, e.target.value)}
+                                placeholder="ለምሳሌ፥ ሮሜ 1:16"
+                                className="px-2 py-0.5 w-full text-xs bg-white dark:bg-slate-950 text-gold border focus:border-gold rounded font-semibold font-sans"
+                              />
+                            </div>
                           </div>
                         )}
                       </div>
@@ -516,7 +585,7 @@ export default function ArticleEditor() {
                 </div>
 
                 {/* Comments allowed */}
-                <div className="flex justify-between items-center text-xs pt-1.5">
+                <div className="flex justify-between items-center text-xs pt-1.5 pb-2">
                   <div>
                     <span className="font-bold uppercase tracking-wider text-[11px] block">Allow discussion</span>
                     <span className="text-lightgrey">Unlock threaded comment moderated forms.</span>
@@ -531,6 +600,23 @@ export default function ArticleEditor() {
                   >
                     {editedArticle.commentsAllowed ? 'Active' : 'Muted'}
                   </button>
+                </div>
+
+                {/* Article UI Language switcher */}
+                <div className="flex justify-between items-center text-xs pt-2.5 border-t border-black/5 dark:border-white/5">
+                  <div>
+                    <span className="font-bold uppercase tracking-wider text-[11px] block">Article Language</span>
+                    <span className="text-lightgrey">Dictates indexing language: English, Amharic, or Bilingual.</span>
+                  </div>
+                  <select
+                    value={editedArticle.lang || 'en'}
+                    onChange={(e) => updateField('lang', e.target.value)}
+                    className="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 border rounded font-semibold focus:outline-none"
+                  >
+                    <option value="en">English (US)</option>
+                    <option value="am">አማርኛ (AM)</option>
+                    <option value="bilingual">Bilingual (EN + AM)</option>
+                  </select>
                 </div>
               </div>
 

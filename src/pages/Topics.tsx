@@ -4,23 +4,28 @@
  */
 
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 import TopicIcon from '../components/TopicIcon';
 import { ArrowRight } from 'lucide-react';
 
 export default function Topics() {
   const { topics, navigateTo } = useApp();
+  const { language, getTranslatedText } = useLanguage();
 
   return (
     <div id="topics-page" className="animate-fade-in max-w-[1140px] mx-auto px-4 md:px-6 py-12 space-y-12">
       
       {/* Page Hero */}
       <div className="text-center max-w-2xl mx-auto space-y-4">
-        <span className="text-xs tracking-widest text-gold font-bold">Intellectual Arenas</span>
+        <span className="text-xs tracking-widest text-gold font-bold">{getTranslatedText('Intellectual Arenas', 'አእምሯዊ አውዶች')}</span>
         <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-nearblack dark:text-white">
-          Explore by topic
+          {getTranslatedText('Explore By Topic', 'በአርዕስት ይመርምሩ')}
         </h1>
         <p className="text-sm md:text-base text-mediumgrey dark:text-gray-300 leading-relaxed font-serif italic">
-          Categorized directories grouping classical philosophy, historical documentation, cosmology objections, and pastoral deep dives into structured archives.
+          {getTranslatedText(
+            'Categorized directories grouping classical philosophy, historical documentation, cosmology objections, and pastoral deep dives into structured archives.',
+            'ጥንታዊ ፍልስፍናን፣ ታሪካዊ ማስረጃዎችን፣ የጽንፈ ዓለም ጥያቄዎችን እና እረኛዊ ትንተናዎችን በስልት የሚመድብ ማህደር።'
+          )}
         </p>
         <div className="w-16 h-1 bg-gold mx-auto rounded-full" />
       </div>
@@ -41,20 +46,20 @@ export default function Topics() {
               
               <div className="space-y-2">
                 <h2 className="font-serif text-xl font-bold text-nearblack dark:text-white group-hover:text-gold transition-colors">
-                  {t.name}
+                  {getTranslatedText(t.name, t.nameAm)}
                 </h2>
                 <p className="text-xs md:text-sm text-mediumgrey dark:text-gray-300 leading-relaxed min-h-[44px]">
-                  {t.description}
+                  {getTranslatedText(t.description, t.descriptionAm)}
                 </p>
               </div>
             </div>
 
             <div className="pt-4 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
-              <span className="text-xs bg-navy/5 dark:bg-white/5 text-navy dark:text-gray-300 px-2.5 py-1 rounded font-semibold">
-                {t.articleCount} {t.articleCount === 1 ? 'Article' : 'Articles'}
+              <span className="text-xs bg-navy/5 dark:bg-white/5 text-navy dark:text-gray-300 px-2.5 py-1 rounded font-semibold font-sans">
+                {t.articleCount} {getTranslatedText(t.articleCount === 1 ? 'Article' : 'Articles', 'ጽሑፎች')}
               </span>
-              <span className="text-xs tracking-wider font-bold text-navy dark:text-gold flex items-center gap-1 group-hover:translate-x-1.5 transition-transform">
-                Explore <ArrowRight size={13} />
+              <span className="text-xs tracking-wider font-bold text-navy dark:text-gold flex items-center gap-1 group-hover:translate-x-1.5 transition-transform font-sans">
+                {getTranslatedText('Explore', 'ይመርምሩ')} <ArrowRight size={13} />
               </span>
             </div>
           </div>

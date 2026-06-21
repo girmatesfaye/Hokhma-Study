@@ -5,6 +5,7 @@
 
 import { useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
+import { LanguageProvider } from './context/LanguageContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
@@ -102,7 +103,9 @@ function MainAppRouter() {
 export default function App() {
   return (
     <AppProvider>
-      <MainAppRouter />
+      <LanguageProvider>
+        <MainAppRouter />
+      </LanguageProvider>
     </AppProvider>
   );
 }

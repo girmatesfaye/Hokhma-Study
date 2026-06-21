@@ -4,11 +4,13 @@
  */
 
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 import DifficultyBadge from '../components/DifficultyBadge';
 import { ArrowLeft, Check, CheckSquare, Square, Clock, Play, BookOpen } from 'lucide-react';
 
 export default function PathDetail() {
   const { currentRoute, paths, articles, progress, toggleStepProgress, navigateTo } = useApp();
+  const { language, getTranslatedText } = useLanguage();
 
   const slug = currentRoute.slug || '';
   const path = paths.find((p) => p.slug === slug);
@@ -16,10 +18,10 @@ export default function PathDetail() {
   if (!path) {
     return (
       <div className="max-w-[1140px] mx-auto px-4 py-20 text-center animate-fade-in">
-        <h2 className="font-serif text-2xl font-bold">Learning Path Not Found</h2>
-        <p className="text-mediumgrey text-sm mt-2">The path you are looking for does not exist in our curriculum index.</p>
+        <h2 className="font-serif text-2xl font-bold">{getTranslatedText('Learning Path Not Found', 'የጥናት ጉዞ አልተገኘም')}</h2>
+        <p className="text-mediumgrey text-sm mt-2">{getTranslatedText('The path you are looking for does not exist in our curriculum index.', 'የፈለጉት የጥናት ጉዞ በስርዓተ ትምህርታችን ማውጫ ውስጥ የለም።')}</p>
         <button onClick={() => navigateTo('/paths')} className="mt-6 px-4 py-2 bg-navy text-white text-xs font-bold uppercase tracking-wider rounded">
-          Return to Paths
+          {getTranslatedText('Return To Paths', 'ወደ ጥናት መንገዶች ይመለሱ')}
         </button>
       </div>
     );
@@ -47,9 +49,9 @@ export default function PathDetail() {
       {/* Back to Paths */}
       <button
         onClick={() => navigateTo('/paths')}
-        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors cursor-pointer"
       >
-        <ArrowLeft size={14} /> Back to paths
+        <ArrowLeft size={14} /> {getTranslatedText('Back To Paths', 'ወደ ጥናት መንገዶች ይመለሱ')}
       </button>
 
       {/* Path Hero */}
@@ -57,28 +59,28 @@ export default function PathDetail() {
         <div className="absolute top-0 right-0 h-48 w-48 bg-gold rounded-full opacity-5 blur-3xl" />
         <div className="space-y-4 max-w-3xl relative z-10">
           <div className="flex flex-wrap gap-2.5 items-center text-xs text-gold font-bold uppercase tracking-wider">
-            <span>Structured Curriculum</span>
+            <span>{getTranslatedText('Structured Curriculum', 'የተዋቀረ ስርዓተ ትምህርት')}</span>
             <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
-            <span>{path.difficultyRange}</span>
+            <span>{getTranslatedText(path.difficultyRange, path.difficultyRangeAm)}</span>
             <span className="h-1.5 w-1.5 rounded-full bg-white/40" />
             <span className="text-white flex items-center gap-1">
-              <Clock size={12} /> {path.totalReadingTime}m total time
+              <Clock size={12} /> {path.totalReadingTime}{getTranslatedText('m total time', ' ደቂቃ በአጠቃላይ')}
             </span>
           </div>
 
           <h1 className="font-serif text-3xl md:text-4xl font-extrabold tracking-tight">
-            {path.title}
+            {getTranslatedText(path.title, path.titleAm)}
           </h1>
 
           <p className="text-sm md:text-base text-gray-300 leading-relaxed font-serif italic">
-            {path.description}
+            {getTranslatedText(path.description, path.descriptionAm)}
           </p>
 
           <div className="bg-white/5 p-4 rounded border border-white/10 text-xs">
             <span className="text-gold font-bold uppercase tracking-wider text-[10px] block mb-1">
-              Final Learning Milestone
+              {getTranslatedText('Final Learning Milestone', 'የመጨረሻው የትምህርት አበይት ግብ')}
             </span>
-            <p className="text-gray-200 leading-relaxed">{path.goal}</p>
+            <p className="text-gray-200 leading-relaxed">{getTranslatedText(path.goal, path.goalAm)}</p>
           </div>
         </div>
       </div>
@@ -90,10 +92,10 @@ export default function PathDetail() {
         <div className="lg:col-span-8 space-y-6">
           <div className="flex items-center justify-between pb-4 border-b border-black/5 dark:border-white/5">
             <h2 className="font-serif text-xl font-bold text-nearblack dark:text-white">
-              Curriculum Sequence
+              {getTranslatedText('Curriculum Sequence', 'የስርዓተ ትምህርት ቅደም ተከተል')}
             </h2>
             <span className="text-xs text-mediumgrey font-bold uppercase tracking-wider">
-              {pathArticles.length} Sequential Steps
+              {pathArticles.length} {getTranslatedText('Sequential Steps', 'ቅደም ተከተላዊ ደረጃዎች')}
             </span>
           </div>
 
@@ -137,32 +139,32 @@ export default function PathDetail() {
                       <DifficultyBadge difficulty={art.difficulty} />
                       <span className="w-1.5 h-1.5 rounded-full bg-lightgrey/50" />
                       <span className="text-lightgrey flex items-center gap-0.5">
-                        <Clock size={11} /> {art.readingTime}m read
+                        <Clock size={11} /> {art.readingTime}{getTranslatedText('m read', ' ደቂቃ ንባብ')}
                       </span>
                     </div>
 
                     <h3 className={`font-serif text-lg font-bold text-nearblack dark:text-white group-hover:text-gold transition-colors ${
                       isCompleted ? 'line-through text-mediumgrey dark:text-gray-450 opacity-75' : ''
                     }`}>
-                      {art.title}
+                      {getTranslatedText(art.title, art.titleAm)}
                     </h3>
                     
                     <p className="text-xs text-mediumgrey dark:text-gray-350 line-clamp-2 leading-relaxed">
-                      {art.excerpt}
+                      {getTranslatedText(art.excerpt, art.excerptAm)}
                     </p>
                   </div>
 
                   {/* Complete Checkbox */}
                   <button
                     onClick={() => toggleStepProgress(path.slug, art.slug)}
-                    className="md:border-l border-black/5 dark:border-white/5 md:pl-4 py-2 flex items-center gap-1.5 text-xs text-mediumgrey hover:text-gold transition-colors whitespace-nowrap"
+                    className="md:border-l border-black/5 dark:border-white/5 md:pl-4 py-2 flex items-center gap-1.5 text-xs text-mediumgrey hover:text-gold transition-colors whitespace-nowrap cursor-pointer"
                   >
                     {isCompleted ? (
                       <CheckSquare size={16} className="text-gold" />
                     ) : (
                       <Square size={16} />
                     )}
-                    <span className="hidden md:inline font-sans">Done</span>
+                    <span className="hidden md:inline font-sans">{getTranslatedText('Done', 'ተከናውኗል')}</span>
                   </button>
 
                 </div>
@@ -177,13 +179,13 @@ export default function PathDetail() {
           {/* Progress Tracker Widget */}
           <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-6 space-y-5 shadow-sm sticky top-24">
             <h3 className="font-serif text-md font-bold text-nearblack dark:text-white uppercase tracking-wider text-[12px] border-b border-black/5 pb-2">
-              Your Course Progress
+              {getTranslatedText('Your Course Progress', 'የትምህርት ሂደትዎ')}
             </h3>
 
             {/* Circular or Bar Progress Indicator */}
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-semibold">
-                <span className="text-mediumgrey">Percent Completed</span>
+                <span className="text-mediumgrey">{getTranslatedText('Percent Completed', 'የተጠናቀቀው መጠን')}</span>
                 <span className="text-gold">{percentCompleted}%</span>
               </div>
               <div className="w-full h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
@@ -193,7 +195,7 @@ export default function PathDetail() {
                 />
               </div>
               <p className="text-[11px] text-lightgrey text-center pt-1 leading-relaxed">
-                Checked off <strong className="text-nearblack dark:text-white">{completedSlugs.length}</strong> of <strong className="text-nearblack dark:text-white">{pathArticles.length}</strong> modules.
+                {getTranslatedText('Checked off', 'እስካሁን የተጠናቀቁት፦')} <strong className="text-nearblack dark:text-white">{completedSlugs.length}</strong> {getTranslatedText('of', 'ከ')} <strong className="text-nearblack dark:text-white">{pathArticles.length}</strong> {getTranslatedText('modules.', 'አሃዶች።')}
               </p>
             </div>
 
@@ -217,7 +219,7 @@ export default function PathDetail() {
                         isDone ? 'line-through text-lightgrey dark:text-gray-500' : 'text-nearblack dark:text-gray-300 font-medium'
                       }`}
                     >
-                      {idx + 1}. {art.title}
+                      {idx + 1}. {getTranslatedText(art.title, art.titleAm)}
                     </span>
                   </div>
                 );
@@ -230,7 +232,7 @@ export default function PathDetail() {
               className="w-full py-2.5 bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold uppercase tracking-wider text-xs rounded shadow hover:bg-navy/90 inline-flex items-center justify-center gap-2 group cursor-pointer"
             >
               <Play size={12} fill="currentColor" />
-              <span>Start step 1</span>
+              <span>{getTranslatedText('Start Step 1', 'ደረጃ 1 ይጀምሩ')}</span>
             </button>
           </div>
 
