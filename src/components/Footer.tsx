@@ -9,7 +9,7 @@ import { STATEMENT_OF_FAITH, AUTHOR_BIO } from '../data';
 import { Mail, ArrowRight, Shield, Check, Info, FileText, Globe, Send, HelpCircle, X } from 'lucide-react';
 
 export default function Footer() {
-  const { navigateTo } = useApp();
+  const { navigateTo, isAdmin } = useApp();
   const [emailValue, setEmailValue] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
   
@@ -81,9 +81,11 @@ export default function Footer() {
               <Mail size={12} className="text-gold" />
               Contact
             </button>
-            <a href="#/admin" className="hover:text-gold transition-colors font-semibold">
-              Author Workroom
-            </a>
+            {isAdmin && (
+              <a href="#/admin" className="hover:text-gold transition-colors font-semibold">
+                Author Workroom
+              </a>
+            )}
           </nav>
 
           {/* ATTRIBUTION */}

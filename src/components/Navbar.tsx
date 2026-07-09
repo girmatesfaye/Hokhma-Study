@@ -6,14 +6,14 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Search, Menu, X, Sun, Moon, ShieldAlert, BadgeInfo, Globe } from 'lucide-react';
+import { Search, Menu, X, Sun, Moon, ShieldAlert, BadgeInfo, Globe, Compass, BookOpen, HelpCircle } from 'lucide-react';
 
 export default function Navbar() {
-  const { currentRoute, navigateTo, darkMode, setDarkMode, isAdmin } = useApp();
+  const { currentRoute, navigateTo, darkMode, setDarkMode, isAdmin, articles, topics, questions } = useApp();
   const { language, setLanguage, t } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [showSearchInput, setShowSearchInput] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [localSearchVal, setLocalSearchVal] = useState('');
 
   useEffect(() => {
@@ -24,20 +24,63 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close drawer on route change
+  // Listen for Cmd+K or Ctrl+K to open search overlay
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Close drawer/search on route change
   useEffect(() => {
     setIsDrawerOpen(false);
-    setShowSearchInput(false);
+    setIsSearchOpen(false);
   }, [currentRoute]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (localSearchVal.trim()) {
       navigateTo(`/search?q=${encodeURIComponent(localSearchVal.trim())}`);
-      setShowSearchInput(false);
-      setLocalSearchVal('');
+      setIsSearchOpen(false);
     }
   };
+
+  // Filter for live search overlay results
+  const filteredArticles = localSearchVal.trim()
+    ? articles.filter(
+        (art) =>
+          art &&
+          art.isPublished &&
+          ((art.title && art.title.toLowerCase().includes(localSearchVal.toLowerCase())) ||
+            (art.titleAm && art.titleAm.toLowerCase().includes(localSearchVal.toLowerCase())) ||
+            (art.excerpt && art.excerpt.toLowerCase().includes(localSearchVal.toLowerCase())) ||
+            (art.excerptAm && art.excerptAm.toLowerCase().includes(localSearchVal.toLowerCase())) ||
+            (Array.isArray(art.tags) && art.tags.some((t) => t && t.toLowerCase().includes(localSearchVal.toLowerCase()))))
+      )
+    : [];
+
+  const filteredQuestions = localSearchVal.trim()
+    ? questions.filter(
+        (q) =>
+          q &&
+          ((q.text && q.text.toLowerCase().includes(localSearchVal.toLowerCase())) ||
+            (q.textAm && q.textAm.toLowerCase().includes(localSearchVal.toLowerCase())))
+      )
+    : [];
+
+  const filteredTopics = localSearchVal.trim()
+    ? topics.filter(
+        (t) =>
+          t &&
+          ((t.name && t.name.toLowerCase().includes(localSearchVal.toLowerCase())) ||
+            (t.nameAm && t.nameAm.toLowerCase().includes(localSearchVal.toLowerCase())))
+      )
+    : [];
 
   const isActive = (pageName: string) => {
     const current = currentRoute.page;
@@ -112,89 +155,44 @@ export default function Navbar() {
           </nav>
 
           {/* ACTION BUTTONS */}
-          <div className="flex items-center gap-3.5">
-            {/* SEARCH EXPANDABLE */}
-            {showSearchInput ? (
-               <form onSubmit={handleSearchSubmit} className="relative flex items-center animate-fade-in">
-                <input
-                  type="text"
-                  placeholder={t('nav.search')}
-                  value={localSearchVal}
-                  onChange={(e) => setLocalSearchVal(e.target.value)}
-                  className="w-28 sm:w-48 bg-white dark:bg-slate-800 text-sm py-1.5 pl-3 pr-8 rounded-[4px] border border-black/10 dark:border-white/10 focus:outline-none focus:border-gold text-nearblack dark:text-white"
-                  autoFocus
-                />
-                <button type="submit" className="absolute right-2 px-1 text-nearblack/60 dark:text-white/60 hover:text-gold">
-                  <Search size={15} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowSearchInput(false)}
-                  className="ml-1 text-nearblack/40 dark:text-white/40 hover:text-red-500 rounded-full"
-                >
-                  <X size={15} />
-                </button>
-              </form>
-            ) : (
-               <button
-                id="search-btn-trigger"
-                onClick={() => setShowSearchInput(true)}
-                className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors"
-                title="Search Articles"
-              >
-                <Search size={19} />
-              </button>
-            )}
+          <div className="flex items-center gap-2 md:gap-3">
+            {/* SEARCH OVERLAY TRIGGER */}
+            <button
+              id="search-btn-trigger"
+              onClick={() => setIsSearchOpen(true)}
+              className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors flex items-center gap-1 cursor-pointer"
+              title="Search Articles (Ctrl+K)"
+            >
+              <Search size={18} />
+            </button>
 
-            {/* INTEGRATED PERSISTENT LANGUAGE SWITCHER (🇺🇸 / 🇪🇹) */}
+            {/* SLEEK COMPACT LANGUAGE SWITCHER */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'am' : 'en')}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold tracking-wider border border-black/10 dark:border-white/10 text-nearblack dark:text-white hover:text-gold dark:hover:text-gold rounded-[4px] cursor-pointer transition-all bg-white/40 dark:bg-slate-900/40"
+              className="flex items-center justify-center h-8 px-2.5 text-[11px] font-bold tracking-wider rounded-full border border-black/10 dark:border-white/15 text-nearblack dark:text-white hover:text-gold dark:hover:text-gold hover:border-gold/30 dark:hover:border-gold/30 transition-all bg-black/[0.03] dark:bg-white/[0.04] cursor-pointer font-sans"
               title={language === 'en' ? 'Switch to Amharic / አማርኛ' : 'Switch to English / እንግሊዝኛ'}
             >
-              <Globe size={13} className="text-gold" />
-              <span>{language === 'en' ? 'English' : 'አማርኛ'}</span>
+              <Globe size={11} className="text-gold mr-1" />
+              <span>{language === 'en' ? 'AM' : 'EN'}</span>
             </button>
 
             {/* DARK MODE TOGGLE */}
             <button
-               id="theme-toggle-btn"
+              id="theme-toggle-btn"
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors"
+              className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors cursor-pointer"
               title={darkMode ? 'Light Theme' : 'Dark Theme'}
             >
-              {darkMode ? <Sun size={19} /> : <Moon size={19} />}
-            </button>
-
-            {/* ADMIN ICON (if logged in) */}
-            {isAdmin && (
-              <a
-                id="header-admin-indicator"
-                href="#/admin"
-                className="flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200/50 dark:border-red-900/40 text-xs font-semibold"
-                title="Admin Dashboard (Active Session)"
-              >
-                <ShieldAlert size={14} />
-                <span className="hidden sm:inline">Admin</span>
-              </a>
-            )}
-
-            {/* NEWSLETTER CTA BUTTON */}
-            <button
-              id="newsletter-header-cta"
-              onClick={handleNewsletterClick}
-              className="hidden sm:inline-flex items-center justify-center px-4 py-2 text-[13px] font-semibold tracking-wider bg-navy text-white hover:bg-navy/90 dark:bg-gold dark:text-slate-950 dark:hover:bg-gold/90 rounded-[4px] transition-colors"
-            >
-              {language === 'en' ? 'Subscribe' : 'ይመዝገቡ'}
+              {darkMode ? <Sun size={18} className="text-gold" /> : <Moon size={18} />}
             </button>
 
             {/* MOBILE DRAWER TOGGLE */}
             <button
               id="mobile-drawer-btn"
               onClick={() => setIsDrawerOpen(true)}
-              className="lg:hidden p-2 text-nearblack/85 dark:text-white/85 hover:text-gold dark:hover:text-gold transition-colors"
+              className="lg:hidden p-2 text-nearblack/85 dark:text-white/85 hover:text-gold dark:hover:text-gold transition-colors cursor-pointer"
             >
-              <Menu size={22} />
+              <Menu size={21} />
             </button>
           </div>
         </div>
@@ -202,47 +200,47 @@ export default function Navbar() {
 
       {/* MOBILE FULL-SCREEN DRAWER */}
       {isDrawerOpen && (
-        <div className="fixed inset-0 z-[100] bg-white dark:bg-dark-bg flex flex-col p-6 animate-fade-in overflow-hidden">
+        <div className="fixed inset-0 z-[100] bg-white dark:bg-dark-bg flex flex-col p-6 animate-fade-in overflow-y-auto">
           <div className="flex items-center justify-between col-span-2">
             <span className="font-serif text-2xl font-bold tracking-tight text-navy dark:text-white flex items-center gap-1">
               {t('brand.name')}
             </span>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {/* Mobile language switch button */}
               <button
                 onClick={() => setLanguage(language === 'en' ? 'am' : 'en')}
-                className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold border border-black/10 dark:border-white/10 rounded-[4px] bg-slate-50 dark:bg-slate-950 text-nearblack dark:text-white"
+                className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold border border-black/10 dark:border-white/10 rounded-full bg-slate-100 dark:bg-slate-800 text-nearblack dark:text-white cursor-pointer"
               >
-                <Globe size={13} className="text-gold" />
-                <span>{language === 'en' ? 'English' : 'አማርኛ'}</span>
+                <Globe size={11} className="text-gold" />
+                <span>{language === 'en' ? 'AM' : 'EN'}</span>
               </button>
 
               {/* Mobile theme switch button */}
               <button
                 id="theme-toggle-btn-mobile"
                 onClick={() => setDarkMode(!darkMode)}
-                className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors"
+                className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors cursor-pointer"
                 title={darkMode ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
               >
-                {darkMode ? <Sun size={22} className="text-gold" /> : <Moon size={22} />}
+                {darkMode ? <Sun size={20} className="text-gold" /> : <Moon size={20} />}
               </button>
               <button
                 id="close-drawer-btn"
                 onClick={() => setIsDrawerOpen(false)}
-                className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold transition-colors"
+                className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold transition-colors cursor-pointer"
               >
-                <X size={26} />
+                <X size={24} />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center items-center gap-8 py-10">
+          <div className="flex-1 flex flex-col justify-start items-center gap-7 py-12">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={`#${link.hash}`}
                 onClick={() => setIsDrawerOpen(false)}
-                className={`text-2xl font-serif tracking-wide transition-colors duration-200 ${
+                className={`text-xl font-serif tracking-wide transition-colors duration-200 ${
                   isActive(link.page)
                     ? 'text-gold font-bold scale-105'
                     : 'text-nearblack/80 dark:text-gray-200 hover:text-gold'
@@ -251,17 +249,6 @@ export default function Navbar() {
                 {link.label}
               </a>
             ))}
-            
-            {isAdmin && (
-              <a
-                href="#/admin"
-                onClick={() => setIsDrawerOpen(false)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200 text-sm font-semibold mt-4"
-              >
-                <ShieldAlert size={16} />
-                {language === 'en' ? 'Author Panel' : 'የጸሐፊ ክፍል'}
-              </a>
-            )}
           </div>
 
           <div className="border-t border-black/5 dark:border-white/5 pt-6 flex flex-col gap-4 text-center items-center">
@@ -270,13 +257,196 @@ export default function Navbar() {
                 setIsDrawerOpen(false);
                 handleNewsletterClick();
               }}
-              className="w-full py-3 text-center text-sm font-bold tracking-wider bg-navy text-white dark:bg-gold dark:text-slate-950 rounded-md shadow-sm"
+              className="w-full py-3 text-center text-sm font-bold tracking-wider bg-navy text-white dark:bg-gold dark:text-slate-950 rounded-md shadow-sm cursor-pointer"
             >
               {language === 'en' ? 'Get Article Updates' : 'ጽሑፎችን በኢሜይል ያግኙ'}
             </button>
             <p className="text-xs text-mediumgrey dark:text-gray-400 font-sans">
               {t('brand.name')} {language === 'en' ? 'Apologetics · Pure academic defense.' : 'የክርስትና መከላከያ · አካዳሚያዊ ጥናት።'}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* GORGEOUS MODAL SEARCH OVERLAY */}
+      {isSearchOpen && (
+        <div 
+          className="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-md flex items-start justify-center p-4 md:p-10 animate-fade-in"
+          onClick={() => setIsSearchOpen(false)}
+        >
+          <div 
+            className="bg-white dark:bg-slate-900 border border-black/10 dark:border-white/10 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden mt-10 md:mt-16 animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header / Input Area */}
+            <div className="p-4 md:p-6 border-b border-black/5 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/40">
+              <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 border border-black/5 dark:border-white/5 rounded-full px-4.5 py-2.5 focus-within:ring-2 focus-within:ring-gold/40 focus-within:border-gold transition-all duration-200">
+                <Search className="text-gold h-5 w-5 shrink-0" />
+                <input
+                  type="text"
+                  value={localSearchVal}
+                  onChange={(e) => setLocalSearchVal(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearchSubmit(e);
+                    } else if (e.key === 'Escape') {
+                      setIsSearchOpen(false);
+                    }
+                  }}
+                  placeholder={t('nav.search') || "Search papers, objections, topics..."}
+                  className="w-full bg-transparent !border-none !ring-0 !outline-none text-sm md:text-base text-nearblack dark:text-white placeholder-mediumgrey/60 font-sans p-0! h-auto! min-w-0"
+                  autoFocus
+                />
+                {localSearchVal.trim() !== '' && (
+                  <button 
+                    onClick={() => setLocalSearchVal('')}
+                    className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-mediumgrey hover:text-nearblack dark:hover:text-white transition-colors cursor-pointer shrink-0"
+                    title="Clear text"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Results Area */}
+            <div className="max-h-[60vh] overflow-y-auto p-4 md:p-6 space-y-6">
+              {localSearchVal.trim() === '' ? (
+                /* Recent / Suggested searches */
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-[10px] uppercase tracking-wider font-bold text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans">
+                      Suggested Apologetics Topics
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {topics.map((t) => (
+                        <button
+                          key={t.id}
+                          onClick={() => {
+                            navigateTo(`/topics/${t.slug}`);
+                            setIsSearchOpen(false);
+                          }}
+                          className="px-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-gold/10 hover:text-gold rounded-full text-nearblack dark:text-gray-200 transition-colors cursor-pointer font-sans"
+                        >
+                          {language === 'en' ? t.name : t.nameAm}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-[10px] uppercase tracking-wider font-bold text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans">
+                      Common Objections
+                    </h4>
+                    <div className="space-y-2">
+                      {questions.slice(0, 3).map((q) => (
+                        <button
+                          key={q.id}
+                          onClick={() => {
+                            navigateTo(`/articles/${q.articleSlug}`);
+                            setIsSearchOpen(false);
+                          }}
+                          className="w-full text-left p-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-nearblack dark:text-gray-300 flex items-center gap-2 transition-colors border border-transparent hover:border-black/5 dark:hover:border-white/5 cursor-pointer font-sans"
+                        >
+                          <HelpCircle size={13} className="text-gold shrink-0" />
+                          <span className="truncate">{q.text}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Dynamic filtered results */
+                <div className="space-y-4">
+                  {/* Category: Papers / Articles */}
+                  {filteredArticles.length > 0 && (
+                    <div>
+                      <h4 className="text-[10px] uppercase tracking-wider font-bold text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans flex justify-between items-center">
+                        <span>Papers & Articles</span>
+                        <span className="font-mono text-[9px] bg-gold/10 text-gold dark:bg-gold/15 dark:text-gold border border-gold/10 dark:border-gold/20 px-2 py-0.5 rounded-full">{filteredArticles.length}</span>
+                      </h4>
+                      <div className="space-y-1.5">
+                        {filteredArticles.slice(0, 4).map((art) => (
+                          <button
+                            key={art.id}
+                            onClick={() => {
+                              navigateTo(`/articles/${art.slug}`);
+                              setIsSearchOpen(false);
+                            }}
+                            className="w-full text-left p-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-nearblack dark:text-gray-200 transition-colors border border-transparent hover:border-black/5 dark:hover:border-white/5 flex flex-col gap-0.5 cursor-pointer font-sans"
+                          >
+                            <span className="font-serif text-sm font-semibold text-navy dark:text-gold">{language === 'en' ? art.title : art.titleAm}</span>
+                            <span className="text-[11px] text-mediumgrey line-clamp-1">{language === 'en' ? art.excerpt : art.excerptAm}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Category: Objections */}
+                  {filteredQuestions.length > 0 && (
+                    <div>
+                      <h4 className="text-[10px] uppercase tracking-wider font-bold text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans flex justify-between items-center">
+                        <span>Skeptical Objections</span>
+                        <span className="font-mono text-[9px] bg-gold/10 text-gold dark:bg-gold/15 dark:text-gold border border-gold/10 dark:border-gold/20 px-2 py-0.5 rounded-full">{filteredQuestions.length}</span>
+                      </h4>
+                      <div className="space-y-1.5">
+                        {filteredQuestions.slice(0, 3).map((q) => (
+                          <button
+                            key={q.id}
+                            onClick={() => {
+                              navigateTo(`/articles/${q.articleSlug}`);
+                              setIsSearchOpen(false);
+                            }}
+                            className="w-full text-left p-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-nearblack dark:text-gray-200 transition-colors border border-transparent hover:border-black/5 dark:hover:border-white/5 flex items-center gap-2.5 cursor-pointer font-sans"
+                          >
+                            <HelpCircle size={14} className="text-gold shrink-0" />
+                            <span className="text-xs font-medium">{q.text}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Category: Topics */}
+                  {filteredTopics.length > 0 && (
+                    <div>
+                      <h4 className="text-[10px] uppercase tracking-wider font-bold text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans flex justify-between items-center">
+                        <span>Topics</span>
+                        <span className="font-mono text-[9px] bg-gold/10 text-gold dark:bg-gold/15 dark:text-gold border border-gold/10 dark:border-gold/20 px-2 py-0.5 rounded-full">{filteredTopics.length}</span>
+                      </h4>
+                      <div className="space-y-1.5">
+                        {filteredTopics.slice(0, 3).map((t) => (
+                          <button
+                            key={t.id}
+                            onClick={() => {
+                              navigateTo(`/topics/${t.slug}`);
+                              setIsSearchOpen(false);
+                            }}
+                            className="w-full text-left p-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-nearblack dark:text-gray-200 transition-colors border border-transparent hover:border-black/5 dark:hover:border-white/5 flex items-center gap-2.5 cursor-pointer font-sans"
+                          >
+                            <Compass size={14} className="text-gold shrink-0" />
+                            <span className="text-xs font-medium">{language === 'en' ? t.name : t.nameAm}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {filteredArticles.length === 0 && filteredQuestions.length === 0 && filteredTopics.length === 0 && (
+                    <div className="text-center py-8 text-mediumgrey font-sans">
+                      No results found for "<strong>{localSearchVal}</strong>". Press Enter to search on the main results page.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Footer containing quick helper */}
+            <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border-t border-black/5 dark:border-white/5 text-[10px] text-mediumgrey flex justify-between items-center font-mono">
+              <span>Press <kbd className="bg-white dark:bg-slate-800 px-1 border border-black/10 dark:border-white/10 rounded">Enter</kbd> to view full library search results</span>
+              <span>ESC to close</span>
+            </div>
           </div>
         </div>
       )}
