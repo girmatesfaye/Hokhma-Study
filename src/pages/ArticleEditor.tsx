@@ -12,21 +12,25 @@ import {
   Trash2,
   Plus,
   BookMarked,
-  Bold,
-  Italic,
-  Underline,
-  List,
   Quote,
-  Link2,
-  Bookmark,
-  PlusCircle,
   Eye,
   Settings,
   X,
-  Check,
   Image,
   Tag,
-  AlertTriangle
+  Globe,
+  FileText,
+  Search,
+  MoveUp,
+  MoveDown,
+  Sparkles,
+  Clock,
+  Calendar,
+  ChevronUp,
+  ChevronDown,
+  Sliders,
+  AlignLeft,
+  Heading2
 } from 'lucide-react';
 
 export default function ArticleEditor() {
@@ -38,27 +42,27 @@ export default function ArticleEditor() {
   // States
   const [editedArticle, setEditedArticle] = useState<Article | null>(null);
   const [newTagInput, setNewTagInput] = useState('');
-  const [autosaveStatus, setAutosaveStatus] = useState('Saved recently');
+  const [autosaveStatus, setAutosaveStatus] = useState('All changes saved locally');
   const [newFootnoteText, setNewFootnoteText] = useState('');
   const [previewMode, setPreviewMode] = useState(false);
+  const [previewLang, setPreviewLang] = useState<'en' | 'am'>('en');
+  const [activeTab, setActiveTab] = useState<'en' | 'am' | 'footnotes' | 'seo'>('en');
 
   // Synchronize initial article
   useEffect(() => {
     if (initialArticle) {
-      // Deep copy to avoid mutating context directly before clicking "Save Revisions"
       setEditedArticle(JSON.parse(JSON.stringify(initialArticle)));
     }
   }, [initialArticle]);
 
-  // If unauthorized, show security warning
   if (!isAdmin) {
     return (
-      <div className="absolute inset-0 bg-[#0F1117] flex justify-center items-center z-50 p-6 text-center animate-fade-in text-white leading-relaxed">
-        <div className="max-w-md bg-[#1A1D24] border border-white/5 rounded-2xl p-8 space-y-6">
+      <div className="absolute inset-0 bg-slate-950 flex justify-center items-center z-50 p-6 text-center animate-fade-in text-white">
+        <div className="max-w-md bg-slate-900 border border-white/10 rounded-2xl p-8 space-y-6 shadow-2xl">
           <Trash2 className="text-gold h-12 w-12 mx-auto" />
-          <h2 className="font-serif text-xl font-bold font-serif">Workspace Blocked</h2>
+          <h2 className="font-serif text-xl font-bold">Workspace Blocked</h2>
           <p className="text-xs text-gray-400">Secure validation is required to access primary manuscript editors.</p>
-          <button onClick={() => navigateTo('/admin/login')} className="px-6 py-2 bg-gold text-slate-950 text-xs font-bold font-sans uppercase tracking-wider rounded">
+          <button onClick={() => navigateTo('/admin/login')} className="px-6 py-2 bg-gold hover:bg-gold/90 text-slate-950 text-xs font-bold font-sans uppercase tracking-wider rounded transition-colors cursor-pointer">
             Authenticate Access
           </button>
         </div>
@@ -71,7 +75,7 @@ export default function ArticleEditor() {
       <div className="max-w-[1140px] mx-auto px-4 py-20 text-center animate-fade-in">
         <h2 className="font-serif text-2xl font-bold">Unmapped Article Entry</h2>
         <p className="text-mediumgrey text-xs mt-2">The article draft does not correspond to an existing record.</p>
-        <button onClick={() => navigateTo('/admin')} className="mt-6 px-4 py-2 bg-navy text-white text-xs font-bold uppercase tracking-wider rounded">
+        <button onClick={() => navigateTo('/admin')} className="mt-6 px-4 py-2 bg-navy text-white text-xs font-bold uppercase tracking-wider rounded cursor-pointer">
           Workroom Dashboard
         </button>
       </div>
@@ -83,15 +87,13 @@ export default function ArticleEditor() {
     setEditedArticle((prev) => {
       if (!prev) return null;
       const next = { ...prev, [field]: value };
-      
-      // Auto-set SEO Title and Slug from Title if edited
       if (field === 'title') {
         next.seoTitle = `${value} | Hokhma Study`;
         next.slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       }
       return next;
     });
-    setAutosaveStatus('Draft edited...');
+    setAutosaveStatus('Draft modified...');
   };
 
   // Content block manipulation
@@ -105,47 +107,21 @@ export default function ArticleEditor() {
       reference: type === 'scripture' ? 'Book 0:0' : undefined,
       referenceAm: type === 'scripture' ? 'መጽሐፍ 0:0' : undefined
     };
-
     updateField('content', [...editedArticle.content, newBlock]);
     setAutosaveStatus('Block added...');
   };
 
-  const handleEditBlockText = (idx: number, text: string) => {
+  const updateBlock = (idx: number, updates: Partial<ContentSection>) => {
     if (!editedArticle) return;
     const updatedContent = editedArticle.content.map((sec, i) =>
-      i === idx ? { ...sec, text } : sec
-    );
-    updateField('content', updatedContent);
-  };
-
-  const handleEditBlockTextAm = (idx: number, textAm: string) => {
-    if (!editedArticle) return;
-    const updatedContent = editedArticle.content.map((sec, i) =>
-      i === idx ? { ...sec, textAm } : sec
-    );
-    updateField('content', updatedContent);
-  };
-
-  const handleEditScriptureReference = (idx: number, reference: string) => {
-    if (!editedArticle) return;
-    const updatedContent = editedArticle.content.map((sec, i) =>
-      i === idx ? { ...sec, reference } : sec
-    );
-    updateField('content', updatedContent);
-  };
-
-  const handleEditScriptureReferenceAm = (idx: number, referenceAm: string) => {
-    if (!editedArticle) return;
-    const updatedContent = editedArticle.content.map((sec, i) =>
-      i === idx ? { ...sec, referenceAm } : sec
+      i === idx ? { ...sec, ...updates } : sec
     );
     updateField('content', updatedContent);
   };
 
   const handleDeleteContentBlock = (idx: number) => {
     if (!editedArticle) return;
-    const filteredContent = editedArticle.content.filter((_, i) => i !== idx);
-    updateField('content', filteredContent);
+    updateField('content', editedArticle.content.filter((_, i) => i !== idx));
     setAutosaveStatus('Block removed...');
   };
 
@@ -164,7 +140,6 @@ export default function ArticleEditor() {
     updateField('content', nextContent);
   };
 
-  // Action: Add tag chip
   const handleAddTag = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTagInput.trim() && editedArticle) {
@@ -176,14 +151,11 @@ export default function ArticleEditor() {
     }
   };
 
-  // Action: Remove tag chip
   const handleRemoveTag = (tagIdx: number) => {
     if (!editedArticle) return;
-    const nextTags = editedArticle.tags.filter((_, i) => i !== tagIdx);
-    updateField('tags', nextTags);
+    updateField('tags', editedArticle.tags.filter((_, i) => i !== tagIdx));
   };
 
-  // Action: Add Footnote
   const handleAddFootnote = (e: React.FormEvent) => {
     e.preventDefault();
     if (newFootnoteText.trim() && editedArticle) {
@@ -193,556 +165,792 @@ export default function ArticleEditor() {
       };
       updateField('footnotes', [...editedArticle.footnotes, newFn]);
       setNewFootnoteText('');
-      setAutosaveStatus('Footnote mapped...');
+      setAutosaveStatus('Citation added...');
     }
   };
 
-  // Action: Remove Footnote
   const handleRemoveFootnote = (fnId: number) => {
     if (!editedArticle) return;
     const filteredFn = editedArticle.footnotes
       .filter((fn) => fn.id !== fnId)
-      // Re-map the footnote numbering indexes
       .map((fn, idx) => ({ ...fn, id: idx + 1 }));
     updateField('footnotes', filteredFn);
   };
 
-  // Action: Compile/Save Revisions
   const handleSaveRevisions = () => {
     if (editedArticle) {
       updateArticle(editedArticle);
-      setAutosaveStatus('Revisions saved!');
+      setAutosaveStatus('Revisions published!');
       setTimeout(() => {
         navigateTo('/admin');
-      }, 1000);
+      }, 800);
     }
   };
 
   return (
-    <div id="article-editor-page" className="animate-fade-in bg-slate-50 dark:bg-slate-950/20 shadow-inner min-h-screen py-6 font-sans">
-      <div className="max-w-[1140px] mx-auto px-4 md:px-6 space-y-6">
+    <div id="article-editor-page" className="animate-fade-in bg-slate-50/50 dark:bg-slate-950/40 min-h-screen py-8 px-4 md:px-8 font-sans">
+      <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* TOP BAR: Back arrow · title · autosave status · Preview btn · Save btn */}
-        <div className="bg-[#1A1D24] border border-white/5 rounded-xl p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4 text-white shadow shadow-xl">
-          <div className="flex items-center gap-3">
+        {/* TOP ACTION HEADER */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => navigateTo('/admin')}
-              className="p-1.5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white"
-              title="Return to Dashboard"
+              className="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-all border border-slate-100 dark:border-white/5 cursor-pointer shadow-sm"
+              title="Return to Workroom"
             >
-              <ArrowLeft size={18} />
+              <ArrowLeft size={16} />
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-serif text-sm font-bold uppercase tracking-wider text-gold">
-                  Editing: {editedArticle.title}
-                </h1>
-                <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-gold text-[9px] font-bold font-sans">
-                  {editedArticle.isPublished ? 'PUBLISHED' : 'DRAFT'}
+                <span className="font-sans text-xs font-bold tracking-widest text-gold">Manuscript Workspace</span>
+                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider ${editedArticle.isPublished ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25' : 'bg-amber-500/10 text-amber-600 dark:text-gold border border-amber-500/25'}`}>
+                  {editedArticle.isPublished ? 'Published' : 'Draft'}
                 </span>
               </div>
-              <p className="text-[10px] text-gray-400 font-mono flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                <span>Autosave: {autosaveStatus}</span>
-              </p>
+              <h1 className="font-serif text-lg font-bold text-slate-900 dark:text-white mt-0.5 line-clamp-1">
+                {editedArticle.title || 'Untitled Manuscript'}
+              </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            {/* Toggle Preview Button */}
+          <div className="flex items-center gap-3 w-full md:w-auto self-stretch md:self-auto justify-end">
+            <p className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 dark:text-gray-500 font-mono mr-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
+              <span>{autosaveStatus}</span>
+            </p>
+
             <button
               onClick={() => setPreviewMode(!previewMode)}
-              className="px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider rounded bg-slate-850 hover:bg-slate-800 text-gold hover:text-white border border-gold/20 flex items-center gap-1 cursor-pointer"
+              className={`px-4 py-2 text-xs font-bold tracking-wider rounded-lg border flex items-center gap-2 transition-all cursor-pointer ${
+                previewMode 
+                  ? 'bg-slate-100 border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-900 dark:text-white' 
+                  : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300'
+              }`}
             >
-              <Eye size={12} />
-              <span>{previewMode ? 'Edit Mode' : 'Preview Paper'}</span>
+              <Eye size={13} />
+              <span>{previewMode ? 'Edit Mode' : 'Live Preview'}</span>
             </button>
 
-            {/* Commit Revisions Button */}
             <button
               onClick={handleSaveRevisions}
-              className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded bg-gold hover:bg-gold/90 text-slate-950 flex items-center gap-1"
+              className="px-5 py-2 text-xs font-bold tracking-wider rounded-lg bg-navy hover:bg-navy/90 dark:bg-gold dark:text-slate-950 dark:hover:bg-gold/90 text-white flex items-center gap-2 transition-colors cursor-pointer shadow-sm"
             >
-              <Save size={12} />
+              <Save size={13} />
               <span>Save Revisions</span>
             </button>
           </div>
         </div>
 
-        {/* PREVIEW CONTAINER */}
         {previewMode ? (
-          <div className="bg-white dark:bg-slate-900 border p-8 md:p-12 rounded-xl text-nearblack max-w-3xl mx-auto space-y-6 animate-fade-in text-xs font-serif shadow-xl">
-            <div className="text-center font-sans space-y-1.5 border-b pb-4">
-              <span className="text-[10px] uppercase tracking-widest text-gold font-bold">PREVIEWING COMPILATION</span>
-              <h1 className="font-serif text-2xl font-bold text-nearblack dark:text-white">{editedArticle.title}</h1>
-              <p className="text-[11px] text-mediumgrey">{editedArticle.publishDate} · Reads: {editedArticle.views}</p>
+          /* PREMIUM PREVIEW MANUSCRIPT INTERFACE */
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-6 md:p-12 max-w-3xl mx-auto space-y-8 shadow-md">
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-4">
+              <span className="text-[10px] uppercase tracking-widest text-gold font-mono">Simulated Reader Context</span>
+              <div className="flex rounded-lg bg-slate-50 dark:bg-slate-950 p-1 border dark:border-white/15">
+                <button
+                  onClick={() => setPreviewLang('en')}
+                  className={`px-3 py-1 text-[10px] font-bold rounded-md transition-colors ${previewLang === 'en' ? 'bg-white dark:bg-slate-850 text-gold shadow-sm' : 'text-slate-400'}`}
+                >
+                  English View
+                </button>
+                <button
+                  onClick={() => setPreviewLang('am')}
+                  className={`px-3 py-1 text-[10px] font-bold rounded-md transition-colors ${previewLang === 'am' ? 'bg-white dark:bg-slate-850 text-gold shadow-sm' : 'text-slate-400'}`}
+                >
+                  አማርኛ እይታ
+                </button>
+              </div>
             </div>
 
-            <p className="text-sm font-semibold italic text-mediumgrey leading-relaxed">
-              Excerpt: {editedArticle.excerpt}
+            <div className="text-center space-y-3">
+              <h1 className="font-serif text-3xl font-bold leading-tight text-slate-900 dark:text-white">
+                {previewLang === 'en' ? editedArticle.title : (editedArticle.titleAm || editedArticle.title)}
+              </h1>
+              <p className="text-xs text-slate-400 dark:text-gray-500 font-mono">
+                {editedArticle.publishDate} · Reads: {editedArticle.views} · Reads: {editedArticle.readingTime} min
+              </p>
+            </div>
+
+            {editedArticle.coverImage && (
+              <div className="aspect-[21/9] rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm">
+                <img src={editedArticle.coverImage} alt="Cover" className="w-full h-full object-cover" />
+              </div>
+            )}
+
+            <p className="text-sm font-semibold italic text-slate-600 dark:text-gray-300 leading-relaxed border-l-4 border-gold/40 pl-4 py-1">
+              {previewLang === 'en' ? editedArticle.excerpt : (editedArticle.excerptAm || editedArticle.excerpt)}
             </p>
 
-            <div className="text-sm md:text-base leading-relaxed text-mediumgrey space-y-5">
+            <div className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-gray-300 space-y-6 font-serif">
               {editedArticle.content.map((sec, i) => {
+                const text = previewLang === 'en' ? sec.text : (sec.textAm || sec.text);
                 if (sec.type === 'header') {
-                  return <h2 key={i} className="font-serif font-bold text-md pt-3 text-nearblack dark:text-white">{sec.text}</h2>;
+                  return (
+                    <h2 key={i} className="font-serif font-bold text-xl pt-4 text-slate-900 dark:text-white tracking-tight">
+                      {text}
+                    </h2>
+                  );
                 }
                 if (sec.type === 'scripture') {
+                  const ref = previewLang === 'en' ? sec.reference : (sec.referenceAm || sec.reference);
                   return (
-                    <div key={i} className="pl-4 border-l-2 border-gold my-4 text-xs italic">
-                      “{sec.text}”
-                      <div className="text-right text-gold uppercase text-[9px] font-sans font-bold">— {sec.reference}</div>
+                    <div key={i} className="pl-5 border-l-3 border-gold my-6 text-sm bg-slate-50/50 dark:bg-white/[0.02] p-4 rounded-r-xl italic leading-relaxed text-slate-800 dark:text-gray-200">
+                      “{text}”
+                      {ref && <div className="text-right text-gold font-sans text-[10px] font-bold uppercase tracking-wider mt-2">— {ref}</div>}
                     </div>
                   );
                 }
-                return <p key={i}>{sec.text}</p>;
+                return <p key={i} className="text-justify">{text}</p>;
               })}
             </div>
-            
-            <div className="pt-4 border-t text-[11px] text-lightgrey">
-              End of Draft Compilation.
-            </div>
-          </div>
-        ) : (
-          /* FULL-WIDTH TWO-COLUMN EDIT INTERFACE */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            {/* LEFT COLUMN: Main Editor (70% approximate) */}
-            <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-6">
-              
-              {/* Dual-Language Title Inputs */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-mediumgrey font-sans">Document Paper Title (English)</label>
-                  <input
-                    type="text"
-                    placeholder="Enter article title (e.g., The Historical Resurrection)..."
-                    value={editedArticle.title}
-                    onChange={(e) => updateField('title', e.target.value)}
-                    className="w-full text-base font-serif font-bold text-nearblack dark:text-white bg-transparent border-b border-black/10 focus:outline-none focus:border-gold pb-2"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-amber-600 dark:text-gold font-sans">Document Paper Title (Amharic / አማርኛ)</label>
-                  <input
-                    type="text"
-                    placeholder="የጽሑፉ አርዕስት እዚህ ያስገቡ..."
-                    value={editedArticle.titleAm || ''}
-                    onChange={(e) => updateField('titleAm', e.target.value)}
-                    className="w-full text-base font-serif font-bold text-nearblack dark:text-white bg-transparent border-b border-gold/20 focus:outline-none focus:border-gold pb-2"
-                  />
-                </div>
-              </div>
 
-              {/* Dual-Language Excerpt Inputs */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-mediumgrey font-sans">One line summary (English Excerpt)</label>
-                  <textarea
-                    rows={2}
-                    value={editedArticle.excerpt}
-                    onChange={(e) => updateField('excerpt', e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-offwhite dark:bg-slate-950 border border-black/10 rounded focus:outline-none font-serif leading-relaxed text-nearblack"
-                    placeholder="A one-sentence summary mapping the Core arguments answered by this paper..."
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold text-amber-600 dark:text-gold font-sans">One line summary (Amharic Excerpt / አማርኛ)</label>
-                  <textarea
-                    rows={2}
-                    value={editedArticle.excerptAm || ''}
-                    onChange={(e) => updateField('excerptAm', e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-offwhite dark:bg-slate-950 border border-gold/15 rounded focus:outline-none font-serif leading-relaxed text-nearblack"
-                    placeholder="ለጽሑፉ አጭር ማጠቃለያ መግለጫ እዚህ ያስገቡ..."
-                  />
-                </div>
-              </div>
-
-              {/* WYSIWYG TOOLBAR SIMULATOR (Paragraph · H2 · Scripture block visual adds) */}
-              <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-1 bg-slate-50 dark:bg-slate-950 p-2 rounded-lg border border-black/5">
-                  <span className="text-[10px] uppercase font-bold text-mediumgrey px-2 font-sans">WYSIWYG Blocks tool:</span>
-                  <div className="h-4 w-px bg-black/10 mx-1" />
-                  
-                  {/* Append Paragraph Block */}
-                  <button
-                    onClick={() => handleAddContentBlock('paragraph')}
-                    className="p-1 px-2 text-[10px] uppercase hover:bg-gold/10 hover:text-gold text-nearblack dark:text-white border border-black/5 hover:border-gold/30 rounded inline-flex items-center gap-1 font-semibold"
-                    title="Add normal paragraph block"
-                  >
-                    <Plus size={10} />
-                    <span>Paragraph</span>
-                  </button>
-
-                  {/* Append Header Block */}
-                  <button
-                    onClick={() => handleAddContentBlock('header', 2)}
-                    className="p-1 px-2 text-[10px] uppercase hover:bg-gold/10 hover:text-gold text-nearblack dark:text-white border border-black/5 hover:border-gold/30 rounded inline-flex items-center gap-1 font-semibold"
-                    title="Add H2 section Header"
-                  >
-                    <Plus size={10} />
-                    <span>H2 Section</span>
-                  </button>
-
-                  {/* Append Scripture Block (accent color specified!) */}
-                  <button
-                    onClick={() => handleAddContentBlock('scripture')}
-                    className="p-1 px-2 text-[10px] uppercase bg-amber-50 dark:bg-amber-950/40 text-gold hover:text-gold border border-gold/45 rounded inline-flex items-center gap-1 font-bold"
-                    title="Insert Scripture Quote block with citation"
-                  >
-                    <Plus size={10} />
-                    <span>Scripture Block</span>
-                  </button>
-                </div>
-
-                {/* VISUAL BLOCK LIST BUILDER */}
-                <div className="space-y-4 max-h-[480px] overflow-y-auto pr-2">
-                  {editedArticle.content.map((sec, idx) => {
-                    return (
-                      <div
-                        key={idx}
-                        className={`p-3.5 border rounded-lg relative space-y-2 group transition-shadow ${
-                          sec.type === 'scripture'
-                            ? 'bg-[#FDFAF3] dark:bg-[#1C1A14] border-gold/40'
-                            : sec.type === 'header'
-                            ? 'bg-slate-50 dark:bg-slate-900 border-black/10'
-                            : 'bg-white dark:bg-slate-900 border-black/5'
-                        }`}
-                      >
-                        {/* Upper Block control bar */}
-                        <div className="flex justify-between items-center text-[10px] font-sans text-mediumgrey border-b border-black/5 pb-1">
-                          <span className="uppercase font-bold tracking-wider text-[9px] text-navy dark:text-gold">
-                            Block {idx + 1}: {sec.type === 'scripture' ? 'Scripture Citation' : sec.type === 'header' ? 'Section Header' : 'Paragraph Body'}
-                          </span>
-                          
-                          <div className="flex gap-1">
-                            {/* Movement */}
-                            <button
-                              onClick={() => handleMoveBlock(idx, 'up')}
-                              className="px-1 text-nearblack hover:text-gold"
-                            >
-                              ▲
-                            </button>
-                            <button
-                              onClick={() => handleMoveBlock(idx, 'down')}
-                              className="px-1 text-nearblack hover:text-gold"
-                            >
-                              ▼
-                            </button>
-                            <span className="h-3 w-px bg-black/10 mx-1" />
-                            {/* Delete */}
-                            <button
-                              onClick={() => handleDeleteContentBlock(idx)}
-                              className="text-red-500 hover:text-red-700"
-                              title="Delete block"
-                            >
-                              ✕ Remove
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Text inputs based on type */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
-                          <div className="space-y-1">
-                            <span className="text-[9px] uppercase font-bold text-mediumgrey block font-sans">English text</span>
-                            <textarea
-                              rows={sec.type === 'paragraph' ? 3 : 1}
-                              value={sec.text}
-                              onChange={(e) => handleEditBlockText(idx, e.target.value)}
-                              className="w-full bg-white dark:bg-slate-950 text-xs px-2.5 py-1.5 focus:outline-none border border-black/5 hover:border-gold/30 rounded focus:border-gold text-nearblack font-serif"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <span className="text-[9px] uppercase font-bold text-amber-600 dark:text-gold block font-sans">Amharic / አማርኛ</span>
-                            <textarea
-                              rows={sec.type === 'paragraph' ? 3 : 1}
-                              value={sec.textAm || ''}
-                              onChange={(e) => handleEditBlockTextAm(idx, e.target.value)}
-                              className="w-full bg-white dark:bg-slate-950 text-xs px-2.5 py-1.5 focus:outline-none border border-gold/15 hover:border-gold/35 rounded focus:border-gold text-nearblack font-serif"
-                              placeholder="ትርጉም እዚህ ይጻፉ..."
-                            />
-                          </div>
-                        </div>
-
-                        {/* Citation for scripture */}
-                        {sec.type === 'scripture' && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-1 border-t border-black/5">
-                            <div className="flex justify-end gap-2 items-center">
-                              <span className="text-[9px] text-lightgrey">Reference (EN):</span>
-                              <input
-                                type="text"
-                                required
-                                value={sec.reference || ''}
-                                onChange={(e) => handleEditScriptureReference(idx, e.target.value)}
-                                placeholder="E.g., Romans 1:16"
-                                className="px-2 py-0.5 w-full text-xs bg-white dark:bg-slate-950 text-gold border focus:border-gold rounded font-semibold font-sans"
-                              />
-                            </div>
-                            <div className="flex justify-end gap-2 items-center">
-                              <span className="text-[9px] text-lightgrey">Reference (AM):</span>
-                              <input
-                                type="text"
-                                value={sec.referenceAm || ''}
-                                onChange={(e) => handleEditScriptureReferenceAm(idx, e.target.value)}
-                                placeholder="ለምሳሌ፥ ሮሜ 1:16"
-                                className="px-2 py-0.5 w-full text-xs bg-white dark:bg-slate-950 text-gold border focus:border-gold rounded font-semibold font-sans"
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* FOOTNOTES LIST BUILDER SECTION */}
-              <div className="border-t border-black/10 pt-6 space-y-4">
-                <h3 className="font-serif text-sm font-bold text-nearblack dark:text-white uppercase tracking-wider">
-                  Academic Footnotes Bibliography
-                </h3>
-                
-                <div className="space-y-2">
+            {editedArticle.footnotes.length > 0 && (
+              <div className="pt-8 border-t border-slate-100 dark:border-white/5 space-y-2">
+                <h4 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-500">Bibliography Footnotes</h4>
+                <div className="space-y-1">
                   {editedArticle.footnotes.map((fn) => (
-                    <div key={fn.id} className="p-2 border border-black/5 rounded bg-slate-50/40 text-xs flex justify-between items-center gap-4">
-                      <span className="text-navy dark:text-gold font-bold font-mono px-1.5">[{fn.id}]</span>
-                      <span className="flex-1 font-serif text-[12.5px] line-clamp-1">{fn.text}</span>
-                      <button
-                        onClick={() => handleRemoveFootnote(fn.id)}
-                        className="text-red-500 hover:text-red-700 p-1"
-                      >
-                        ✕
-                      </button>
-                    </div>
+                    <p key={fn.id} className="text-[11px] text-slate-400 dark:text-gray-500 font-serif leading-relaxed">
+                      <span className="font-mono text-gold font-bold mr-1.5">[{fn.id}]</span>
+                      {fn.text}
+                    </p>
                   ))}
                 </div>
-
-                {/* Form to append new footnote */}
-                <form onSubmit={handleAddFootnote} className="flex gap-2 text-xs">
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter academic reference citation (e.g. Lewis, C.S., 'Mere Christianity', 1943)..."
-                    value={newFootnoteText}
-                    onChange={(e) => setNewFootnoteText(e.target.value)}
-                    className="flex-1 px-3 py-2 border rounded focus:outline-none focus:border-gold bg-offwhite text-nearblack font-serif"
-                  />
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-navy text-white text-xs font-bold uppercase tracking-wider rounded whitespace-nowrap cursor-pointer"
-                  >
-                    Add Citation
-                  </button>
-                </form>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* REDESIGNED TWO-COLUMN WORKSPACE */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* LEFT COMPILER PANEL (8 Columns) */}
+            <main className="lg:col-span-8 space-y-6">
+              
+              {/* COMPACT CHOPPED TAB COMPONENT */}
+              <div className="flex border-b border-slate-100 dark:border-white/10 overflow-x-auto bg-white dark:bg-slate-900 p-1.5 rounded-xl border shadow-sm gap-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('en')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    activeTab === 'en' 
+                      ? 'bg-slate-100 dark:bg-slate-850 text-slate-900 dark:text-white shadow-inner' 
+                      : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
+                  }`}
+                >
+                  <FileText size={14} className={activeTab === 'en' ? 'text-gold' : ''} />
+                  <span>English Content</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('am')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    activeTab === 'am' 
+                      ? 'bg-slate-100 dark:bg-slate-850 text-slate-900 dark:text-white shadow-inner' 
+                      : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
+                  }`}
+                >
+                  <Globe size={14} className={activeTab === 'am' ? 'text-gold' : ''} />
+                  <span>አማርኛ ይዘት (Amharic)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('footnotes')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    activeTab === 'footnotes' 
+                      ? 'bg-slate-100 dark:bg-slate-850 text-slate-900 dark:text-white shadow-inner' 
+                      : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
+                  }`}
+                >
+                  <BookMarked size={14} className={activeTab === 'footnotes' ? 'text-gold' : ''} />
+                  <span>Bibliography Citation</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('seo')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    activeTab === 'seo' 
+                      ? 'bg-slate-100 dark:bg-slate-850 text-slate-900 dark:text-white shadow-inner' 
+                      : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
+                  }`}
+                >
+                  <Search size={14} className={activeTab === 'seo' ? 'text-gold' : ''} />
+                  <span>SEO Metadata</span>
+                </button>
               </div>
 
-            </div>
+              {/* CORE EDITOR WRAPPERS */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-6 shadow-sm space-y-6">
+                
+                {activeTab === 'en' && (
+                  <div className="space-y-6 animate-fade-in">
+                    {/* English Title */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-400 font-sans">Manuscript Title (English)</label>
+                        <span className="text-[9px] font-mono text-slate-400">{(editedArticle.title || '').length} characters</span>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Enter manuscript title (e.g., The Historical Credibility)..."
+                        value={editedArticle.title}
+                        onChange={(e) => updateField('title', e.target.value)}
+                        className="w-full text-xl font-serif font-bold text-slate-900 dark:text-white bg-transparent border-b border-slate-150 focus:border-gold focus:outline-none pb-2 transition-colors placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                      />
+                    </div>
 
-            {/* RIGHT COLUMN: Settings Sidebar (30% approximate) */}
-            <aside className="lg:col-span-4 bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-6">
+                    {/* English Excerpt */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-400 font-sans">Summary Abstract (English Excerpt)</label>
+                        <span className="text-[9px] font-mono text-slate-400">{(editedArticle.excerpt || '').length} characters</span>
+                      </div>
+                      <textarea
+                        rows={2}
+                        value={editedArticle.excerpt}
+                        onChange={(e) => updateField('excerpt', e.target.value)}
+                        className="w-full px-4 py-3 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/5 rounded-xl focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 font-serif leading-relaxed text-slate-800 dark:text-gray-300 transition-all placeholder:text-slate-400"
+                        placeholder="Write a concise abstract summarizing the core defense arguments or answers in this paper..."
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'am' && (
+                  <div className="space-y-6 animate-fade-in">
+                    {/* Amharic Title */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-amber-600 dark:text-gold font-sans">የዕጅ ጽሑፍ አርዕስት (Amharic Title)</label>
+                        <button 
+                          onClick={() => updateField('titleAm', editedArticle.title)}
+                          className="text-[9px] font-sans font-bold text-gold hover:underline cursor-pointer"
+                        >
+                          Copy English Title
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="የጽሑፉን አርዕስት እዚህ ያስገቡ..."
+                        value={editedArticle.titleAm || ''}
+                        onChange={(e) => updateField('titleAm', e.target.value)}
+                        className="w-full text-xl font-serif font-bold text-slate-900 dark:text-white bg-transparent border-b border-slate-150 focus:border-gold focus:outline-none pb-2 transition-colors placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                      />
+                    </div>
+
+                    {/* Amharic Excerpt */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-amber-600 dark:text-gold font-sans">አጭር ማጠቃለያ (Amharic Excerpt)</label>
+                        <button 
+                          onClick={() => updateField('excerptAm', editedArticle.excerpt)}
+                          className="text-[9px] font-sans font-bold text-gold hover:underline cursor-pointer"
+                        >
+                          Copy English Abstract
+                        </button>
+                      </div>
+                      <textarea
+                        rows={2}
+                        value={editedArticle.excerptAm || ''}
+                        onChange={(e) => updateField('excerptAm', e.target.value)}
+                        className="w-full px-4 py-3 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/5 rounded-xl focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 font-serif leading-relaxed text-slate-800 dark:text-gray-300 transition-all placeholder:text-slate-400"
+                        placeholder="ለጽሑፉ አጭርና ግልጽ ማጠቃለያ መግለጫ እዚህ ይጻፉ..."
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* WYSIWYG CONTENT BLOCKS LIST (For 'en' and 'am' tabs) */}
+                {(activeTab === 'en' || activeTab === 'am') && (
+                  <div className="space-y-5 border-t border-slate-100 dark:border-white/5 pt-6">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 font-sans">Manuscript Content Blocks</span>
+                      <span className="text-[9px] font-mono text-slate-400">{editedArticle.content.length} Blocks Total</span>
+                    </div>
+
+                    {/* STICKY-LIKE FLOATING WYSIWYG BAR */}
+                    <div className="flex flex-wrap items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-2 rounded-xl border border-slate-150 dark:border-white/5">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 px-2 font-sans">Insert Block:</span>
+                      <div className="h-4 w-px bg-slate-200 dark:bg-white/10" />
+                      
+                      <button
+                        type="button"
+                        onClick={() => handleAddContentBlock('paragraph')}
+                        className="py-1.5 px-3 text-[10px] uppercase bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-white/5 hover:border-gold/30 rounded-lg inline-flex items-center gap-1.5 font-bold transition-all cursor-pointer shadow-sm"
+                        title="Add normal paragraph block"
+                      >
+                        <AlignLeft size={11} className="text-slate-400" />
+                        <span>Paragraph</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleAddContentBlock('header', 2)}
+                        className="py-1.5 px-3 text-[10px] uppercase bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-white/5 hover:border-gold/30 rounded-lg inline-flex items-center gap-1.5 font-bold transition-all cursor-pointer shadow-sm"
+                        title="Add heading section block"
+                      >
+                        <Heading2 size={11} className="text-blue-500" />
+                        <span>Section Heading</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleAddContentBlock('scripture')}
+                        className="py-1.5 px-3 text-[10px] uppercase bg-amber-500/5 hover:bg-amber-500/10 dark:bg-amber-500/10 dark:hover:bg-amber-500/15 text-amber-600 dark:text-gold border border-amber-500/20 rounded-lg inline-flex items-center gap-1.5 font-bold transition-all cursor-pointer shadow-sm"
+                        title="Insert Scripture Quote block with citation"
+                      >
+                        <Quote size={11} className="text-gold" />
+                        <span>Scripture Block</span>
+                      </button>
+                    </div>
+
+                    {/* CONTENT BLOCKS RENDERER */}
+                    <div className="space-y-4 max-h-[580px] overflow-y-auto pr-1">
+                      {editedArticle.content.map((sec, idx) => {
+                        const isScripture = sec.type === 'scripture';
+                        const isHeader = sec.type === 'header';
+                        
+                        return (
+                          <div
+                            key={idx}
+                            className={`p-4 border rounded-xl relative space-y-3 group transition-all shadow-sm ${
+                              isScripture
+                                ? 'bg-amber-50/10 dark:bg-[#1A1813] border-gold/25'
+                                : isHeader
+                                ? 'bg-slate-50/30 dark:bg-slate-900/40 border-slate-150 dark:border-white/10 font-bold'
+                                : 'bg-white dark:bg-slate-900 border-slate-150 dark:border-white/5'
+                            }`}
+                          >
+                            {/* Block Header with metadata & handles */}
+                            <div className="flex justify-between items-center text-[10px] font-sans text-slate-400 border-b border-slate-100 dark:border-white/5 pb-2">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-slate-300">#{idx + 1}</span>
+                                <span className={`uppercase font-bold tracking-wider text-[9px] ${isScripture ? 'text-gold' : isHeader ? 'text-blue-500' : 'text-slate-400'}`}>
+                                  {isScripture ? 'Scripture Quote' : isHeader ? 'Section Header' : 'Paragraph Block'}
+                                </span>
+                              </div>
+                              
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveBlock(idx, 'up')}
+                                  className="p-1 hover:bg-slate-100 dark:hover:bg-white/5 rounded text-slate-400 hover:text-gold transition-colors cursor-pointer"
+                                  title="Move Up"
+                                >
+                                  <MoveUp size={11} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveBlock(idx, 'down')}
+                                  className="p-1 hover:bg-slate-100 dark:hover:bg-white/5 rounded text-slate-400 hover:text-gold transition-colors cursor-pointer"
+                                  title="Move Down"
+                                >
+                                  <MoveDown size={11} />
+                                </button>
+                                <span className="h-3.5 w-px bg-slate-200 dark:bg-white/10 mx-1" />
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteContentBlock(idx)}
+                                  className="py-0.5 px-2 text-rose-500 hover:bg-rose-500/10 rounded font-sans font-semibold text-[9px] uppercase tracking-wider transition-all cursor-pointer"
+                                  title="Delete Block"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Block Language-Specific Input */}
+                            <div className="space-y-2">
+                              {activeTab === 'en' ? (
+                                <div className="space-y-1">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-[9px] uppercase font-bold text-slate-400 font-sans">English Paragraph Text</span>
+                                    {isScripture && (
+                                      <span className="text-[8px] text-slate-300 uppercase font-mono">Quotes map reference automatically</span>
+                                    )}
+                                  </div>
+                                  <textarea
+                                    rows={isHeader ? 1 : 3}
+                                    value={sec.text}
+                                    onChange={(e) => updateBlock(idx, { text: e.target.value })}
+                                    className={`w-full bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-xs focus:outline-none border border-slate-150 dark:border-white/5 rounded-lg focus:border-gold/50 focus:ring-1 focus:ring-gold/20 text-slate-800 dark:text-gray-200 font-serif leading-relaxed`}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="space-y-1">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-[9px] uppercase font-bold text-amber-600 dark:text-gold font-sans">የአማርኛ ይዘት (Amharic Translation)</span>
+                                    <button 
+                                      type="button"
+                                      onClick={() => updateBlock(idx, { textAm: sec.text })}
+                                      className="text-[8px] font-sans text-gold hover:underline"
+                                    >
+                                      Copy English Text
+                                    </button>
+                                  </div>
+                                  <textarea
+                                    rows={isHeader ? 1 : 3}
+                                    value={sec.textAm || ''}
+                                    onChange={(e) => updateBlock(idx, { textAm: e.target.value })}
+                                    className={`w-full bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-xs focus:outline-none border border-gold/15 hover:border-gold/25 dark:border-white/5 rounded-lg focus:border-gold/50 focus:ring-1 focus:ring-gold/20 text-slate-800 dark:text-gray-200 font-serif leading-relaxed`}
+                                    placeholder="አማርኛ ትርጉም እዚህ ይጻፉ..."
+                                  />
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Additional parameters for Scripture Citation */}
+                            {isScripture && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-white/5">
+                                {activeTab === 'en' ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 font-sans whitespace-nowrap">Scripture Reference:</span>
+                                    <input
+                                      type="text"
+                                      value={sec.reference || ''}
+                                      onChange={(e) => updateBlock(idx, { reference: e.target.value })}
+                                      placeholder="E.g., Genesis 1:1"
+                                      className="px-2.5 py-1 w-full text-xs bg-slate-50 dark:bg-slate-950 text-gold border border-slate-200 dark:border-white/10 rounded-lg focus:border-gold focus:outline-none font-bold font-sans"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-gold font-sans whitespace-nowrap">የጥቅስ ማውጫ:</span>
+                                    <input
+                                      type="text"
+                                      value={sec.referenceAm || ''}
+                                      onChange={(e) => updateBlock(idx, { referenceAm: e.target.value })}
+                                      placeholder="ለምሳሌ፥ ዘፍጥረት 1:1"
+                                      className="px-2.5 py-1 w-full text-xs bg-slate-50 dark:bg-slate-950 text-gold border border-gold/15 dark:border-white/10 rounded-lg focus:border-gold focus:outline-none font-bold font-sans"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB: FOOTNOTES BIBLIOGRAPHY */}
+                {activeTab === 'footnotes' && (
+                  <div className="space-y-6 animate-fade-in">
+                    <div>
+                      <h3 className="font-serif text-base font-bold text-slate-900 dark:text-white">Manuscript Bibliography Citations</h3>
+                      <p className="text-xs text-slate-400">Map precise citations as clickable superscript annotations throughout the manuscript paper flow.</p>
+                    </div>
+
+                    <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                      {editedArticle.footnotes.length === 0 ? (
+                        <div className="p-8 border border-dashed border-slate-200 dark:border-white/5 rounded-xl text-center text-xs text-slate-400">
+                          No footnotes mapped to this paper. Add one below to structure an academic defense.
+                        </div>
+                      ) : (
+                        editedArticle.footnotes.map((fn) => (
+                          <div key={fn.id} className="p-3 border border-slate-100 dark:border-white/5 rounded-xl bg-slate-50/50 dark:bg-white/[0.01] text-xs flex justify-between items-center gap-4">
+                            <span className="text-gold font-bold font-mono px-2 bg-slate-100 dark:bg-slate-800 rounded py-0.5">[{fn.id}]</span>
+                            <span className="flex-1 font-serif text-slate-700 dark:text-gray-300 line-clamp-2 leading-relaxed">{fn.text}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFootnote(fn.id)}
+                              className="text-rose-500 hover:text-rose-700 p-1 hover:bg-rose-500/10 rounded transition-all cursor-pointer"
+                              title="Delete citation"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <form onSubmit={handleAddFootnote} className="space-y-2 border-t border-slate-150 dark:border-white/5 pt-4">
+                      <label className="text-[10px] uppercase font-bold tracking-wider text-slate-400 font-sans">Add Citation Entry</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          required
+                          placeholder="E.g., Lewis, C.S., 'Mere Christianity', Macmillan Pub, 1943, p. 54..."
+                          value={newFootnoteText}
+                          onChange={(e) => setNewFootnoteText(e.target.value)}
+                          className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-white/10 rounded-xl focus:border-gold focus:outline-none bg-slate-50 dark:bg-slate-950 text-xs font-serif text-slate-900 dark:text-white"
+                        />
+                        <button
+                          type="submit"
+                          className="px-5 py-2.5 bg-navy text-white dark:bg-gold dark:text-slate-950 font-sans text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-opacity-90 whitespace-nowrap cursor-pointer shadow-sm"
+                        >
+                          Add Citation
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* TAB: SEO METADATA METERS */}
+                {activeTab === 'seo' && (
+                  <div className="space-y-6 animate-fade-in">
+                    <div>
+                      <h3 className="font-serif text-base font-bold text-slate-900 dark:text-white">Search Engine Optimization</h3>
+                      <p className="text-xs text-slate-400">Optimize search metadata headers to index this defensive paper efficiently on Google and Bing.</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Meta Title */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="text-slate-400 uppercase font-bold">META TITLE HEADER</span>
+                          <span className={`font-mono font-bold ${((editedArticle.seoTitle || '').length > 60 || (editedArticle.seoTitle || '').length === 0) ? 'text-rose-500' : 'text-emerald-500'}`}>
+                            {(editedArticle.seoTitle || '').length}/60 characters
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={editedArticle.seoTitle || ''}
+                          onChange={(e) => updateField('seoTitle', e.target.value)}
+                          className="w-full px-4 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 text-slate-800 dark:text-gray-200 focus:outline-none focus:border-gold"
+                          placeholder="E.g., The Credibility of the New Testament | Hokhma Study"
+                        />
+                      </div>
+
+                      {/* Meta Description */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="text-slate-400 uppercase font-bold">META DESCRIPTION ABSTRACT</span>
+                          <span className={`font-mono font-bold ${((editedArticle.seoDescription || '').length > 160 || (editedArticle.seoDescription || '').length === 0) ? 'text-rose-500' : 'text-emerald-500'}`}>
+                            {(editedArticle.seoDescription || '').length}/160 characters
+                          </span>
+                        </div>
+                        <textarea
+                          rows={3}
+                          value={editedArticle.seoDescription || ''}
+                          onChange={(e) => updateField('seoDescription', e.target.value)}
+                          className="w-full px-4 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 text-slate-800 dark:text-gray-200 focus:outline-none focus:border-gold leading-relaxed font-sans"
+                          placeholder="Provide a high-quality summary explaining what the visitor will read. Safe length is under 160 characters..."
+                        />
+                      </div>
+
+                      {/* slug / permalink */}
+                      <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-white/5">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block font-sans">URL Slug / Permalink Identifier</label>
+                        <div className="flex items-center gap-1 text-xs text-slate-400 bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-150 dark:border-white/10">
+                          <span className="font-mono text-[10px]">/articles/</span>
+                          <input
+                            type="text"
+                            value={editedArticle.slug}
+                            onChange={(e) => updateField('slug', e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}
+                            className="bg-transparent border-none text-slate-900 dark:text-white font-mono font-bold text-xs focus:outline-none flex-1 p-0"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </main>
+
+            {/* RIGHT SIDEBAR CONTROLLER PANEL (4 Columns) */}
+            <aside className="lg:col-span-4 space-y-6">
               
-              {/* 1. STATUS Toggles: Published / Featured / Comments allowed */}
-              <div className="space-y-3.5 border-b border-black/5 pb-4">
-                <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-nearblack dark:text-white flex items-center gap-1">
-                  <Settings size={13} className="text-gold" />
-                  <span>Article Status Parameters</span>
-                </h3>
+              {/* PUBLISHING PARAMETERS CARD */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
+                  <Sliders size={14} className="text-gold" />
+                  <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Publish Parameters</h3>
+                </div>
 
-                {/* Published */}
+                {/* Published Toggle */}
                 <div className="flex justify-between items-center text-xs">
                   <div>
-                    <span className="font-bold uppercase tracking-wider text-[11px] block">Publish directly</span>
-                    <span className="text-lightgrey">Make paper visible to visitors of the site.</span>
+                    <span className="font-bold text-slate-800 dark:text-gray-200 block">Publish Status</span>
+                    <span className="text-[10px] text-slate-400">Toggle site visibility.</span>
                   </div>
                   <button
+                    type="button"
                     onClick={() => updateField('isPublished', !editedArticle.isPublished)}
-                    className={`px-3 py-1 rounded text-[11px] font-bold uppercase tracking-wide border transition-all ${
+                    className={`px-3.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide border transition-all cursor-pointer ${
                       editedArticle.isPublished
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                        : 'bg-slate-100 text-slate-655 border-slate-300'
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                        : 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-950 dark:text-gray-400 dark:border-white/5'
                     }`}
                   >
-                    {editedArticle.isPublished ? 'Yes' : 'Draft'}
+                    {editedArticle.isPublished ? 'Published' : 'Draft'}
                   </button>
                 </div>
 
-                {/* Featured */}
+                {/* Editor's Pick Toggle */}
                 <div className="flex justify-between items-center text-xs pt-1.5">
                   <div>
-                    <span className="font-bold uppercase tracking-wider text-[11px] block">Editor’s Pick</span>
-                    <span className="text-lightgrey">Promote as large card in main Hero section.</span>
+                    <span className="font-bold text-slate-800 dark:text-gray-200 block">Editor’s Pick</span>
+                    <span className="text-[10px] text-slate-400">Promote to hero header slot.</span>
                   </div>
                   <button
+                    type="button"
                     onClick={() => updateField('featured', !editedArticle.featured)}
-                    className={`px-3 py-1 rounded text-[11px] font-bold uppercase tracking-wide border transition-all ${
+                    className={`px-3.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide border transition-all cursor-pointer ${
                       editedArticle.featured
-                        ? 'bg-gold/15 text-gold border-gold/45'
-                        : 'bg-slate-100 text-slate-655 border-slate-300'
+                        ? 'bg-amber-500/10 text-amber-600 dark:text-gold border-amber-500/20'
+                        : 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-950 dark:text-gray-400 dark:border-white/5'
                     }`}
                   >
                     {editedArticle.featured ? 'Featured' : 'Regular'}
                   </button>
                 </div>
 
-                {/* Comments allowed */}
-                <div className="flex justify-between items-center text-xs pt-1.5 pb-2">
+                {/* Allow Discussion Toggle */}
+                <div className="flex justify-between items-center text-xs pt-1.5">
                   <div>
-                    <span className="font-bold uppercase tracking-wider text-[11px] block">Allow discussion</span>
-                    <span className="text-lightgrey">Unlock threaded comment moderated forms.</span>
+                    <span className="font-bold text-slate-800 dark:text-gray-200 block">Allow Comments</span>
+                    <span className="text-[10px] text-slate-400">Enable moderated reader dialog.</span>
                   </div>
                   <button
+                    type="button"
                     onClick={() => updateField('commentsAllowed', !editedArticle.commentsAllowed)}
-                    className={`px-3 py-1 rounded text-[11px] font-bold uppercase tracking-wide border transition-all ${
+                    className={`px-3.5 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide border transition-all cursor-pointer ${
                       editedArticle.commentsAllowed
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-rose-50 text-rose-600 border-rose-200'
+                        ? 'bg-slate-900 text-white border-slate-950 dark:bg-gold dark:text-slate-950'
+                        : 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20'
                     }`}
                   >
-                    {editedArticle.commentsAllowed ? 'Active' : 'Muted'}
+                    {editedArticle.commentsAllowed ? 'Enabled' : 'Muted'}
                   </button>
                 </div>
 
-                {/* Article UI Language switcher */}
-                <div className="flex justify-between items-center text-xs pt-2.5 border-t border-black/5 dark:border-white/5">
-                  <div>
-                    <span className="font-bold uppercase tracking-wider text-[11px] block">Article Language</span>
-                    <span className="text-lightgrey">Dictates indexing language: English, Amharic, or Bilingual.</span>
-                  </div>
+                {/* Article Language index mapping */}
+                <div className="flex flex-col gap-1 pt-3 border-t border-slate-100 dark:border-white/5 text-xs">
+                  <span className="font-bold text-slate-800 dark:text-gray-200">Index Language Mode</span>
                   <select
                     value={editedArticle.lang || 'en'}
                     onChange={(e) => updateField('lang', e.target.value)}
-                    className="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 border rounded font-semibold focus:outline-none"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 rounded-xl font-semibold text-slate-800 dark:text-white focus:outline-none"
                   >
-                    <option value="en">English (US)</option>
-                    <option value="am">አማርኛ (AM)</option>
-                    <option value="bilingual">Bilingual (EN + AM)</option>
+                    <option value="en">English Content Only</option>
+                    <option value="am">Amharic Content Only</option>
+                    <option value="bilingual">Bilingual (English + Amharic)</option>
                   </select>
                 </div>
               </div>
 
-              {/* 2. CATEGORY: Dropdown selection */}
-              <div className="space-y-1.5 border-b border-black/5 pb-4 text-xs">
-                <label className="font-bold uppercase tracking-wider text-[10px] block text-mediumgrey">
-                  Core Topic Arena Selection
-                </label>
-                <select
-                  value={editedArticle.topicSlug}
-                  onChange={(e) => updateField('topicSlug', e.target.value)}
-                  className="w-full px-3 py-2 bg-offwhite rounded border border-black/10 text-nearblack"
-                >
-                  {topics.map((t) => (
-                    <option key={t.slug} value={t.slug}>{t.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 3. DIFFICULTY: 3-button toggle group (Beginner / Intermediate / Deep dive) */}
-              <div className="space-y-1.5 border-b border-black/5 pb-4 text-xs">
-                <label className="font-bold uppercase tracking-wider text-[10px] block text-mediumgrey">
-                  Difficulty Depth Level
-                </label>
-                <div className="grid grid-cols-3 gap-1 rounded bg-slate-50 dark:bg-slate-950 p-1 border border-black/5">
-                  {(['beginner', 'intermediate', 'deep-dive'] as Difficulty[]).map((diff) => (
-                    <button
-                      key={diff}
-                      type="button"
-                      onClick={() => updateField('difficulty', diff)}
-                      className={`py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-colors ${
-                        editedArticle.difficulty === diff
-                          ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold'
-                          : 'text-mediumgrey hover:text-nearblack'
-                      }`}
-                    >
-                      {diff === 'deep-dive' ? 'Deep Dive' : diff}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 4. TAGS PILL CHIP INPUT */}
-              <div className="space-y-3.5 border-b border-black/5 pb-4 text-xs">
-                <div className="flex gap-1 items-center">
-                  <Tag size={13} className="text-gold" />
-                  <label className="font-bold uppercase tracking-wider text-[10px] block text-mediumgrey">
-                    Paper Keywords & Tags
-                  </label>
+              {/* TAXONOMY & DIFFICULTY DEPTH */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
+                  <BookMarked size={14} className="text-gold" />
+                  <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Taxonomy Arena</h3>
                 </div>
 
-                <div className="flex flex-wrap gap-1">
-                  {editedArticle.tags.map((tag, i) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-offwhite dark:bg-slate-800 border text-[10px] text-nearblack whitespace-nowrap"
-                    >
-                      <span>#{tag}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTag(i)}
-                        className="text-red-500 font-bold hover:text-red-700 text-[10px]"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-
-                <form onSubmit={handleAddTag} className="flex gap-1">
-                  <input
-                    type="text"
-                    placeholder="Type keyword..."
-                    value={newTagInput}
-                    onChange={(e) => setNewTagInput(e.target.value)}
-                    className="flex-1 px-2.5 py-1.5 border text-xs bg-offwhite dark:bg-slate-950 rounded text-nearblack"
-                  />
-                  <button
-                    type="submit"
-                    className="px-3 bg-navy text-white text-[11px] font-bold rounded uppercase"
+                {/* Category Selection */}
+                <div className="space-y-1 text-xs">
+                  <label className="font-bold text-slate-800 dark:text-gray-200 block">Core Topic Area</label>
+                  <select
+                    value={editedArticle.topicSlug}
+                    onChange={(e) => updateField('topicSlug', e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-800 dark:text-white"
                   >
-                    Add
-                  </button>
-                </form>
+                    {topics.map((t) => (
+                      <option key={t.slug} value={t.slug}>{t.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Difficulty Depth segment control */}
+                <div className="space-y-1.5 text-xs pt-1">
+                  <label className="font-bold text-slate-800 dark:text-gray-200 block">Difficulty Depth Level</label>
+                  <div className="grid grid-cols-3 gap-1 rounded-xl bg-slate-50 dark:bg-slate-950 p-1 border border-slate-150 dark:border-white/5">
+                    {(['beginner', 'intermediate', 'deep-dive'] as Difficulty[]).map((diff) => (
+                      <button
+                        key={diff}
+                        type="button"
+                        onClick={() => updateField('difficulty', diff)}
+                        className={`py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all cursor-pointer ${
+                          editedArticle.difficulty === diff
+                            ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold shadow-sm'
+                            : 'text-slate-500 hover:text-slate-950 dark:text-gray-400 dark:hover:text-white'
+                        }`}
+                      >
+                        {diff === 'deep-dive' ? 'Deep Dive' : diff}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Reading Time Slider/Input */}
+                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-white/5 text-xs">
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-800 dark:text-gray-200 flex items-center gap-1">
+                      <Clock size={11} className="text-gold" />
+                      <span>Reading Time</span>
+                    </label>
+                    <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-150 dark:border-white/10">
+                      <input
+                        type="number"
+                        min={1}
+                        max={120}
+                        value={editedArticle.readingTime}
+                        onChange={(e) => updateField('readingTime', parseInt(e.target.value) || 5)}
+                        className="bg-transparent border-none text-xs font-bold text-slate-800 dark:text-white w-full focus:outline-none p-0 text-center"
+                      />
+                      <span className="text-[10px] text-slate-400">min</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-800 dark:text-gray-200 flex items-center gap-1">
+                      <Calendar size={11} className="text-gold" />
+                      <span>Publish Date</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={editedArticle.publishDate}
+                      onChange={(e) => updateField('publishDate', e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-950 px-2 py-1 text-xs font-bold text-slate-800 dark:text-white border border-slate-150 dark:border-white/10 rounded-xl focus:outline-none"
+                    />
+                  </div>
+                </div>
               </div>
 
-              {/* 5. COVER IMAGE PLACEHOLDER with simulated click select */}
-              <div className="space-y-2 border-b border-black/5 pb-4 text-xs">
-                <div className="flex gap-1 items-center">
-                  <Image size={13} className="text-gold" />
-                  <label className="font-bold uppercase tracking-wider text-[10px] block text-mediumgrey animate-pulse">
-                    Cover Image URL mapping
-                  </label>
+              {/* COVER IMAGE FRAME CONTAINER */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
+                  <Image size={14} className="text-gold" />
+                  <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Cover Graphic</h3>
                 </div>
 
                 {editedArticle.coverImage && (
-                  <div className="h-28 rounded-md overflow-hidden border">
-                    <img
-                      src={editedArticle.coverImage}
-                      alt="Cover"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="aspect-[16/10] rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm relative group bg-slate-950">
+                    <img src={editedArticle.coverImage} alt="Cover Preview" className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500 opacity-90" />
+                    <button 
+                      type="button"
+                      onClick={() => updateField('coverImage', '')}
+                      className="absolute top-2 right-2 p-1 bg-slate-950/80 hover:bg-slate-950 text-white rounded-full text-xs transition-colors"
+                      title="Clear image URL"
+                    >
+                      <X size={12} />
+                    </button>
                   </div>
                 )}
                 
-                <input
-                  type="text"
-                  placeholder="Paste Unsplash image URL..."
-                  value={editedArticle.coverImage || ''}
-                  onChange={(e) => updateField('coverImage', e.target.value)}
-                  className="w-full px-2.5 py-2 border rounded bg-offwhite text-nearblack focus:outline-none"
-                />
+                <div className="space-y-1 text-xs">
+                  <label className="font-bold text-slate-800 dark:text-gray-200 block">Cover Image URL</label>
+                  <input
+                    type="text"
+                    placeholder="E.g., https://images.unsplash.com/photo-..."
+                    value={editedArticle.coverImage || ''}
+                    onChange={(e) => updateField('coverImage', e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 rounded-xl focus:outline-none focus:border-gold"
+                  />
+                </div>
               </div>
 
-              {/* 6. LEARNING PATH dropdown menu */}
-              <div className="space-y-4 border-b border-black/5 pb-4 text-xs">
-                <div className="flex gap-1 items-center">
-                  <BookMarked size={13} className="text-gold" />
-                  <label className="font-bold uppercase tracking-wider text-[10px] block text-mediumgrey">
-                    Map to Learning Path
-                  </label>
+              {/* MAPPED LEARNING ROADMAPS */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
+                  <Sparkles size={14} className="text-gold" />
+                  <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Roadmap Integration</h3>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[10px] text-lightgrey block mb-1">Select Path</label>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-800 dark:text-gray-200 block">Target Path</label>
                     <select
                       value={editedArticle.partInPath?.pathSlug || ''}
                       onChange={(e) => {
@@ -756,22 +964,23 @@ export default function ArticleEditor() {
                           updateField('partInPath', undefined);
                         }
                       }}
-                      className="w-full px-2 py-1.5 bg-offwhite border text-xs rounded text-nearblack"
+                      className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 text-xs rounded-xl text-slate-800 dark:text-white focus:outline-none"
                     >
-                      <option value="">-- None --</option>
+                      <option value="">-- Unmapped --</option>
                       {paths.map((p) => (
                         <option key={p.slug} value={p.slug}>{p.title}</option>
                       ))}
                     </select>
                   </div>
 
-                  <div>
-                    <label className="text-[10px] text-lightgrey block mb-1 font-sans">Sequence Order</label>
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-800 dark:text-gray-200 block font-sans">Index Position</label>
                     <input
                       type="number"
                       min={1}
-                      max={12}
+                      max={20}
                       value={editedArticle.partInPath?.position || 1}
+                      disabled={!editedArticle.partInPath}
                       onChange={(e) => {
                         if (editedArticle.partInPath) {
                           updateField('partInPath', {
@@ -780,49 +989,56 @@ export default function ArticleEditor() {
                           });
                         }
                       }}
-                      className="w-full px-2 py-1 bg-offwhite border text-xs rounded text-nearblack font-sans"
+                      className="w-full px-2.5 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 text-xs rounded-xl text-slate-800 dark:text-white disabled:opacity-50 text-center"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* 7. SEO meta variables with char counts */}
-              <div className="space-y-3.5 text-xs">
-                <span className="font-bold uppercase tracking-wider text-[10px] block text-mediumgrey">
-                  SEO Search Engine Metadata
-                </span>
+              {/* KEYWORD TAG CHIPS */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
+                  <Tag size={14} className="text-gold" />
+                  <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Manuscript Tags</h3>
+                </div>
 
-                <div>
-                  <div className="flex justify-between items-center text-[10px] mb-1">
-                    <span className="text-lightgrey uppercase font-bold text-[9px]">META TITLE</span>
-                    <span className={`${(editedArticle.seoTitle || '').length > 60 ? 'text-red-500' : 'text-gold'} font-bold`}>
-                      {(editedArticle.seoTitle || '').length}/60
-                    </span>
-                  </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {editedArticle.tags.length === 0 ? (
+                    <span className="text-[10px] text-slate-400">No tag keywords linked to this paper.</span>
+                  ) : (
+                    editedArticle.tags.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-150 dark:border-white/5 text-[10px] text-slate-800 dark:text-slate-200 whitespace-nowrap"
+                      >
+                        <span>#{tag}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTag(i)}
+                          className="text-rose-500 font-bold hover:text-rose-700 text-[10px] ml-0.5"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))
+                  )}
+                </div>
+
+                <form onSubmit={handleAddTag} className="flex gap-1.5">
                   <input
                     type="text"
-                    value={editedArticle.seoTitle || ''}
-                    onChange={(e) => updateField('seoTitle', e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded bg-offwhite border focus:outline-none"
-                    placeholder="SEO title mapping..."
+                    placeholder="Enter tag label..."
+                    value={newTagInput}
+                    onChange={(e) => setNewTagInput(e.target.value)}
+                    className="flex-1 px-3 py-1.5 border border-slate-200 dark:border-white/10 text-xs bg-slate-50 dark:bg-slate-950 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:border-gold"
                   />
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center text-[10px] mb-1">
-                    <span className="text-lightgrey uppercase font-bold text-[9px]">META DESCRIPTION</span>
-                    <span className={`${(editedArticle.seoDescription || '').length > 160 ? 'text-red-500' : 'text-gold'} font-bold`}>
-                      {(editedArticle.seoDescription || '').length}/160
-                    </span>
-                  </div>
-                  <textarea
-                    rows={2}
-                    value={editedArticle.seoDescription || ''}
-                    onChange={(e) => updateField('seoDescription', e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs rounded bg-offwhite border focus:outline-none leading-relaxed"
-                    placeholder="SEO description paragraph..."
-                  />
-                </div>
+                  <button
+                    type="submit"
+                    className="px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-gray-300 text-[11px] font-bold rounded-xl uppercase transition-colors"
+                  >
+                    Add
+                  </button>
+                </form>
               </div>
 
             </aside>

@@ -81,9 +81,13 @@ export default function Footer() {
               <Mail size={12} className="text-gold" />
               Contact
             </button>
-            {isAdmin && (
-              <a href="#/admin" className="hover:text-gold transition-colors font-semibold">
+            {isAdmin ? (
+              <a id="footer-admin-link" href="#/admin" className="hover:text-gold transition-colors font-semibold">
                 Author Workroom
+              </a>
+            ) : (
+              <a id="footer-admin-login-link" href="#/admin/login" className="hover:text-gold transition-colors font-semibold">
+                Admin Login
               </a>
             )}
           </nav>
