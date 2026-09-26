@@ -850,7 +850,7 @@ export default function AdminDashboard() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setContentModal(activeTab)}
+                    onClick={() => setContentModal(activeTab === 'topics' ? 'topic' : activeTab === 'paths' ? 'path' : 'resource')}
                     className="inline-flex w-fit shrink-0 items-center gap-1.5 rounded bg-navy px-3 py-2 text-[11px] font-bold tracking-wider text-white hover:bg-navy/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 dark:bg-gold dark:text-slate-950"
                   >
                     <Plus size={13} aria-hidden="true" />
@@ -1015,12 +1015,27 @@ export default function AdminDashboard() {
       </div>
 
       {contentModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-lg overflow-hidden rounded-xl border border-black/10 bg-white text-nearblack shadow-2xl dark:border-white/10 dark:bg-slate-900 dark:text-white">
+        <div
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm animate-fade-in"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeContentModal();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') closeContentModal();
+          }}
+          role="presentation"
+        >
+          <div
+            className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto overscroll-contain rounded-xl border border-black/10 bg-white text-nearblack shadow-2xl dark:border-white/10 dark:bg-slate-900 dark:text-white"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="content-modal-title"
+            tabIndex={-1}
+          >
             <div className="flex items-center justify-between border-b border-black/5 p-5 dark:border-white/5">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-gold">{getTranslatedText('Create Public Content', 'የህዝብ ይዘት ይፍጠሩ')}</p>
-                <h2 className="mt-1 font-serif text-lg font-bold">
+                <h2 id="content-modal-title" className="mt-1 font-serif text-lg font-bold">
                   {contentModal === 'topic' && getTranslatedText('Add Topic', 'ርዕስ ይጨምሩ')}
                   {contentModal === 'path' && getTranslatedText('Add Learning Path', 'የጥናት መንገድ ይጨምሩ')}
                   {contentModal === 'resource' && getTranslatedText('Add Resource', 'ግብዓት ይጨምሩ')}
