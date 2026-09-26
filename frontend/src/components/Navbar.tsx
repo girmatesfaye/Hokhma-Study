@@ -321,7 +321,7 @@ export default function Navbar() {
                     <div className="flex flex-wrap gap-2">
                       {topics.map((t) => (
                         <button
-                          key={t.id}
+                          key={t.slug}
                           onClick={() => {
                             navigateTo(`/topics/${t.slug}`);
                             setIsSearchOpen(false);
@@ -418,7 +418,7 @@ export default function Navbar() {
                       <div className="space-y-1.5">
                         {filteredTopics.slice(0, 3).map((t) => (
                           <button
-                            key={t.id}
+                            key={t.slug}
                             onClick={() => {
                               navigateTo(`/topics/${t.slug}`);
                               setIsSearchOpen(false);
