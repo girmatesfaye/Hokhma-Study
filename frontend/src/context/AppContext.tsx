@@ -35,6 +35,15 @@ interface AppContextType {
   addArticle: (article: Article) => void;
   updateArticle: (article: Article) => void;
   deleteArticle: (id: string) => void;
+  addTopic: (topic: Topic) => void;
+  updateTopic: (topic: Topic) => void;
+  deleteTopic: (slug: string) => void;
+  addPath: (path: LearningPath) => void;
+  updatePath: (path: LearningPath) => void;
+  deletePath: (slug: string) => void;
+  addResource: (resource: Resource) => void;
+  updateResource: (resource: Resource) => void;
+  deleteResource: (id: string) => void;
   addComment: (comment: Comment) => void;
   approveComment: (id: string) => void;
   deleteComment: (id: string) => void;
@@ -265,6 +274,42 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const addTopic = (newTopic: Topic) => {
+    setTopics((prev) => [newTopic, ...prev]);
+  };
+
+  const updateTopic = (updatedTopic: Topic) => {
+    setTopics((prev) => prev.map((topic) => (topic.slug === updatedTopic.slug ? updatedTopic : topic)));
+  };
+
+  const deleteTopic = (slug: string) => {
+    setTopics((prev) => prev.filter((topic) => topic.slug !== slug));
+  };
+
+  const addPath = (newPath: LearningPath) => {
+    setPaths((prev) => [newPath, ...prev]);
+  };
+
+  const updatePath = (updatedPath: LearningPath) => {
+    setPaths((prev) => prev.map((path) => (path.slug === updatedPath.slug ? updatedPath : path)));
+  };
+
+  const deletePath = (slug: string) => {
+    setPaths((prev) => prev.filter((path) => path.slug !== slug));
+  };
+
+  const addResource = (newResource: Resource) => {
+    setResources((prev) => [newResource, ...prev]);
+  };
+
+  const updateResource = (updatedResource: Resource) => {
+    setResources((prev) => prev.map((resource) => (resource.id === updatedResource.id ? updatedResource : resource)));
+  };
+
+  const deleteResource = (id: string) => {
+    setResources((prev) => prev.filter((resource) => resource.id !== id));
+  };
+
   const addComment = (newComment: Comment) => {
     setComments((prev) => [newComment, ...prev]);
   };
@@ -306,6 +351,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         addArticle,
         updateArticle,
         deleteArticle,
+        addTopic,
+        updateTopic,
+        deleteTopic,
+        addPath,
+        updatePath,
+        deletePath,
+        addResource,
+        updateResource,
+        deleteResource,
         addComment,
         approveComment,
         deleteComment,

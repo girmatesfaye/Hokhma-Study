@@ -6,8 +6,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
+import { AUTHOR_BIO, STATEMENT_OF_FAITH } from '../data';
 import DifficultyBadge from '../components/DifficultyBadge';
-import { Article, Question, Comment } from '../types';
+import { Article, Question, Comment, Difficulty, LearningPath, Resource, Topic } from '../types';
 import {
   Shield,
   LogOut,
@@ -47,13 +48,34 @@ export default function AdminDashboard() {
     deleteArticle,
     addArticle,
     addQuestion,
+    addTopic,
+    deleteTopic,
+    addPath,
+    deletePath,
+    addResource,
+    deleteResource,
     logoutAdmin,
     navigateTo,
     isAdmin
   } = useApp();
 
   const { language, getTranslatedText } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'articles' | 'questions' | 'comments' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<
+    | 'dashboard'
+    | 'articles'
+    | 'topics'
+    | 'paths'
+    | 'resources'
+    | 'questions'
+    | 'comments'
+    | 'profile'
+    | 'faith'
+    | 'navigation'
+    | 'subscribers'
+    | 'inquiries'
+    | 'submissions'
+    | 'settings'
+  >('dashboard');
 
   // Modal map question state
   const [showMapQuestionModal, setShowMapQuestionModal] = useState(false);
@@ -65,6 +87,10 @@ export default function AdminDashboard() {
     articleSlug: ''
   });
   const [mapSuccess, setMapSuccess] = useState(false);
+  const [contentModal, setContentModal] = useState<'topic' | 'path' | 'resource' | null>(null);
+  const [topicForm, setTopicForm] = useState({ name: '', description: '', icon: 'Compass' });
+  const [pathForm, setPathForm] = useState({ title: '', description: '', goal: '', articleSlugs: '' });
+  const [resourceForm, setResourceForm] = useState({ title: '', category: 'Books' as Resource['category'], author: '', description: '', link: '' });
 
   // If unauthorized, redirect to login
   if (!isAdmin) {
@@ -152,6 +178,57 @@ export default function AdminDashboard() {
         });
       }, 1500);
     }
+  };
+
+  const closeContentModal = () => {
+    setContentModal(null);
+    setTopicForm({ name: '', description: '', icon: 'Compass' });
+    setPathForm({ title: '', description: '', goal: '', articleSlugs: '' });
+    setResourceForm({ title: '', category: 'Books', author: '', description: '', link: '' });
+  };
+
+  const handleContentCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    const slugify = (value: string) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    if (contentModal === 'topic' && topicForm.name.trim()) {
+      addTopic({
+        slug: slugify(topicForm.name),
+        name: topicForm.name.trim(),
+        description: topicForm.description.trim(),
+        articleCount: 0,
+        icon: topicForm.icon.trim() || 'Compass',
+      });
+    }
+
+    if (contentModal === 'path' && pathForm.title.trim()) {
+      const articleSlugs = pathForm.articleSlugs.split(',').map((slug) => slug.trim()).filter(Boolean);
+      const totalReadingTime = articleSlugs.reduce((total, slug) => total + (articles.find((article) => article.slug === slug)?.readingTime || 0), 0);
+      const newPath: LearningPath = {
+        slug: slugify(pathForm.title),
+        title: pathForm.title.trim(),
+        description: pathForm.description.trim(),
+        goal: pathForm.goal.trim(),
+        articleCount: articleSlugs.length,
+        difficultyRange: 'Beginner to Deep Dive',
+        totalReadingTime,
+        articleSlugs,
+      };
+      addPath(newPath);
+    }
+
+    if (contentModal === 'resource' && resourceForm.title.trim() && resourceForm.link.trim()) {
+      addResource({
+        id: `resource-${Date.now()}`,
+        category: resourceForm.category,
+        title: resourceForm.title.trim(),
+        author: resourceForm.author.trim(),
+        description: resourceForm.description.trim(),
+        link: resourceForm.link.trim(),
+      });
+    }
+
+    closeContentModal();
   };
 
   // Reset database helper (clears custom edit localStorage to defaults)
@@ -279,6 +356,28 @@ export default function AdminDashboard() {
                 <span>{getTranslatedText('Questions Mapped', 'የተያያዙ ጥያቄዎች')} ({questions.length})</span>
               </button>
 
+              {[
+                { id: 'topics' as const, icon: Compass, label: 'Topics', count: topics.length },
+                { id: 'paths' as const, icon: Route, label: 'Learning Paths', count: paths.length },
+                { id: 'resources' as const, icon: BookOpen, label: 'Resources', count: resources.length },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full text-left py-2.5 px-3.5 rounded-lg text-xs font-bold tracking-wider transition-all flex items-center gap-2.5 cursor-pointer ${
+                      activeTab === item.id
+                        ? 'bg-navy text-white dark:bg-gold dark:text-slate-950'
+                        : 'text-mediumgrey hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <Icon size={15} aria-hidden="true" />
+                    <span>{getTranslatedText(item.label, item.label)} ({item.count})</span>
+                  </button>
+                );
+              })}
+
               {/* Comments */}
               <button
                 onClick={() => setActiveTab('comments')}
@@ -291,6 +390,31 @@ export default function AdminDashboard() {
                 <MessageSquare size={15} />
                 <span>{getTranslatedText('Pending Comments', 'ያልጸደቁ አስተያየቶች')} ({comments.filter((c) => !c.isApproved).length})</span>
               </button>
+
+              {[
+                { id: 'profile' as const, icon: Users, label: 'Author Profile' },
+                { id: 'faith' as const, icon: Shield, label: 'Statement Of Faith' },
+                { id: 'navigation' as const, icon: Globe, label: 'Navigation Content' },
+                { id: 'subscribers' as const, icon: Users, label: 'Newsletter Subscribers' },
+                { id: 'inquiries' as const, icon: MessageSquare, label: 'Contact Messages' },
+                { id: 'submissions' as const, icon: HelpCircle, label: 'Question Submissions' },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full text-left py-2.5 px-3.5 rounded-lg text-xs font-bold tracking-wider transition-all flex items-center gap-2.5 cursor-pointer ${
+                      activeTab === item.id
+                        ? 'bg-navy text-white dark:bg-gold dark:text-slate-950'
+                        : 'text-mediumgrey hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <Icon size={15} aria-hidden="true" />
+                    <span>{getTranslatedText(item.label, item.label)}</span>
+                  </button>
+                );
+              })}
 
               {/* Settings */}
               <button
@@ -709,6 +833,148 @@ export default function AdminDashboard() {
               </div>
             )}
 
+            {(activeTab === 'topics' || activeTab === 'paths' || activeTab === 'resources') && (
+              <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-5 animate-fade-in font-sans">
+                <div className="flex flex-col gap-3 border-b border-black/5 pb-3 dark:border-white/5 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-1">
+                    <h2 className="font-serif text-base font-bold text-nearblack dark:text-white">
+                      {activeTab === 'topics' && getTranslatedText('Topics Library', 'የርዕሶች ቤተ-መጻሕፍት')}
+                      {activeTab === 'paths' && getTranslatedText('Learning Path Library', 'የጥናት መንገዶች ቤተ-መጻሕፍት')}
+                      {activeTab === 'resources' && getTranslatedText('Recommended Resources', 'የሚመከሩ ግብዓቶች')}
+                    </h2>
+                    <p className="text-xs leading-relaxed text-mediumgrey dark:text-gray-400">
+                    {getTranslatedText(
+                      'These records are currently loaded from the local content catalog. Backend editing controls will persist changes for all readers.',
+                      'እነዚህ መዝገቦች አሁን ከአካባቢያዊ የይዘት ማውጫ ይጫናሉ። የኋላ ክፍል ማስተካከያ ቁጥጥሮች ለሁሉም አንባቢዎች ለውጦችን ያስቀምጣሉ።'
+                    )}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setContentModal(activeTab)}
+                    className="inline-flex w-fit shrink-0 items-center gap-1.5 rounded bg-navy px-3 py-2 text-[11px] font-bold tracking-wider text-white hover:bg-navy/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 dark:bg-gold dark:text-slate-950"
+                  >
+                    <Plus size={13} aria-hidden="true" />
+                    {getTranslatedText('Add New', 'አዲስ ጨምር')}
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {activeTab === 'topics' && topics.map((topic) => (
+                    <div key={topic.slug} className="flex flex-col gap-2 rounded-lg border border-black/5 p-4 dark:border-white/5 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 className="font-serif font-bold text-nearblack dark:text-white">{getTranslatedText(topic.name, topic.nameAm)}</h3>
+                        <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{topic.articleCount} {getTranslatedText('articles', 'ጽሑፎች')}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => navigateTo(`/topics/${topic.slug}`)} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('View Topic', 'ርዕሱን ይመልከቱ')}</button>
+                        <button onClick={() => { if (confirm(`Delete topic "${topic.name}"?`)) deleteTopic(topic.slug); }} className="text-xs font-bold text-rose-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60">{getTranslatedText('Delete', 'ሰርዝ')}</button>
+                      </div>
+                    </div>
+                  ))}
+                  {activeTab === 'paths' && paths.map((path) => (
+                    <div key={path.slug} className="flex flex-col gap-2 rounded-lg border border-black/5 p-4 dark:border-white/5 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 className="font-serif font-bold text-nearblack dark:text-white">{getTranslatedText(path.title, path.titleAm)}</h3>
+                        <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{path.articleCount} {getTranslatedText('steps', 'ደረጃዎች')} · {path.totalReadingTime} {getTranslatedText('minutes', 'ደቂቃዎች')}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => navigateTo(`/paths/${path.slug}`)} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('View Path', 'መንገዱን ይመልከቱ')}</button>
+                        <button onClick={() => { if (confirm(`Delete learning path "${path.title}"?`)) deletePath(path.slug); }} className="text-xs font-bold text-rose-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60">{getTranslatedText('Delete', 'ሰርዝ')}</button>
+                      </div>
+                    </div>
+                  ))}
+                  {activeTab === 'resources' && resources.map((resource) => (
+                    <div key={resource.id} className="flex flex-col gap-2 rounded-lg border border-black/5 p-4 dark:border-white/5 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 className="font-serif font-bold text-nearblack dark:text-white">{getTranslatedText(resource.title, resource.titleAm)}</h3>
+                        <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{resource.category} · {getTranslatedText(resource.author, resource.authorAm)}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <a href={resource.link} target="_blank" rel="noreferrer" className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('Open Resource', 'ግብዓቱን ይክፈቱ')}</a>
+                        <button onClick={() => { if (confirm(`Delete resource "${resource.title}"?`)) deleteResource(resource.id); }} className="text-xs font-bold text-rose-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60">{getTranslatedText('Delete', 'ሰርዝ')}</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'profile' && (
+              <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-5 animate-fade-in font-sans">
+                <div className="border-b border-black/5 pb-3 dark:border-white/5">
+                  <h2 className="font-serif text-base font-bold text-nearblack dark:text-white">{getTranslatedText('Author Profile', 'የጸሐፊ መገለጫ')}</h2>
+                  <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{getTranslatedText('This profile powers the public About page and footer.', 'ይህ መገለጫ የህዝብ ስለ ገጽንና ግርጌን ያስኬዳል።')}</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {[
+                    ['Name', AUTHOR_BIO.name],
+                    ['Role', AUTHOR_BIO.role],
+                    ['Email', AUTHOR_BIO.email],
+                    ['Tagline', AUTHOR_BIO.tagline],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-lg border border-black/5 p-4 dark:border-white/5">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-mediumgrey dark:text-gray-400">{label}</p>
+                      <p className="mt-2 text-sm font-semibold text-nearblack dark:text-white break-words">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="rounded-lg border border-dashed border-gold/50 bg-gold/5 p-4 text-xs leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText('Editing is visible here, but persistence is still local until the backend content settings are connected.', 'ማስተካከያ እዚህ ይታያል፤ የኋላ ክፍል የይዘት ቅንብሮች እስኪገናኙ ድረስ ግን ማስቀመጥ አካባቢያዊ ነው።')}</div>
+              </div>
+            )}
+
+            {activeTab === 'faith' && (
+              <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-5 animate-fade-in font-sans">
+                <div className="border-b border-black/5 pb-3 dark:border-white/5">
+                  <h2 className="font-serif text-base font-bold text-nearblack dark:text-white">{getTranslatedText('Statement Of Faith', 'የእምነት መግለጫ')}</h2>
+                  <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{getTranslatedText('Review the doctrines currently displayed in the public footer and About page.', 'በህዝብ ግርጌና ስለ ገጽ ላይ የሚታዩትን እምነቶች ይመልከቱ።')}</p>
+                </div>
+                <div className="space-y-3">
+                  {STATEMENT_OF_FAITH.map((item) => (
+                    <div key={item.doctrine} className="rounded-lg border border-black/5 p-4 dark:border-white/5">
+                      <h3 className="font-serif font-bold text-nearblack dark:text-white">{item.doctrine}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{item.belief}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'navigation' && (
+              <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-5 animate-fade-in font-sans">
+                <div className="border-b border-black/5 pb-3 dark:border-white/5">
+                  <h2 className="font-serif text-base font-bold text-nearblack dark:text-white">{getTranslatedText('Navigation Content', 'የአሰሳ ይዘት')}</h2>
+                  <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{getTranslatedText('Public navigation currently uses these routes and labels.', 'የህዝብ አሰሳ አሁን እነዚህን መንገዶችና ስያሜዎች ይጠቀማል።')}</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    ['Home', '/'], ['Topics', '/topics'], ['Questions', '/questions'], ['Learning Paths', '/paths'], ['Resources', '/resources'], ['About', '/about'],
+                  ].map(([label, route]) => (
+                    <div key={route} className="flex items-center justify-between rounded-lg border border-black/5 p-4 dark:border-white/5">
+                      <span className="text-sm font-semibold text-nearblack dark:text-white">{label}</span>
+                      <span className="font-mono text-xs text-mediumgrey dark:text-gray-400">{route}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(activeTab === 'subscribers' || activeTab === 'inquiries' || activeTab === 'submissions') && (
+              <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-5 animate-fade-in font-sans">
+                <div className="border-b border-black/5 pb-3 dark:border-white/5">
+                  <h2 className="font-serif text-base font-bold text-nearblack dark:text-white">
+                    {activeTab === 'subscribers' && getTranslatedText('Newsletter Subscribers', 'የጋዜጣ ተመዝጋቢዎች')}
+                    {activeTab === 'inquiries' && getTranslatedText('Contact Messages', 'የግንኙነት መልዕክቶች')}
+                    {activeTab === 'submissions' && getTranslatedText('Public Question Submissions', 'የህዝብ ጥያቄ ማስገቢያዎች')}
+                  </h2>
+                  <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{getTranslatedText('This queue is ready for backend records, moderation, and export controls.', 'ይህ ወረፋ ለኋላ ክፍል መዝገቦች፣ ለግምገማና ለማውጫ ቁጥጥሮች ዝግጁ ነው።')}</p>
+                </div>
+                <div className="rounded-xl border border-dashed border-black/10 bg-slate-50 p-8 text-center dark:border-white/10 dark:bg-slate-950/40">
+                  <MessageSquare className="mx-auto h-8 w-8 text-gold" aria-hidden="true" />
+                  <h3 className="mt-3 font-serif font-bold text-nearblack dark:text-white">{getTranslatedText('No Backend Records Yet', 'እስካሁን የኋላ ክፍል መዝገብ የለም')}</h3>
+                  <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-mediumgrey dark:text-gray-400">{getTranslatedText('The public form currently shows a confirmation locally. Connect the backend queue to receive, review, and manage real submissions here.', 'የህዝብ ቅጹ አሁን በአካባቢው ማረጋገጫ ብቻ ያሳያል። እውነተኛ ማስገቢያዎችን ለመቀበልና ለመቆጣጠር የኋላ ክፍል ወረፋውን ያገናኙ።')}</p>
+                </div>
+              </div>
+            )}
+
             {/* Tab: System settings */}
             {activeTab === 'settings' && (
               <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-6 animate-fade-in font-sans text-xs">
@@ -747,6 +1013,62 @@ export default function AdminDashboard() {
         </div>
 
       </div>
+
+      {contentModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-lg overflow-hidden rounded-xl border border-black/10 bg-white text-nearblack shadow-2xl dark:border-white/10 dark:bg-slate-900 dark:text-white">
+            <div className="flex items-center justify-between border-b border-black/5 p-5 dark:border-white/5">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gold">{getTranslatedText('Create Public Content', 'የህዝብ ይዘት ይፍጠሩ')}</p>
+                <h2 className="mt-1 font-serif text-lg font-bold">
+                  {contentModal === 'topic' && getTranslatedText('Add Topic', 'ርዕስ ይጨምሩ')}
+                  {contentModal === 'path' && getTranslatedText('Add Learning Path', 'የጥናት መንገድ ይጨምሩ')}
+                  {contentModal === 'resource' && getTranslatedText('Add Resource', 'ግብዓት ይጨምሩ')}
+                </h2>
+              </div>
+              <button onClick={closeContentModal} aria-label="Close dialog" className="rounded-full p-1.5 text-mediumgrey hover:bg-black/5 hover:text-nearblack focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 dark:hover:bg-white/5 dark:hover:text-white">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleContentCreate} className="space-y-4 p-5 text-xs">
+              {contentModal === 'topic' && (
+                <>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Topic Name', 'የርዕስ ስም')}</span><input required value={topicForm.name} onChange={(e) => setTopicForm({ ...topicForm, name: e.target.value })} placeholder="E.g., Biblical Archaeology…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Description', 'መግለጫ')}</span><textarea required value={topicForm.description} onChange={(e) => setTopicForm({ ...topicForm, description: e.target.value })} rows={3} placeholder="Describe what readers will study…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Lucide Icon Name', 'የአይኮን ስም')}</span><input value={topicForm.icon} onChange={(e) => setTopicForm({ ...topicForm, icon: e.target.value })} placeholder="Compass" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                </>
+              )}
+
+              {contentModal === 'path' && (
+                <>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Path Title', 'የመንገድ ርዕስ')}</span><input required value={pathForm.title} onChange={(e) => setPathForm({ ...pathForm, title: e.target.value })} placeholder="E.g., Foundations Of Faith…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Description', 'መግለጫ')}</span><textarea required value={pathForm.description} onChange={(e) => setPathForm({ ...pathForm, description: e.target.value })} rows={2} placeholder="Describe the learning journey…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Learning Goal', 'የጥናት ግብ')}</span><textarea required value={pathForm.goal} onChange={(e) => setPathForm({ ...pathForm, goal: e.target.value })} rows={2} placeholder="What will readers understand by the end?…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Article Slugs, Comma Separated', 'የጽሑፍ ስሞች በኮማ የተለዩ')}</span><input value={pathForm.articleSlugs} onChange={(e) => setPathForm({ ...pathForm, articleSlugs: e.target.value })} placeholder="cosmological-fine-tuning, the-moral-argument…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                </>
+              )}
+
+              {contentModal === 'resource' && (
+                <>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Resource Title', 'የግብዓት ርዕስ')}</span><input required value={resourceForm.title} onChange={(e) => setResourceForm({ ...resourceForm, title: e.target.value })} placeholder="E.g., The Reason For God…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Category', 'ምድብ')}</span><select value={resourceForm.category} onChange={(e) => setResourceForm({ ...resourceForm, category: e.target.value as Resource['category'] })} className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10"><option>Books</option><option>Websites</option><option>Podcasts</option><option>Videos</option></select></label>
+                    <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Author', 'ደራሲ')}</span><input required value={resourceForm.author} onChange={(e) => setResourceForm({ ...resourceForm, author: e.target.value })} placeholder="Author or organization…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  </div>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Description', 'መግለጫ')}</span><textarea required value={resourceForm.description} onChange={(e) => setResourceForm({ ...resourceForm, description: e.target.value })} rows={3} placeholder="Explain why readers should explore it…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">URL</span><input required type="url" value={resourceForm.link} onChange={(e) => setResourceForm({ ...resourceForm, link: e.target.value })} placeholder="https://example.org…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                </>
+              )}
+
+              <div className="flex justify-end gap-3 border-t border-black/5 pt-4 dark:border-white/5">
+                <button type="button" onClick={closeContentModal} className="rounded border border-black/10 px-4 py-2 font-bold dark:border-white/10">{getTranslatedText('Cancel', 'ይቅር')}</button>
+                <button type="submit" className="rounded bg-navy px-4 py-2 font-bold text-white dark:bg-gold dark:text-slate-950">{getTranslatedText('Create Content', 'ይዘት ይፍጠሩ')}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* MODAL: MAP OBJECTION / QUESTION OVERLAY */}
       {showMapQuestionModal && (
