@@ -49,10 +49,13 @@ export default function AdminDashboard() {
     addArticle,
     addQuestion,
     addTopic,
+    updateTopic,
     deleteTopic,
     addPath,
+    updatePath,
     deletePath,
     addResource,
+    updateResource,
     deleteResource,
     logoutAdmin,
     navigateTo,
@@ -88,6 +91,8 @@ export default function AdminDashboard() {
   });
   const [mapSuccess, setMapSuccess] = useState(false);
   const [contentModal, setContentModal] = useState<'topic' | 'path' | 'resource' | null>(null);
+  const [editingContentId, setEditingContentId] = useState<string | null>(null);
+  const [detailContent, setDetailContent] = useState<{ type: 'topic' | 'path' | 'resource'; id: string } | null>(null);
   const [topicForm, setTopicForm] = useState({ name: '', description: '', icon: 'Compass' });
   const [pathForm, setPathForm] = useState({ title: '', description: '', goal: '', articleSlugs: '' });
   const [resourceForm, setResourceForm] = useState({ title: '', category: 'Books' as Resource['category'], author: '', description: '', link: '' });
@@ -182,6 +187,7 @@ export default function AdminDashboard() {
 
   const closeContentModal = () => {
     setContentModal(null);
+    setEditingContentId(null);
     setTopicForm({ name: '', description: '', icon: 'Compass' });
     setPathForm({ title: '', description: '', goal: '', articleSlugs: '' });
     setResourceForm({ title: '', category: 'Books', author: '', description: '', link: '' });
@@ -192,20 +198,24 @@ export default function AdminDashboard() {
     const slugify = (value: string) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
     if (contentModal === 'topic' && topicForm.name.trim()) {
-      addTopic({
-        slug: slugify(topicForm.name),
+      const currentTopic = editingContentId ? topics.find((topic) => topic.slug === editingContentId) : undefined;
+      const topic: Topic = {
+        slug: currentTopic?.slug || slugify(topicForm.name),
         name: topicForm.name.trim(),
         description: topicForm.description.trim(),
-        articleCount: 0,
+        articleCount: currentTopic?.articleCount || 0,
         icon: topicForm.icon.trim() || 'Compass',
-      });
+      };
+      if (editingContentId) updateTopic(topic);
+      else addTopic(topic);
     }
 
     if (contentModal === 'path' && pathForm.title.trim()) {
       const articleSlugs = pathForm.articleSlugs.split(',').map((slug) => slug.trim()).filter(Boolean);
       const totalReadingTime = articleSlugs.reduce((total, slug) => total + (articles.find((article) => article.slug === slug)?.readingTime || 0), 0);
+      const currentPath = editingContentId ? paths.find((path) => path.slug === editingContentId) : undefined;
       const newPath: LearningPath = {
-        slug: slugify(pathForm.title),
+        slug: currentPath?.slug || slugify(pathForm.title),
         title: pathForm.title.trim(),
         description: pathForm.description.trim(),
         goal: pathForm.goal.trim(),
@@ -214,22 +224,45 @@ export default function AdminDashboard() {
         totalReadingTime,
         articleSlugs,
       };
-      addPath(newPath);
+      if (editingContentId) updatePath(newPath);
+      else addPath(newPath);
     }
 
     if (contentModal === 'resource' && resourceForm.title.trim() && resourceForm.link.trim()) {
-      addResource({
-        id: `resource-${Date.now()}`,
+      const resource: Resource = {
+        id: editingContentId || `resource-${Date.now()}`,
         category: resourceForm.category,
         title: resourceForm.title.trim(),
         author: resourceForm.author.trim(),
         description: resourceForm.description.trim(),
         link: resourceForm.link.trim(),
-      });
+      };
+      if (editingContentId) updateResource(resource);
+      else addResource(resource);
     }
 
     closeContentModal();
   };
+
+  const openTopicEditor = (topic: Topic) => {
+    setEditingContentId(topic.slug);
+    setTopicForm({ name: topic.name, description: topic.description, icon: topic.icon });
+    setContentModal('topic');
+  };
+
+  const openPathEditor = (path: LearningPath) => {
+    setEditingContentId(path.slug);
+    setPathForm({ title: path.title, description: path.description, goal: path.goal, articleSlugs: path.articleSlugs.join(', ') });
+    setContentModal('path');
+  };
+
+  const openResourceEditor = (resource: Resource) => {
+    setEditingContentId(resource.id);
+    setResourceForm({ title: resource.title, category: resource.category, author: resource.author, description: resource.description, link: resource.link });
+    setContentModal('resource');
+  };
+
+  const closeContentDetail = () => setDetailContent(null);
 
   // Reset database helper (clears custom edit localStorage to defaults)
   const handleResetDatabase = () => {
@@ -865,7 +898,7 @@ export default function AdminDashboard() {
                         <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{topic.articleCount} {getTranslatedText('articles', 'ጽሑፎች')}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <button onClick={() => navigateTo(`/topics/${topic.slug}`)} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('View Topic', 'ርዕሱን ይመልከቱ')}</button>
+                        <button onClick={() => openTopicEditor(topic)} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('Edit Topic', 'ርዕሱን ያስተካክሉ')}</button>
                         <button onClick={() => { if (confirm(`Delete topic "${topic.name}"?`)) deleteTopic(topic.slug); }} className="text-xs font-bold text-rose-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60">{getTranslatedText('Delete', 'ሰርዝ')}</button>
                       </div>
                     </div>
@@ -877,7 +910,7 @@ export default function AdminDashboard() {
                         <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{path.articleCount} {getTranslatedText('steps', 'ደረጃዎች')} · {path.totalReadingTime} {getTranslatedText('minutes', 'ደቂቃዎች')}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <button onClick={() => navigateTo(`/paths/${path.slug}`)} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('View Path', 'መንገዱን ይመልከቱ')}</button>
+                        <button onClick={() => openPathEditor(path)} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('Edit Path', 'መንገዱን ያስተካክሉ')}</button>
                         <button onClick={() => { if (confirm(`Delete learning path "${path.title}"?`)) deletePath(path.slug); }} className="text-xs font-bold text-rose-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60">{getTranslatedText('Delete', 'ሰርዝ')}</button>
                       </div>
                     </div>
@@ -889,7 +922,7 @@ export default function AdminDashboard() {
                         <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{resource.category} · {getTranslatedText(resource.author, resource.authorAm)}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <a href={resource.link} target="_blank" rel="noreferrer" className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('Open Resource', 'ግብዓቱን ይክፈቱ')}</a>
+                        <button onClick={() => openResourceEditor(resource)} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('Edit Resource', 'ግብዓቱን ያስተካክሉ')}</button>
                         <button onClick={() => { if (confirm(`Delete resource "${resource.title}"?`)) deleteResource(resource.id); }} className="text-xs font-bold text-rose-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60">{getTranslatedText('Delete', 'ሰርዝ')}</button>
                       </div>
                     </div>
@@ -1034,11 +1067,11 @@ export default function AdminDashboard() {
           >
             <div className="flex items-center justify-between border-b border-black/5 p-5 dark:border-white/5">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gold">{getTranslatedText('Create Public Content', 'የህዝብ ይዘት ይፍጠሩ')}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gold">{getTranslatedText(editingContentId ? 'Update Public Content' : 'Create Public Content', editingContentId ? 'የህዝብ ይዘት ያዘምኑ' : 'የህዝብ ይዘት ይፍጠሩ')}</p>
                 <h2 id="content-modal-title" className="mt-1 font-serif text-lg font-bold">
-                  {contentModal === 'topic' && getTranslatedText('Add Topic', 'ርዕስ ይጨምሩ')}
-                  {contentModal === 'path' && getTranslatedText('Add Learning Path', 'የጥናት መንገድ ይጨምሩ')}
-                  {contentModal === 'resource' && getTranslatedText('Add Resource', 'ግብዓት ይጨምሩ')}
+                  {contentModal === 'topic' && getTranslatedText(editingContentId ? 'Update Topic' : 'Add Topic', editingContentId ? 'ርዕስ ያዘምኑ' : 'ርዕስ ይጨምሩ')}
+                  {contentModal === 'path' && getTranslatedText(editingContentId ? 'Update Learning Path' : 'Add Learning Path', editingContentId ? 'የጥናት መንገድ ያዘምኑ' : 'የጥናት መንገድ ይጨምሩ')}
+                  {contentModal === 'resource' && getTranslatedText(editingContentId ? 'Update Resource' : 'Add Resource', editingContentId ? 'ግብዓት ያዘምኑ' : 'ግብዓት ይጨምሩ')}
                 </h2>
               </div>
               <button onClick={closeContentModal} aria-label="Close dialog" className="rounded-full p-1.5 text-mediumgrey hover:bg-black/5 hover:text-nearblack focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 dark:hover:bg-white/5 dark:hover:text-white">
@@ -1078,7 +1111,7 @@ export default function AdminDashboard() {
 
               <div className="flex justify-end gap-3 border-t border-black/5 pt-4 dark:border-white/5">
                 <button type="button" onClick={closeContentModal} className="rounded border border-black/10 px-4 py-2 font-bold dark:border-white/10">{getTranslatedText('Cancel', 'ይቅር')}</button>
-                <button type="submit" className="rounded bg-navy px-4 py-2 font-bold text-white dark:bg-gold dark:text-slate-950">{getTranslatedText('Create Content', 'ይዘት ይፍጠሩ')}</button>
+                <button type="submit" className="rounded bg-navy px-4 py-2 font-bold text-white dark:bg-gold dark:text-slate-950">{getTranslatedText(editingContentId ? 'Save Updates' : 'Create Content', editingContentId ? 'ማሻሻያዎችን አስቀምጥ' : 'ይዘት ይፍጠሩ')}</button>
               </div>
             </form>
           </div>
