@@ -890,7 +890,64 @@ export default function AdminDashboard() {
                     {getTranslatedText('Add New', 'አዲስ ጨምር')}
                   </button>
                 </div>
-                <div className="space-y-3">
+                {detailContent && (
+                  <div className="rounded-xl border border-gold/30 bg-gold/5 p-5 dark:bg-gold/10">
+                    <div className="flex items-start justify-between gap-4 border-b border-gold/20 pb-4">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-gold">{getTranslatedText('Content Detail', 'የይዘት ዝርዝር')}</p>
+                        <h3 className="mt-1 font-serif text-xl font-bold text-nearblack dark:text-white">
+                          {detailContent.type === 'topic' && topics.find((topic) => topic.slug === detailContent.id)?.name}
+                          {detailContent.type === 'path' && paths.find((path) => path.slug === detailContent.id)?.title}
+                          {detailContent.type === 'resource' && resources.find((resource) => resource.id === detailContent.id)?.title}
+                        </h3>
+                      </div>
+                      <button onClick={closeContentDetail} className="rounded border border-black/10 px-3 py-1.5 text-xs font-bold text-mediumgrey hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 dark:border-white/10 dark:hover:bg-slate-800">{getTranslatedText('Back To List', 'ወደ ዝርዝሩ ተመለስ')}</button>
+                    </div>
+
+                    {detailContent.type === 'topic' && (() => {
+                      const topic = topics.find((item) => item.slug === detailContent.id);
+                      const topicArticles = articles.filter((article) => article.topicSlug === detailContent.id);
+                      if (!topic) return null;
+                      return (
+                        <div className="mt-4 space-y-4">
+                          <p className="text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText(topic.description, topic.descriptionAm)}</p>
+                          <div>
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-nearblack dark:text-white">{getTranslatedText('Articles In This Topic', 'በዚህ ርዕስ ውስጥ ያሉ ጽሑፎች')} ({topicArticles.length})</h4>
+                            <div className="mt-3 space-y-2">
+                              {topicArticles.length > 0 ? topicArticles.map((article) => (
+                                <div key={article.id} className="flex items-center justify-between gap-3 rounded-lg border border-black/5 bg-white p-3 dark:border-white/5 dark:bg-slate-900">
+                                  <div className="min-w-0"><p className="truncate text-sm font-semibold text-nearblack dark:text-white">{getTranslatedText(article.title, article.titleAm)}</p><p className="mt-1 text-[11px] text-mediumgrey dark:text-gray-400">{article.isPublished ? getTranslatedText('Published', 'የታተመ') : getTranslatedText('Draft', 'ረቂቅ')} · {article.readingTime} min</p></div>
+                                  <button onClick={() => navigateTo(`/admin/articles/${article.id}/edit`)} className="shrink-0 text-xs font-bold text-gold hover:underline">{getTranslatedText('Edit Article', 'ጽሑፉን ያስተካክሉ')}</button>
+                                </div>
+                              )) : <p className="rounded-lg border border-dashed border-black/10 p-4 text-xs text-mediumgrey dark:border-white/10">{getTranslatedText('No articles are assigned to this topic yet.', 'እስካሁን ምንም ጽሑፍ ከዚህ ርዕስ ጋር አልተመደበም።')}</p>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {detailContent.type === 'path' && (() => {
+                      const path = paths.find((item) => item.slug === detailContent.id);
+                      if (!path) return null;
+                      const pathArticles = path.articleSlugs.map((slug) => articles.find((article) => article.slug === slug)).filter(Boolean) as Article[];
+                      return (
+                        <div className="mt-4 space-y-4">
+                          <p className="text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText(path.description, path.descriptionAm)}</p>
+                          <div className="rounded-lg border border-black/5 bg-white p-4 dark:border-white/5 dark:bg-slate-900"><p className="text-[10px] font-bold uppercase tracking-wider text-gold">{getTranslatedText('Learning Goal', 'የጥናት ግብ')}</p><p className="mt-2 text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText(path.goal, path.goalAm)}</p></div>
+                          <div><h4 className="text-xs font-bold uppercase tracking-wider text-nearblack dark:text-white">{getTranslatedText('Articles In This Path', 'በዚህ መንገድ ውስጥ ያሉ ጽሑፎች')} ({pathArticles.length})</h4><div className="mt-3 space-y-2">{pathArticles.map((article, index) => <div key={article.id} className="flex items-center justify-between gap-3 rounded-lg border border-black/5 bg-white p-3 dark:border-white/5 dark:bg-slate-900"><div className="flex min-w-0 items-center gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold/10 text-xs font-bold text-gold">{index + 1}</span><p className="truncate text-sm font-semibold text-nearblack dark:text-white">{getTranslatedText(article.title, article.titleAm)}</p></div><button onClick={() => navigateTo(`/admin/articles/${article.id}/edit`)} className="shrink-0 text-xs font-bold text-gold hover:underline">{getTranslatedText('Edit Article', 'ጽሑፉን ያስተካክሉ')}</button></div>)}</div></div>
+                        </div>
+                      );
+                    })()}
+
+                    {detailContent.type === 'resource' && (() => {
+                      const resource = resources.find((item) => item.id === detailContent.id);
+                      if (!resource) return null;
+                      return <div className="mt-4 space-y-4"><p className="text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText(resource.description, resource.descriptionAm)}</p><p className="text-xs text-mediumgrey dark:text-gray-400">{getTranslatedText('Author', 'ደራሲ')}: <strong className="text-nearblack dark:text-white">{getTranslatedText(resource.author, resource.authorAm)}</strong></p><a href={resource.link} target="_blank" rel="noreferrer" className="inline-flex text-xs font-bold text-gold underline-offset-4 hover:underline">{getTranslatedText('Open External Resource', 'ውጫዊ ግብዓቱን ይክፈቱ')} ↗</a></div>;
+                    })()}
+                  </div>
+                )}
+
+                {!detailContent && <div className="space-y-3">
                   {activeTab === 'topics' && topics.map((topic) => (
                     <div key={topic.slug} className="flex flex-col gap-2 rounded-lg border border-black/5 p-4 dark:border-white/5 sm:flex-row sm:items-center sm:justify-between">
                       <div>
@@ -898,6 +955,7 @@ export default function AdminDashboard() {
                         <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{topic.articleCount} {getTranslatedText('articles', 'ጽሑፎች')}</p>
                       </div>
                       <div className="flex items-center gap-3">
+                        <button onClick={() => setDetailContent({ type: 'topic', id: topic.slug })} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('View Details', 'ዝርዝሩን ይመልከቱ')}</button>
                         <button onClick={() => openTopicEditor(topic)} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('Edit Topic', 'ርዕሱን ያስተካክሉ')}</button>
                         <button onClick={() => { if (confirm(`Delete topic "${topic.name}"?`)) deleteTopic(topic.slug); }} className="text-xs font-bold text-rose-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60">{getTranslatedText('Delete', 'ሰርዝ')}</button>
                       </div>
@@ -910,6 +968,7 @@ export default function AdminDashboard() {
                         <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{path.articleCount} {getTranslatedText('steps', 'ደረጃዎች')} · {path.totalReadingTime} {getTranslatedText('minutes', 'ደቂቃዎች')}</p>
                       </div>
                       <div className="flex items-center gap-3">
+                        <button onClick={() => setDetailContent({ type: 'path', id: path.slug })} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('View Details', 'ዝርዝሩን ይመልከቱ')}</button>
                         <button onClick={() => openPathEditor(path)} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('Edit Path', 'መንገዱን ያስተካክሉ')}</button>
                         <button onClick={() => { if (confirm(`Delete learning path "${path.title}"?`)) deletePath(path.slug); }} className="text-xs font-bold text-rose-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60">{getTranslatedText('Delete', 'ሰርዝ')}</button>
                       </div>
@@ -922,12 +981,13 @@ export default function AdminDashboard() {
                         <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{resource.category} · {getTranslatedText(resource.author, resource.authorAm)}</p>
                       </div>
                       <div className="flex items-center gap-3">
+                        <button onClick={() => setDetailContent({ type: 'resource', id: resource.id })} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('View Details', 'ዝርዝሩን ይመልከቱ')}</button>
                         <button onClick={() => openResourceEditor(resource)} className="w-fit text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60">{getTranslatedText('Edit Resource', 'ግብዓቱን ያስተካክሉ')}</button>
                         <button onClick={() => { if (confirm(`Delete resource "${resource.title}"?`)) deleteResource(resource.id); }} className="text-xs font-bold text-rose-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/60">{getTranslatedText('Delete', 'ሰርዝ')}</button>
                       </div>
                     </div>
                   ))}
-                </div>
+                </div>}
               </div>
             )}
 
