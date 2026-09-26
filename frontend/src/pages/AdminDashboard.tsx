@@ -25,6 +25,8 @@ import {
   Globe,
   Plus,
   Compass,
+  BookOpen,
+  Route,
   Settings,
   X,
   RefreshCw,
@@ -39,6 +41,7 @@ export default function AdminDashboard() {
     comments,
     topics,
     paths,
+    resources,
     approveComment,
     deleteComment,
     deleteArticle,
@@ -175,6 +178,27 @@ export default function AdminDashboard() {
   return (
     <div id="admin-dashboard-page" className="animate-fade-in bg-slate-50 dark:bg-slate-950/20 min-h-screen py-10">
       <div className="max-w-[1140px] mx-auto px-4 md:px-6 space-y-8">
+
+        <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold font-sans">
+              {getTranslatedText('Private Author Workroom', 'የግል የጸሐፊ የሥራ ክፍል')}
+            </p>
+            <h1 className="mt-1 font-serif text-3xl font-bold tracking-tight text-nearblack dark:text-white text-balance">
+              {getTranslatedText('Content Command Center', 'የይዘት መቆጣጠሪያ ማዕከል')}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-mediumgrey dark:text-gray-400">
+              {getTranslatedText(
+                'Shape the articles, questions, and public study library that readers discover through Hokhma Study.',
+                'አንባቢዎች በሆክማ ጥናት የሚያገኙትን ጽሑፎች፣ ጥያቄዎችና የጥናት ቤተ-መጻሕፍት ያዘጋጁ።'
+              )}
+            </p>
+          </div>
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[11px] font-bold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
+            {getTranslatedText('Workspace Ready', 'የሥራ ቦታው ዝግጁ ነው')}
+          </span>
+        </div>
         
         {/* TOP BAR: Logo + Admin Label + Logout link */}
         <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 flex justify-between items-center shadow-sm">
@@ -214,7 +238,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* LEFT SIDEBAR NAVIGATION: Dashboard · Articles · Questions · Paths · Comments · Settings */}
-          <aside className="lg:col-span-3 space-y-4 font-sans">
+          <aside className="lg:col-span-3 space-y-4 font-sans lg:sticky lg:top-24 lg:self-start">
             <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-4 shadow-sm space-y-1">
               {/* Dashboard */}
               <button
@@ -329,6 +353,61 @@ export default function AdminDashboard() {
                     <strong className="text-2xl font-serif text-nearblack dark:text-white block">{metricNewsletterTotal}</strong>
                   </div>
                 </div>
+
+                <section className="space-y-4" aria-labelledby="content-inventory-heading">
+                  <div className="flex flex-col gap-1 border-b border-black/5 pb-3 dark:border-white/5">
+                    <h2 id="content-inventory-heading" className="font-serif text-lg font-bold text-nearblack dark:text-white">
+                      {getTranslatedText('Public Content Inventory', 'የህዝብ ይዘት ማውጫ')}
+                    </h2>
+                    <p className="text-xs leading-relaxed text-mediumgrey dark:text-gray-400">
+                      {getTranslatedText(
+                        'Keep the public learning library in view while you work on manuscripts and moderation.',
+                        'በጽሑፎችና በአስተያየቶች ላይ ሲሰሩ የህዝብ የጥናት ቤተ-መጻሕፍትን በእይታ ያቆዩ።'
+                      )}
+                    </p>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-slate-900">
+                      <Compass className="h-5 w-5 text-gold" aria-hidden="true" />
+                      <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-mediumgrey dark:text-gray-400">
+                        {getTranslatedText('Topics', 'ርዕሶች')}
+                      </p>
+                      <p className="mt-1 font-serif text-3xl font-bold text-nearblack dark:text-white">{topics.length}</p>
+                      <button
+                        onClick={() => navigateTo('/topics')}
+                        className="mt-4 text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+                      >
+                        {getTranslatedText('View Public Topics', 'የህዝብ ርዕሶችን ይመልከቱ')}
+                      </button>
+                    </div>
+                    <div className="rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-slate-900">
+                      <Route className="h-5 w-5 text-gold" aria-hidden="true" />
+                      <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-mediumgrey dark:text-gray-400">
+                        {getTranslatedText('Learning Paths', 'የጥናት መንገዶች')}
+                      </p>
+                      <p className="mt-1 font-serif text-3xl font-bold text-nearblack dark:text-white">{paths.length}</p>
+                      <button
+                        onClick={() => navigateTo('/paths')}
+                        className="mt-4 text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+                      >
+                        {getTranslatedText('View Public Paths', 'የህዝብ መንገዶችን ይመልከቱ')}
+                      </button>
+                    </div>
+                    <div className="rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-slate-900">
+                      <BookOpen className="h-5 w-5 text-gold" aria-hidden="true" />
+                      <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-mediumgrey dark:text-gray-400">
+                        {getTranslatedText('Resources', 'ግብዓቶች')}
+                      </p>
+                      <p className="mt-1 font-serif text-3xl font-bold text-nearblack dark:text-white">{resources.length}</p>
+                      <button
+                        onClick={() => navigateTo('/resources')}
+                        className="mt-4 text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+                      >
+                        {getTranslatedText('View Public Resources', 'የህዝብ ግብዓቶችን ይመልከቱ')}
+                      </button>
+                    </div>
+                  </div>
+                </section>
 
                 {/* QUICK ACTIONS ROW */}
                 <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-4">
