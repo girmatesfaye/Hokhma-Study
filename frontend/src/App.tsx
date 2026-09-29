@@ -89,7 +89,7 @@ function MainAppRouter() {
       <Navbar />
 
       {/* Main Viewport Grid Wrapper */}
-      <main className="flex-grow pt-16">
+      <main className="flex-grow">
         {pageComponent}
       </main>
 

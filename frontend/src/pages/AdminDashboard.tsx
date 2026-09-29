@@ -6,9 +6,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
-import { AUTHOR_BIO, STATEMENT_OF_FAITH } from '../data';
 import DifficultyBadge from '../components/DifficultyBadge';
-import { Article, Question, Comment, Difficulty, LearningPath, Resource, Topic } from '../types';
+import { Article, Question, Comment, LearningPath, Resource, Topic, AuthorProfile, FaithStatement } from '../types';
 import {
   Shield,
   LogOut,
@@ -43,6 +42,8 @@ export default function AdminDashboard() {
     topics,
     paths,
     resources,
+    authorProfile,
+    statementOfFaith,
     approveComment,
     deleteComment,
     deleteArticle,
@@ -57,6 +58,8 @@ export default function AdminDashboard() {
     addResource,
     updateResource,
     deleteResource,
+    updateAuthorProfile,
+    updateStatementOfFaith,
     logoutAdmin,
     navigateTo,
     isAdmin
@@ -96,6 +99,10 @@ export default function AdminDashboard() {
   const [topicForm, setTopicForm] = useState({ name: '', description: '', icon: 'Compass' });
   const [pathForm, setPathForm] = useState({ title: '', description: '', goal: '', articleSlugs: '' });
   const [resourceForm, setResourceForm] = useState({ title: '', category: 'Books' as Resource['category'], author: '', description: '', link: '' });
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileDraft, setProfileDraft] = useState<AuthorProfile>(authorProfile);
+  const [editingFaith, setEditingFaith] = useState(false);
+  const [faithDraft, setFaithDraft] = useState<FaithStatement[]>(statementOfFaith);
 
   // If unauthorized, redirect to login
   if (!isAdmin) {
@@ -263,6 +270,16 @@ export default function AdminDashboard() {
   };
 
   const closeContentDetail = () => setDetailContent(null);
+
+  const handleProfileSave = () => {
+    updateAuthorProfile(profileDraft);
+    setEditingProfile(false);
+  };
+
+  const handleFaithSave = () => {
+    updateStatementOfFaith(faithDraft);
+    setEditingFaith(false);
+  };
 
   // Reset database helper (clears custom edit localStorage to defaults)
   const handleResetDatabase = () => {
@@ -993,41 +1010,28 @@ export default function AdminDashboard() {
 
             {activeTab === 'profile' && (
               <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-5 animate-fade-in font-sans">
-                <div className="border-b border-black/5 pb-3 dark:border-white/5">
-                  <h2 className="font-serif text-base font-bold text-nearblack dark:text-white">{getTranslatedText('Author Profile', 'የጸሐፊ መገለጫ')}</h2>
-                  <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{getTranslatedText('This profile powers the public About page and footer.', 'ይህ መገለጫ የህዝብ ስለ ገጽንና ግርጌን ያስኬዳል።')}</p>
+                <div className="flex items-start justify-between gap-4 border-b border-black/5 pb-3 dark:border-white/5">
+                  <div><h2 className="font-serif text-base font-bold text-nearblack dark:text-white">{getTranslatedText('Author Profile', 'የጸሐፊ መገለጫ')}</h2><p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{getTranslatedText('This profile powers the public About page and footer.', 'ይህ መገለጫ የህዝብ ስለ ገጽንና ግርጌን ያስኬዳል።')}</p></div>
+                  {!editingProfile && <button onClick={() => { setProfileDraft(authorProfile); setEditingProfile(true); }} className="rounded bg-navy px-3 py-2 text-xs font-bold text-white dark:bg-gold dark:text-slate-950">{getTranslatedText('Edit Profile', 'መገለጫውን ያስተካክሉ')}</button>}
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {[
-                    ['Name', AUTHOR_BIO.name],
-                    ['Role', AUTHOR_BIO.role],
-                    ['Email', AUTHOR_BIO.email],
-                    ['Tagline', AUTHOR_BIO.tagline],
-                  ].map(([label, value]) => (
-                    <div key={label} className="rounded-lg border border-black/5 p-4 dark:border-white/5">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-mediumgrey dark:text-gray-400">{label}</p>
-                      <p className="mt-2 text-sm font-semibold text-nearblack dark:text-white break-words">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="rounded-lg border border-dashed border-gold/50 bg-gold/5 p-4 text-xs leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText('Editing is visible here, but persistence is still local until the backend content settings are connected.', 'ማስተካከያ እዚህ ይታያል፤ የኋላ ክፍል የይዘት ቅንብሮች እስኪገናኙ ድረስ ግን ማስቀመጥ አካባቢያዊ ነው።')}</div>
+                {editingProfile ? (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {([['name', 'Name'], ['role', 'Role'], ['email', 'Email'], ['avatar', 'Avatar URL'], ['tagline', 'Tagline'], ['bio', 'Bio'], ['mission', 'Mission']] as const).map(([field, label]) => (
+                      <label key={field} className={`block space-y-1.5 ${field === 'bio' || field === 'mission' ? 'sm:col-span-2' : ''}`}><span className="text-[10px] font-bold uppercase tracking-wider text-mediumgrey">{label}</span>{field === 'bio' || field === 'mission' ? <textarea rows={3} value={profileDraft[field]} onChange={(event) => setProfileDraft({ ...profileDraft, [field]: event.target.value })} className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /> : <input type={field === 'email' ? 'email' : 'text'} value={profileDraft[field]} onChange={(event) => setProfileDraft({ ...profileDraft, [field]: event.target.value })} className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" />}</label>
+                    ))}
+                    <div className="flex justify-end gap-3 sm:col-span-2"><button onClick={() => setEditingProfile(false)} className="rounded border border-black/10 px-3 py-2 text-xs font-bold dark:border-white/10">{getTranslatedText('Cancel', 'ይቅር')}</button><button onClick={handleProfileSave} className="rounded bg-navy px-3 py-2 text-xs font-bold text-white dark:bg-gold dark:text-slate-950">{getTranslatedText('Save Profile', 'መገለጫውን አስቀምጥ')}</button></div>
+                  </div>
+                ) : <div className="grid gap-4 sm:grid-cols-2">{[['Name', authorProfile.name], ['Role', authorProfile.role], ['Email', authorProfile.email], ['Tagline', authorProfile.tagline]].map(([label, value]) => <div key={label} className="rounded-lg border border-black/5 p-4 dark:border-white/5"><p className="text-[10px] font-bold uppercase tracking-wider text-mediumgrey dark:text-gray-400">{label}</p><p className="mt-2 break-words text-sm font-semibold text-nearblack dark:text-white">{value}</p></div>)}</div>}
               </div>
             )}
 
             {activeTab === 'faith' && (
               <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-5 animate-fade-in font-sans">
-                <div className="border-b border-black/5 pb-3 dark:border-white/5">
-                  <h2 className="font-serif text-base font-bold text-nearblack dark:text-white">{getTranslatedText('Statement Of Faith', 'የእምነት መግለጫ')}</h2>
-                  <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{getTranslatedText('Review the doctrines currently displayed in the public footer and About page.', 'በህዝብ ግርጌና ስለ ገጽ ላይ የሚታዩትን እምነቶች ይመልከቱ።')}</p>
+                <div className="flex items-start justify-between gap-4 border-b border-black/5 pb-3 dark:border-white/5">
+                  <div><h2 className="font-serif text-base font-bold text-nearblack dark:text-white">{getTranslatedText('Statement Of Faith', 'የእምነት መግለጫ')}</h2><p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{getTranslatedText('Review the doctrines currently displayed in the public footer and About page.', 'በህዝብ ግርጌና ስለ ገጽ ላይ የሚታዩትን እምነቶች ይመልከቱ።')}</p></div>
+                  {!editingFaith && <button onClick={() => { setFaithDraft(statementOfFaith); setEditingFaith(true); }} className="rounded bg-navy px-3 py-2 text-xs font-bold text-white dark:bg-gold dark:text-slate-950">{getTranslatedText('Edit Statement', 'መግለጫውን ያስተካክሉ')}</button>}
                 </div>
-                <div className="space-y-3">
-                  {STATEMENT_OF_FAITH.map((item) => (
-                    <div key={item.doctrine} className="rounded-lg border border-black/5 p-4 dark:border-white/5">
-                      <h3 className="font-serif font-bold text-nearblack dark:text-white">{item.doctrine}</h3>
-                      <p className="mt-2 text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{item.belief}</p>
-                    </div>
-                  ))}
-                </div>
+                {editingFaith ? <div className="space-y-4">{faithDraft.map((item, index) => <div key={index} className="space-y-2 rounded-lg border border-black/5 p-4 dark:border-white/5"><input value={item.doctrine} onChange={(event) => setFaithDraft(faithDraft.map((entry, itemIndex) => itemIndex === index ? { ...entry, doctrine: event.target.value } : entry))} className="w-full rounded border border-black/10 px-3 py-2 font-bold dark:border-white/10" /><textarea rows={4} value={item.belief} onChange={(event) => setFaithDraft(faithDraft.map((entry, itemIndex) => itemIndex === index ? { ...entry, belief: event.target.value } : entry))} className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></div>)}<div className="flex justify-end gap-3"><button onClick={() => setEditingFaith(false)} className="rounded border border-black/10 px-3 py-2 text-xs font-bold dark:border-white/10">{getTranslatedText('Cancel', 'ይቅር')}</button><button onClick={handleFaithSave} className="rounded bg-navy px-3 py-2 text-xs font-bold text-white dark:bg-gold dark:text-slate-950">{getTranslatedText('Save Statement', 'መግለጫውን አስቀምጥ')}</button></div></div> : <div className="space-y-3">{statementOfFaith.map((item) => <div key={item.doctrine} className="rounded-lg border border-black/5 p-4 dark:border-white/5"><h3 className="font-serif font-bold text-nearblack dark:text-white">{item.doctrine}</h3><p className="mt-2 text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{item.belief}</p></div>)}</div>}
               </div>
             )}
 

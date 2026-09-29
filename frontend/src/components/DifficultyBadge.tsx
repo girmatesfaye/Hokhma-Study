@@ -16,7 +16,7 @@ export default function DifficultyBadge({ difficulty, className = '' }: Difficul
 
   switch (difficulty) {
     case 'beginner':
-      styles = 'bg-[#0F9E7B] text-white dark:bg-[#0F9E7B]/20 dark:text-[#2ecc71] dark:border dark:border-[#0F9E7B]/30';
+      styles = 'bg-black text-white dark:bg-white/10 dark:text-white dark:border dark:border-white/20';
       label = 'Beginner';
       break;
     case 'intermediate':
@@ -24,7 +24,7 @@ export default function DifficultyBadge({ difficulty, className = '' }: Difficul
       label = 'Intermediate';
       break;
     case 'deep-dive':
-      styles = 'bg-[#534AB7] text-white dark:bg-[#534AB7]/20 dark:text-[#a29bfe] dark:border dark:border-[#534AB7]/30';
+      styles = 'bg-gold text-black dark:bg-gold/20 dark:text-gold dark:border dark:border-gold/30';
       label = 'Deep Dive';
       break;
   }

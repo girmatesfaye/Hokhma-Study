@@ -6,12 +6,11 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
-import { STATEMENT_OF_FAITH, AUTHOR_BIO } from '../data';
 import DifficultyBadge from '../components/DifficultyBadge';
 import { Mail, ChevronDown, ChevronUp, ArrowRight, ShieldCheck, Globe, Heart } from 'lucide-react';
 
 export default function About() {
-  const { articles, navigateTo } = useApp();
+  const { articles, navigateTo, authorProfile, statementOfFaith } = useApp();
   const { language, getTranslatedText } = useLanguage();
   const [openAccordionIdx, setOpenAccordionIdx] = useState<number | null>(null);
 
@@ -31,10 +30,10 @@ export default function About() {
 
   // Localized Bio Elements Map
   const localizedBio = {
-    name: getTranslatedText(AUTHOR_BIO.name, 'ቄስ ዶ/ር ቶማስ ጄ. ስተርሊንግ'),
-    role: getTranslatedText(AUTHOR_BIO.role, 'ክርስቲያን አፖሎጂስት እና የታሪክ ምሁር'),
+    name: getTranslatedText(authorProfile.name, 'ቄስ ዶ/ር ቶማስ ጄ. ስተርሊንግ'),
+    role: getTranslatedText(authorProfile.role, 'ክርስቲያን አፖሎጂስት እና የታሪክ ምሁር'),
     bio: getTranslatedText(
-      AUTHOR_BIO.bio,
+      authorProfile.bio,
       'ቄስ ዶ/ር ቶማስ ስተርሊንግ የስነ-መለኮት ምሁር፣ ቀድሞ የጥንታዊ ፍልስፍና መምህር፣ እና ላለፉት ሁለት አስርት ዓመታት ስለ አዲስ ኪዳን ታሪካዊ ዳራ፣ ስለ ጽንፈ ዓለም አመጣጥ እንዲሁም ስለ እግዚአብሔር መኖር ሲያስተምሩ የቆዩ መጋቢ ናቸው። በHokhma Study በኩል ጥልቅ ምርምር የተደረገባቸውና ምክንያታዊ የሆኑ የስነ-መለኮት ምላሾችን ያዘጋጃሉ።'
     )
   };
@@ -66,7 +65,7 @@ export default function About() {
         {/* Author photo (circle, 120px specified) */}
         <div className="w-[120px] h-[120px] rounded-full overflow-hidden shrink-0 border-2 border-gold/30 shadow">
           <img
-            src={AUTHOR_BIO.avatar}
+            src={authorProfile.avatar}
             alt={localizedBio.name}
             className="w-full h-full object-cover"
           />
@@ -96,11 +95,11 @@ export default function About() {
               <span>{getTranslatedText('Contact Dr. Thomas', 'ዶ/ር ስተርሊንግን ያግኙ')}</span>
             </button>
             <a
-              href={`mailto:${AUTHOR_BIO.email}`}
+              href={`mailto:${authorProfile.email}`}
               className="px-4 py-2 bg-navy text-white hover:bg-navy/90 text-xs font-bold tracking-wider rounded flex items-center gap-1.5 font-sans"
             >
               <Mail size={13} />
-              <span>{AUTHOR_BIO.email}</span>
+              <span>{authorProfile.email}</span>
             </a>
           </div>
         </div>
@@ -175,7 +174,7 @@ export default function About() {
 
         {/* Accordions */}
         <div className="divide-y divide-black/5 dark:divide-white/5 border-t border-b border-black/5 dark:border-white/5">
-          {STATEMENT_OF_FAITH.map((item, id) => {
+          {statementOfFaith.map((item, id) => {
             const isOpen = openAccordionIdx === id;
             return (
               <div key={id} className="py-4 font-sans">

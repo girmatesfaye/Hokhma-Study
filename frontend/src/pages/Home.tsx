@@ -97,7 +97,7 @@ export default function Home() {
                   />
                   {art.featured && (
                     <div className="absolute top-4 left-4 flex gap-2">
-                      <span className="px-2.5 py-0.5 rounded-[4px] bg-[#534AB7] text-white text-[10px] font-bold tracking-wider">
+                      <span className="px-2.5 py-0.5 rounded-[4px] bg-gold text-black text-[10px] font-bold tracking-wider">
                         {language === 'en' ? 'Featured Thesis' : 'የተመረጠ ጥናት'}
                       </span>
                     </div>
@@ -325,7 +325,7 @@ export default function Home() {
                 placeholder={t('footer.newsletterPlaceholder')}
                 value={emailValue}
                 onChange={(e) => setEmailValue(e.target.value)}
-                className="flex-1 px-4 py-2.5 bg-[#263223] border border-white/10 rounded-[4px] focus:outline-none focus:border-gold text-sm text-white"
+                className="flex-1 px-4 py-2.5 bg-dark-input border border-dark-border rounded-[4px] focus:outline-none focus:border-gold text-sm text-white"
               />
               <button
                 type="submit"

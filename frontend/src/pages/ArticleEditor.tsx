@@ -30,7 +30,8 @@ import {
   ChevronDown,
   Sliders,
   AlignLeft,
-  Heading2
+  Heading2,
+  List
 } from 'lucide-react';
 
 export default function ArticleEditor() {
@@ -104,6 +105,8 @@ export default function ArticleEditor() {
       text: type === 'scripture' ? 'Enter scripture quote here...' : 'Enter new block paragraph...',
       textAm: type === 'scripture' ? 'የጥቅስ ቃል እዚህ ይጻፉ...' : 'አዲስ አንቀጽ እዚህ ይጻፉ...',
       level,
+      items: type === 'list' ? ['Enter list item...'] : undefined,
+      itemsAm: type === 'list' ? ['የዝርዝር ነጥብ እዚህ ይጻፉ...'] : undefined,
       reference: type === 'scripture' ? 'Book 0:0' : undefined,
       referenceAm: type === 'scripture' ? 'መጽሐፍ 0:0' : undefined
     };
@@ -501,6 +504,16 @@ export default function ArticleEditor() {
                         <Quote size={11} className="text-gold" />
                         <span>Scripture Block</span>
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleAddContentBlock('list')}
+                        className="py-1.5 px-3 text-[10px] uppercase bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-white/5 hover:border-gold/30 rounded-lg inline-flex items-center gap-1.5 font-bold transition-all cursor-pointer shadow-sm"
+                        title="Add a list block"
+                      >
+                        <List size={11} className="text-emerald-500" />
+                        <span>List</span>
+                      </button>
                     </div>
 
                     {/* CONTENT BLOCKS RENDERER */}
@@ -508,6 +521,7 @@ export default function ArticleEditor() {
                       {editedArticle.content.map((sec, idx) => {
                         const isScripture = sec.type === 'scripture';
                         const isHeader = sec.type === 'header';
+                        const isList = sec.type === 'list';
                         
                         return (
                           <div
@@ -525,7 +539,7 @@ export default function ArticleEditor() {
                               <div className="flex items-center gap-1.5">
                                 <span className="font-mono text-slate-300">#{idx + 1}</span>
                                 <span className={`uppercase font-bold tracking-wider text-[9px] ${isScripture ? 'text-gold' : isHeader ? 'text-blue-500' : 'text-slate-400'}`}>
-                                  {isScripture ? 'Scripture Quote' : isHeader ? 'Section Header' : 'Paragraph Block'}
+                                  {isScripture ? 'Scripture Quote' : isHeader ? 'Section Header' : isList ? 'List Block' : 'Paragraph Block'}
                                 </span>
                               </div>
                               
@@ -557,6 +571,21 @@ export default function ArticleEditor() {
                                 </button>
                               </div>
                             </div>
+
+                            {isHeader && (
+                              <div className="flex items-center gap-2 text-[10px]">
+                                <label htmlFor={`heading-level-${idx}`} className="font-bold text-slate-400 uppercase tracking-wider">Heading Level</label>
+                                <select
+                                  id={`heading-level-${idx}`}
+                                  value={sec.level || 2}
+                                  onChange={(e) => updateBlock(idx, { level: parseInt(e.target.value) as 2 | 3 })}
+                                  className="px-2 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 rounded-lg text-slate-800 dark:text-white"
+                                >
+                                  <option value={2}>Section Heading</option>
+                                  <option value={3}>Subheading</option>
+                                </select>
+                              </div>
+                            )}
 
                             {/* Block Language-Specific Input */}
                             <div className="space-y-2">
@@ -624,6 +653,50 @@ export default function ArticleEditor() {
                                     />
                                   </div>
                                 )}
+                              </div>
+                            )}
+
+                            {isList && (
+                              <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-white/5">
+                                <label className="text-[9px] uppercase font-bold text-slate-400 font-sans">{activeTab === 'en' ? 'List Items' : 'የዝርዝር ነጥቦች'}</label>
+                                {(activeTab === 'en' ? (sec.items || []) : (sec.itemsAm || [])).map((item, itemIdx) => (
+                                  <div key={itemIdx} className="flex gap-2">
+                                    <input
+                                      type="text"
+                                      value={item}
+                                      onChange={(e) => {
+                                        const key = activeTab === 'en' ? 'items' : 'itemsAm';
+                                        const items = [...(activeTab === 'en' ? (sec.items || []) : (sec.itemsAm || []))];
+                                        items[itemIdx] = e.target.value;
+                                        updateBlock(idx, { [key]: items });
+                                      }}
+                                      className="flex-1 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/5 rounded-lg text-slate-800 dark:text-gray-200 focus:outline-none focus:border-gold"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const key = activeTab === 'en' ? 'items' : 'itemsAm';
+                                        const items = (activeTab === 'en' ? (sec.items || []) : (sec.itemsAm || [])).filter((_, i) => i !== itemIdx);
+                                        updateBlock(idx, { [key]: items });
+                                      }}
+                                      className="px-2 text-rose-500 hover:bg-rose-500/10 rounded-lg"
+                                      title="Remove list item"
+                                    >
+                                      <X size={13} />
+                                    </button>
+                                  </div>
+                                ))}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const key = activeTab === 'en' ? 'items' : 'itemsAm';
+                                    const items = [...(activeTab === 'en' ? (sec.items || []) : (sec.itemsAm || [])), ''];
+                                    updateBlock(idx, { [key]: items });
+                                  }}
+                                  className="text-[10px] font-bold text-gold hover:underline"
+                                >
+                                  Add List Item
+                                </button>
                               </div>
                             )}
                           </div>

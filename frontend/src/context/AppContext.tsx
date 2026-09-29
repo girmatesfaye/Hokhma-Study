@@ -258,6 +258,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const updateArticle = (updatedArt: Article) => {
     const oldArt = articles.find((a) => a.id === updatedArt.id);
     setArticles((prev) => prev.map((art) => (art.id === updatedArt.id ? updatedArt : art)));
+
+    // Keep the ordered path index aligned when an article is moved or renamed.
+    setPaths((prev) => prev.map((path) => {
+      const withoutArticle = path.articleSlugs.filter((slug) => slug !== oldArt?.slug && slug !== updatedArt.slug);
+      const isTargetPath = updatedArt.partInPath?.pathSlug === path.slug;
+      const articleSlugs = isTargetPath
+        ? [...withoutArticle.slice(0, Math.max(0, updatedArt.partInPath!.position - 1)), updatedArt.slug, ...withoutArticle.slice(Math.max(0, updatedArt.partInPath!.position - 1))]
+        : withoutArticle;
+      return { ...path, articleSlugs, articleCount: articleSlugs.length };
+    }));
     
     // Update topics counts if topicSlug changed
     if (oldArt && oldArt.topicSlug !== updatedArt.topicSlug) {
@@ -304,10 +314,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const addPath = (newPath: LearningPath) => {
     setPaths((prev) => [newPath, ...prev]);
+    setArticles((prev) => prev.map((article) => {
+      const position = newPath.articleSlugs.indexOf(article.slug);
+      return position === -1
+        ? article
+        : { ...article, partInPath: { pathSlug: newPath.slug, position: position + 1 } };
+    }));
   };
 
   const updatePath = (updatedPath: LearningPath) => {
     setPaths((prev) => prev.map((path) => (path.slug === updatedPath.slug ? updatedPath : path)));
+    setArticles((prev) => prev.map((article) => {
+      const position = updatedPath.articleSlugs.indexOf(article.slug);
+      if (position !== -1) {
+        return { ...article, partInPath: { pathSlug: updatedPath.slug, position: position + 1 } };
+      }
+      if (article.partInPath?.pathSlug === updatedPath.slug) {
+        const { partInPath: _partInPath, ...articleWithoutPath } = article;
+        return articleWithoutPath;
+      }
+      return article;
+    }));
   };
 
   const deletePath = (slug: string) => {

@@ -185,16 +185,16 @@ export default function QuestionsIndex() {
               <button
                 onClick={() => setSelectedDifficulty('beginner')}
                 className={`flex items-center gap-2 py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 ${
-                  selectedDifficulty === 'beginner' ? 'text-teal-500 font-bold' : 'text-mediumgrey dark:text-gray-300'
+                  selectedDifficulty === 'beginner' ? 'text-nearblack dark:text-white font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
-                <span className="w-2.5 h-2.5 rounded-full bg-teal-505 bg-[#0F9E7B]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-black dark:bg-white" />
                 <span>{getTranslatedText('Beginner', 'ጀማሪ')}</span>
               </button>
               <button
                 onClick={() => setSelectedDifficulty('intermediate')}
                 className={`flex items-center gap-2 py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 ${
-                  selectedDifficulty === 'intermediate' ? 'text-amber-500 font-bold' : 'text-mediumgrey dark:text-gray-300'
+                  selectedDifficulty === 'intermediate' ? 'text-gold font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
                 <span className="w-2.5 h-2.5 rounded-full bg-gold" />
@@ -203,10 +203,10 @@ export default function QuestionsIndex() {
               <button
                 onClick={() => setSelectedDifficulty('deep-dive')}
                 className={`flex items-center gap-2 py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 ${
-                  selectedDifficulty === 'deep-dive' ? 'text-indigo-505 font-bold' : 'text-mediumgrey dark:text-gray-300'
+                  selectedDifficulty === 'deep-dive' ? 'text-gold font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
-                <span className="w-2.5 h-2.5 rounded-full bg-[#534AB7]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-gold" />
                 <span>{getTranslatedText('Deep Dive', 'ጥልቅ ጥናት')}</span>
               </button>
             </div>

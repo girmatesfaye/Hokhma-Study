@@ -129,7 +129,12 @@ export default function Navbar() {
             href="#/"
             className="flex items-center gap-2 text-navy dark:text-white transition-opacity hover:opacity-90 animate-fade-in"
           >
-            <span className="font-serif text-2xl font-bold tracking-tight">{t('brand.name')}</span>
+            <img
+              src="/assets/logo.jpg"
+              alt="Hokhma Study logo"
+              className="h-10 w-10 rounded-full object-cover"
+            />
+            <span className="font-serif text-xl font-bold tracking-tight">{t('brand.name')}</span>
             <span className="h-4 w-px bg-gold/50" />
             <span className="font-sans text-[11px] tracking-widest text-gold font-semibold hidden sm:inline-block">
               {language === 'en' ? 'Apologetics' : 'መከላከያ'}
@@ -202,7 +207,12 @@ export default function Navbar() {
       {isDrawerOpen && (
         <div className="fixed inset-0 z-[100] bg-white dark:bg-dark-bg flex flex-col p-6 animate-fade-in overflow-y-auto">
           <div className="flex items-center justify-between col-span-2">
-            <span className="font-serif text-2xl font-bold tracking-tight text-navy dark:text-white flex items-center gap-1">
+            <span className="font-serif text-xl font-bold tracking-tight text-navy dark:text-white flex items-center gap-2">
+              <img
+                src="/assets/logo.jpg"
+                alt="Hokhma Study logo"
+                className="h-9 w-9 rounded-full object-cover"
+              />
               {t('brand.name')}
             </span>
             <div className="flex items-center gap-2">

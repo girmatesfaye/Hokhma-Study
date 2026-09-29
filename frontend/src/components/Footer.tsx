@@ -5,11 +5,10 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { STATEMENT_OF_FAITH, AUTHOR_BIO } from '../data';
 import { Mail, ArrowRight, Shield, Check, Info, FileText, Globe, Send, HelpCircle, X } from 'lucide-react';
 
 export default function Footer() {
-  const { navigateTo, isAdmin } = useApp();
+  const { navigateTo, isAdmin, authorProfile, statementOfFaith } = useApp();
   const [emailValue, setEmailValue] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
   
@@ -54,7 +53,7 @@ export default function Footer() {
               Hokhma Study<span className="text-gold">.</span>
             </a>
             <p className="text-xs text-mediumgrey dark:text-gray-400 font-sans">
-              Apologetics with academic rigor. Curated by {AUTHOR_BIO.name}.
+              Apologetics with academic rigor. Curated by {authorProfile.name}.
             </p>
           </div>
           
@@ -122,7 +121,7 @@ export default function Footer() {
               </p>
               
               <div className="space-y-5">
-                {STATEMENT_OF_FAITH.map((item, id) => (
+                {statementOfFaith.map((item, id) => (
                    <div key={id} className="border-l-2 border-gold/40 pl-4 py-1">
                     <h4 className="font-serif text-sm font-bold text-navy dark:text-gold tracking-wider mb-1.5">
                       {item.doctrine}
