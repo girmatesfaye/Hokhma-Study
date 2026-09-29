@@ -104,6 +104,21 @@ export interface Resource {
   link: string;
 }
 
+export interface FaithStatement {
+  doctrine: string;
+  belief: string;
+}
+
+export interface AuthorProfile {
+  name: string;
+  role: string;
+  avatar: string;
+  bio: string;
+  email: string;
+  tagline: string;
+  mission: string;
+}
+
 export interface Comment {
   id: string;
   articleSlug: string;

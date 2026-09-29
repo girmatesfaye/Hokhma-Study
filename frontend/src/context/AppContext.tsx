@@ -4,7 +4,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Article, Topic, Question, LearningPath, Resource, Comment, AppRoute, Difficulty } from '../types';
+import { Article, Topic, Question, LearningPath, Resource, Comment, AppRoute, AuthorProfile, FaithStatement } from '../types';
 import {
   INITIAL_ARTICLES,
   INITIAL_TOPICS,
@@ -12,6 +12,8 @@ import {
   INITIAL_PATHS,
   INITIAL_RESOURCES,
   INITIAL_COMMENTS,
+  AUTHOR_BIO,
+  STATEMENT_OF_FAITH,
 } from '../data';
 
 interface AppContextType {
@@ -23,6 +25,8 @@ interface AppContextType {
   paths: LearningPath[];
   resources: Resource[];
   comments: Comment[];
+  authorProfile: AuthorProfile;
+  statementOfFaith: FaithStatement[];
   isAdmin: boolean;
   loginAdmin: () => void;
   logoutAdmin: () => void;
@@ -44,6 +48,8 @@ interface AppContextType {
   addResource: (resource: Resource) => void;
   updateResource: (resource: Resource) => void;
   deleteResource: (id: string) => void;
+  updateAuthorProfile: (profile: AuthorProfile) => void;
+  updateStatementOfFaith: (statements: FaithStatement[]) => void;
   addComment: (comment: Comment) => void;
   approveComment: (id: string) => void;
   deleteComment: (id: string) => void;
@@ -143,6 +149,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [paths, setPaths] = useState<LearningPath[]>(() => getStoredValue('hokhma_paths', INITIAL_PATHS));
   const [resources, setResources] = useState<Resource[]>(() => getStoredValue('hokhma_resources', INITIAL_RESOURCES));
   const [comments, setComments] = useState<Comment[]>(() => getStoredValue('hokhma_comments', INITIAL_COMMENTS));
+  const [authorProfile, setAuthorProfile] = useState<AuthorProfile>(() => getStoredValue('hokhma_author_profile', AUTHOR_BIO));
+  const [statementOfFaith, setStatementOfFaith] = useState<FaithStatement[]>(() => getStoredValue('hokhma_statement_of_faith', STATEMENT_OF_FAITH));
   const [isAdmin, setIsAdmin] = useState<boolean>(() => getStoredValue('hokhma_is_admin', false));
   const [darkMode, setDarkMode] = useState<boolean>(() => getStoredValue('hokhma_dark_mode', false));
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -202,6 +210,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setStoredValue('hokhma_comments', comments);
   }, [comments]);
+
+  useEffect(() => {
+    setStoredValue('hokhma_author_profile', authorProfile);
+  }, [authorProfile]);
+
+  useEffect(() => {
+    setStoredValue('hokhma_statement_of_faith', statementOfFaith);
+  }, [statementOfFaith]);
 
   useEffect(() => {
     setStoredValue('hokhma_is_admin', isAdmin);
@@ -310,6 +326,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setResources((prev) => prev.filter((resource) => resource.id !== id));
   };
 
+  const updateAuthorProfile = (profile: AuthorProfile) => {
+    setAuthorProfile(profile);
+  };
+
+  const updateStatementOfFaith = (statements: FaithStatement[]) => {
+    setStatementOfFaith(statements);
+  };
+
   const addComment = (newComment: Comment) => {
     setComments((prev) => [newComment, ...prev]);
   };
@@ -339,6 +363,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         paths,
         resources,
         comments,
+        authorProfile,
+        statementOfFaith,
         isAdmin,
         loginAdmin,
         logoutAdmin,
@@ -360,6 +386,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         addResource,
         updateResource,
         deleteResource,
+        updateAuthorProfile,
+        updateStatementOfFaith,
         addComment,
         approveComment,
         deleteComment,
