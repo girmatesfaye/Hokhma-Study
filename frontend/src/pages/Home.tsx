@@ -211,7 +211,7 @@ export default function Home() {
                       {getTranslatedText(path.difficultyRange, path.difficultyRangeAm)}
                     </span>
                     <span className="text-xs text-lightgrey font-sans font-medium tracking-wide">
-                      {path.articleCount} {language === 'en' ? 'articles' : 'ጽሑፎች'} · {path.totalReadingTime}m {language === 'en' ? 'total' : 'በጠቅላላ'}
+                      {path.steps?.length || path.articleCount} {language === 'en' ? 'guided levels' : 'የተመሩ ደረጃዎች'} · {path.totalReadingTime}m {language === 'en' ? 'reading' : 'ንባብ'}
                     </span>
                   </div>
                   
@@ -220,6 +220,9 @@ export default function Home() {
                   </h3>
                   <p className="text-xs text-mediumgrey dark:text-gray-300 leading-relaxed font-serif italic">
                     {getTranslatedText(path.description, path.descriptionAm)}
+                  </p>
+                  <p className="text-[11px] font-semibold text-gold font-sans">
+                    {language === 'en' ? 'A guided route from first principles to a clear next step.' : 'ከመሠረታዊ ግንዛቤ ወደ ግልጽ ቀጣይ ደረጃ የሚመራ ጉዞ።'}
                   </p>
                 </div>
 

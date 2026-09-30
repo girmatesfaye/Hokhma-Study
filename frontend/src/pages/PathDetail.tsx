@@ -6,10 +6,11 @@
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import DifficultyBadge from '../components/DifficultyBadge';
-import { ArrowLeft, Check, CheckSquare, Square, Clock, Play, BookOpen } from 'lucide-react';
+import { LearningPathStep } from '../types';
+import { ArrowLeft, Check, CheckSquare, Square, Clock, BookOpen, ExternalLink, Flag, Play } from 'lucide-react';
 
 export default function PathDetail() {
-  const { currentRoute, paths, articles, progress, toggleStepProgress, navigateTo } = useApp();
+  const { currentRoute, paths, articles, resources, progress, toggleStepProgress, navigateTo } = useApp();
   const { language, getTranslatedText } = useLanguage();
 
   const slug = currentRoute.slug || '';
@@ -31,6 +32,14 @@ export default function PathDetail() {
   const pathArticles = path.articleSlugs
     .map((artSlug) => articles.find((art) => art.slug === artSlug))
     .filter((art): art is typeof articles[0] => !!art);
+  const guidedSteps: LearningPathStep[] = path.steps?.length ? path.steps : path.articleSlugs.map((articleSlug, index) => ({
+    id: `${path.slug}-${index + 1}`,
+    level: index + 1,
+    title: `Step ${index + 1}`,
+    purpose: 'Complete this reading before continuing to the next level.',
+    type: 'article' as const,
+    articleSlug,
+  }));
 
   const completedSlugs = progress[path.slug] || [];
   const percentCompleted = pathArticles.length
@@ -38,10 +47,22 @@ export default function PathDetail() {
     : 0;
 
   const handleStartPath = () => {
-    if (pathArticles.length > 0) {
-      navigateTo(`/articles/${pathArticles[0].slug}`);
+    const firstStep = guidedSteps[0];
+    if (firstStep?.articleSlug) {
+      navigateTo(`/articles/${firstStep.articleSlug}`);
+      return;
+    }
+    if (firstStep?.resourceId) {
+      const resource = resources.find((item) => item.id === firstStep.resourceId);
+      if (resource) window.open(resource.link, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (firstStep?.externalUrl) {
+      window.open(firstStep.externalUrl, '_blank', 'noopener,noreferrer');
     }
   };
+
+  const firstStepLabel = guidedSteps[0]?.type === 'resource' ? 'Open Step 1 Resource' : guidedSteps[0]?.type === 'milestone' ? 'Review Step 1' : 'Start Step 1';
 
   return (
     <div id="path-detail-page" className="animate-fade-in max-w-[1140px] mx-auto px-4 md:px-6 py-10 space-y-10">
@@ -95,7 +116,7 @@ export default function PathDetail() {
               {getTranslatedText('Curriculum Sequence', 'የስርዓተ ትምህርት ቅደም ተከተል')}
             </h2>
             <span className="text-xs text-mediumgrey font-bold tracking-wider">
-              {pathArticles.length} {getTranslatedText('Sequential Steps', 'ቅደም ተከተላዊ ደረጃዎች')}
+              {guidedSteps.length} {getTranslatedText('Guided Levels', 'የተመሩ ደረጃዎች')}
             </span>
           </div>
 
@@ -105,13 +126,15 @@ export default function PathDetail() {
             {/* Vertical timeline connector lines */}
             <div className="absolute top-4 bottom-4 left-4 md:left-5 w-0.5 bg-black/10 dark:bg-white/10" />
 
-            {pathArticles.map((art, idx) => {
+            {guidedSteps.map((step, idx) => {
               const stepNumber = idx + 1;
-              const isCompleted = completedSlugs.includes(art.slug);
+              const linkedArticle = step.articleSlug ? articles.find((article) => article.slug === step.articleSlug) : undefined;
+              const linkedResource = step.resourceId ? resources.find((resource) => resource.id === step.resourceId) : undefined;
+              const isCompleted = linkedArticle ? completedSlugs.includes(linkedArticle.slug) : false;
 
               return (
                 <div
-                  key={art.id}
+                  key={step.id}
                   className="relative group flex flex-col md:flex-row gap-4 justify-between items-start bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-white/15 p-5 rounded-lg shadow-sm hover:shadow transition-all duration-300"
                 >
                   
@@ -119,7 +142,7 @@ export default function PathDetail() {
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleStepProgress(path.slug, art.slug);
+                      if (linkedArticle) toggleStepProgress(path.slug, linkedArticle.slug);
                     }}
                     className={`absolute -left-[28px] md:-left-[35px] top-6 w-6 h-6 md:w-7 md:h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all border duration-200 cursor-pointer ${
                       isCompleted
@@ -127,44 +150,42 @@ export default function PathDetail() {
                         : 'bg-white dark:bg-slate-800 border-black/10 dark:border-gray-700 text-mediumgrey group-hover:border-gold/50'
                     }`}
                   >
-                    {isCompleted ? <Check size={13} className="stroke-[3]" /> : stepNumber}
+                    {isCompleted ? <Check size={13} className="stroke-[3]" /> : step.type === 'milestone' ? <Flag size={13} /> : stepNumber}
                   </div>
 
                   {/* Body click area goes to article detail */}
-                  <div
-                    className="flex-1 space-y-1.5 cursor-pointer"
-                    onClick={() => navigateTo(`/articles/${art.slug}`)}
-                  >
+                  <div className="flex-1 space-y-2">
                     <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <DifficultyBadge difficulty={art.difficulty} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-lightgrey/50" />
-                      <span className="text-lightgrey flex items-center gap-0.5">
-                        <Clock size={11} /> {art.readingTime}{getTranslatedText('m read', ' ደቂቃ ንባብ')}
-                      </span>
+                      <span className="rounded-full bg-gold/10 px-2 py-1 font-bold text-gold">Level {step.level}</span>
+                      {linkedArticle && <DifficultyBadge difficulty={linkedArticle.difficulty} />}
+                      {linkedArticle && <span className="text-lightgrey flex items-center gap-0.5"><Clock size={11} /> {linkedArticle.readingTime}{getTranslatedText('m read', ' ደቂቃ ንባብ')}</span>}
+                      {step.type === 'resource' && <span className="flex items-center gap-1 text-gold"><BookOpen size={11} /> Recommended Resource</span>}
+                      {step.type === 'milestone' && <span className="flex items-center gap-1 text-gold"><Flag size={11} /> Reflection Milestone</span>}
                     </div>
 
-                    <h3 className={`font-serif text-lg font-bold text-nearblack dark:text-white group-hover:text-gold transition-colors ${
+                    <h3 className={`font-serif text-lg font-bold text-nearblack dark:text-white transition-colors ${
                       isCompleted ? 'line-through text-mediumgrey dark:text-gray-450 opacity-75' : ''
                     }`}>
-                      {getTranslatedText(art.title, art.titleAm)}
+                      {getTranslatedText(step.title, step.titleAm)}
                     </h3>
                     
-                    <p className="text-xs text-mediumgrey dark:text-gray-350 line-clamp-2 leading-relaxed">
-                      {getTranslatedText(art.excerpt, art.excerptAm)}
-                    </p>
+                    <p className="text-xs text-mediumgrey dark:text-gray-350 leading-relaxed">{getTranslatedText(step.purpose, step.purposeAm)}</p>
+                    {linkedArticle && <button onClick={() => navigateTo(`/articles/${linkedArticle.slug}`)} className="text-xs font-bold text-gold hover:underline">Read {getTranslatedText(linkedArticle.title, linkedArticle.titleAm)} <ArrowLeft size={11} className="inline rotate-180" /></button>}
+                    {(linkedResource || step.externalUrl) && <a href={linkedResource?.link || step.externalUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-gold hover:underline">Open {getTranslatedText(linkedResource?.title || step.externalTitle, step.externalTitle)} <ExternalLink size={11} /></a>}
                   </div>
 
                   {/* Complete Checkbox */}
                   <button
-                    onClick={() => toggleStepProgress(path.slug, art.slug)}
+                    onClick={() => linkedArticle && toggleStepProgress(path.slug, linkedArticle.slug)}
+                    disabled={!linkedArticle}
                     className="md:border-l border-black/5 dark:border-white/5 md:pl-4 py-2 flex items-center gap-1.5 text-xs text-mediumgrey hover:text-gold transition-colors whitespace-nowrap cursor-pointer"
                   >
-                    {isCompleted ? (
+                    {linkedArticle && isCompleted ? (
                       <CheckSquare size={16} className="text-gold" />
-                    ) : (
+                    ) : linkedArticle ? (
                       <Square size={16} />
-                    )}
-                    <span className="hidden md:inline font-sans">{getTranslatedText('Done', 'ተከናውኗል')}</span>
+                    ) : <span className="text-[10px]">Reference</span>}
+                    {linkedArticle && <span className="hidden md:inline font-sans">{getTranslatedText('Done', 'ተከናውኗል')}</span>}
                   </button>
 
                 </div>
@@ -232,7 +253,7 @@ export default function PathDetail() {
               className="w-full py-2.5 bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold tracking-wider text-xs rounded shadow hover:bg-navy/90 inline-flex items-center justify-center gap-2 group cursor-pointer"
             >
               <Play size={12} fill="currentColor" />
-              <span>{getTranslatedText('Start Step 1', 'ደረጃ 1 ይጀምሩ')}</span>
+              <span>{getTranslatedText(firstStepLabel, firstStepLabel)}</span>
             </button>
           </div>
 

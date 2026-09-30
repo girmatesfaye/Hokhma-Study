@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import DifficultyBadge from '../components/DifficultyBadge';
-import { Article, Question, Comment, LearningPath, Resource, Topic, AuthorProfile, FaithStatement } from '../types';
+import { Article, Question, Comment, LearningPath, LearningPathStep, Resource, Topic, AuthorProfile, FaithStatement } from '../types';
 import {
   Shield,
   LogOut,
@@ -101,6 +101,7 @@ export default function AdminDashboard() {
   const [detailContent, setDetailContent] = useState<{ type: 'topic' | 'path' | 'resource'; id: string } | null>(null);
   const [topicForm, setTopicForm] = useState({ name: '', description: '', icon: 'Compass' });
   const [pathForm, setPathForm] = useState({ title: '', description: '', goal: '', articleSlugs: '' });
+  const [pathSteps, setPathSteps] = useState<LearningPathStep[]>([]);
   const [resourceForm, setResourceForm] = useState({ title: '', category: 'Books' as Resource['category'], author: '', description: '', link: '' });
   const [editingProfile, setEditingProfile] = useState(false);
   const [profileDraft, setProfileDraft] = useState<AuthorProfile>(authorProfile);
@@ -200,6 +201,7 @@ export default function AdminDashboard() {
     setEditingContentId(null);
     setTopicForm({ name: '', description: '', icon: 'Compass' });
     setPathForm({ title: '', description: '', goal: '', articleSlugs: '' });
+    setPathSteps([]);
     setResourceForm({ title: '', category: 'Books', author: '', description: '', link: '' });
   };
 
@@ -221,18 +223,22 @@ export default function AdminDashboard() {
     }
 
     if (contentModal === 'path' && pathForm.title.trim()) {
-      const articleSlugs = pathForm.articleSlugs.split(',').map((slug) => slug.trim()).filter(Boolean);
-      const totalReadingTime = articleSlugs.reduce((total, slug) => total + (articles.find((article) => article.slug === slug)?.readingTime || 0), 0);
+      const guidedSteps = pathSteps.filter((step) => step.title.trim() && step.purpose.trim());
+      const articleSlugs = guidedSteps.filter((step) => step.type === 'article' && step.articleSlug).map((step) => step.articleSlug as string);
+      const fallbackArticleSlugs = pathForm.articleSlugs.split(',').map((slug) => slug.trim()).filter(Boolean);
+      const orderedArticleSlugs = articleSlugs.length > 0 ? articleSlugs : fallbackArticleSlugs;
+      const totalReadingTime = orderedArticleSlugs.reduce((total, slug) => total + (articles.find((article) => article.slug === slug)?.readingTime || 0), 0);
       const currentPath = editingContentId ? paths.find((path) => path.slug === editingContentId) : undefined;
       const newPath: LearningPath = {
         slug: currentPath?.slug || slugify(pathForm.title),
         title: pathForm.title.trim(),
         description: pathForm.description.trim(),
         goal: pathForm.goal.trim(),
-        articleCount: articleSlugs.length,
+        articleCount: orderedArticleSlugs.length,
         difficultyRange: 'Beginner to Deep Dive',
         totalReadingTime,
-        articleSlugs,
+        articleSlugs: orderedArticleSlugs,
+        steps: guidedSteps,
       };
       if (editingContentId) updatePath(newPath);
       else addPath(newPath);
@@ -263,6 +269,14 @@ export default function AdminDashboard() {
   const openPathEditor = (path: LearningPath) => {
     setEditingContentId(path.slug);
     setPathForm({ title: path.title, description: path.description, goal: path.goal, articleSlugs: path.articleSlugs.join(', ') });
+    setPathSteps(path.steps || path.articleSlugs.map((slug, index) => ({
+      id: `${path.slug}-${index + 1}`,
+      level: index + 1,
+      title: `Study Step ${index + 1}`,
+      purpose: 'Complete this reading before continuing to the next level.',
+      type: 'article',
+      articleSlug: slug,
+    })));
     setContentModal('path');
   };
 
@@ -904,7 +918,13 @@ export default function AdminDashboard() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setContentModal(activeTab === 'topics' ? 'topic' : activeTab === 'paths' ? 'path' : 'resource')}
+                    onClick={() => {
+                      const modal = activeTab === 'topics' ? 'topic' : activeTab === 'paths' ? 'path' : 'resource';
+                      if (modal === 'path') {
+                        setPathSteps([{ id: `step-${Date.now()}`, level: 1, title: '', purpose: '', type: 'article' }]);
+                      }
+                      setContentModal(modal);
+                    }}
                     className="inline-flex w-fit shrink-0 items-center gap-1.5 rounded bg-navy px-3 py-2 text-[11px] font-bold tracking-wider text-white hover:bg-navy/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 dark:bg-gold dark:text-slate-950"
                   >
                     <Plus size={13} aria-hidden="true" />
@@ -1170,10 +1190,27 @@ export default function AdminDashboard() {
 
               {contentModal === 'path' && (
                 <>
-                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Path Title', 'የመንገድ ርዕስ')}</span><input required value={pathForm.title} onChange={(e) => setPathForm({ ...pathForm, title: e.target.value })} placeholder="E.g., Foundations Of Faith…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
-                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Description', 'መግለጫ')}</span><textarea required value={pathForm.description} onChange={(e) => setPathForm({ ...pathForm, description: e.target.value })} rows={2} placeholder="Describe the learning journey…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
-                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Learning Goal', 'የጥናት ግብ')}</span><textarea required value={pathForm.goal} onChange={(e) => setPathForm({ ...pathForm, goal: e.target.value })} rows={2} placeholder="What will readers understand by the end?…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
-                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Article Slugs, Comma Separated', 'የጽሑፍ ስሞች በኮማ የተለዩ')}</span><input value={pathForm.articleSlugs} onChange={(e) => setPathForm({ ...pathForm, articleSlugs: e.target.value })} placeholder="cosmological-fine-tuning, the-moral-argument…" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  <div className="rounded-lg border border-gold/25 bg-gold/5 p-4 dark:bg-gold/10">
+                    <p className="font-serif text-base font-bold text-nearblack dark:text-white">Build A Guided Learning Journey</p>
+                    <p className="mt-1 text-xs leading-relaxed text-mediumgrey dark:text-gray-300">Start with the first foundation, add readings or recommended resources, and finish with a clear learning milestone.</p>
+                  </div>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Path Title', 'የመንገድ ርዕስ')}</span><input required value={pathForm.title} onChange={(e) => setPathForm({ ...pathForm, title: e.target.value })} placeholder="E.g., Foundations Of Faith" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Who Is This For?', 'ይህ ጥናት ለማን ነው?')}</span><textarea required value={pathForm.description} onChange={(e) => setPathForm({ ...pathForm, description: e.target.value })} rows={2} placeholder="Explain who should start here and what problem this journey solves." className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  <label className="block space-y-1.5"><span className="font-bold text-mediumgrey">{getTranslatedText('Where Will They End?', 'በመጨረሻ ምን ይማራሉ?')}</span><textarea required value={pathForm.goal} onChange={(e) => setPathForm({ ...pathForm, goal: e.target.value })} rows={2} placeholder="Describe what a learner will understand or be able to do at the end." className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></label>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between"><span className="font-bold text-mediumgrey">Curriculum Steps</span><span className="text-[10px] text-lightgrey">Start to Finish</span></div>
+                    {pathSteps.map((step, index) => (
+                      <div key={step.id} className="rounded-lg border border-black/10 p-3 space-y-2 dark:border-white/10">
+                        <div className="flex items-center justify-between gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold text-xs font-bold text-black">{index + 1}</span><button type="button" onClick={() => setPathSteps(pathSteps.filter((item) => item.id !== step.id))} className="text-xs font-bold text-rose-600 hover:underline">Remove Step</button></div>
+                        <input required value={step.title} onChange={(event) => setPathSteps(pathSteps.map((item) => item.id === step.id ? { ...item, title: event.target.value, level: index + 1 } : item))} placeholder="Step title, e.g. Understand The Big Questions" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" />
+                        <textarea required value={step.purpose} onChange={(event) => setPathSteps(pathSteps.map((item) => item.id === step.id ? { ...item, purpose: event.target.value } : item))} rows={2} placeholder="What should the learner gain at this step?" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" />
+                        <select value={step.type} onChange={(event) => setPathSteps(pathSteps.map((item) => item.id === step.id ? { ...item, type: event.target.value as LearningPathStep['type'], articleSlug: undefined, resourceId: undefined, externalTitle: undefined, externalUrl: undefined } : item))} className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10"><option value="article">Read An Article</option><option value="resource">Recommended External Resource</option><option value="milestone">Reflection / Milestone</option></select>
+                        {step.type === 'article' && <select required value={step.articleSlug || ''} onChange={(event) => setPathSteps(pathSteps.map((item) => item.id === step.id ? { ...item, articleSlug: event.target.value } : item))} className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10"><option value="">Choose An Article</option>{articles.map((article) => <option key={article.slug} value={article.slug}>{article.title}</option>)}</select>}
+                        {step.type === 'resource' && <><select value={step.resourceId || ''} onChange={(event) => setPathSteps(pathSteps.map((item) => item.id === step.id ? { ...item, resourceId: event.target.value, externalTitle: undefined, externalUrl: undefined } : item))} className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10"><option value="">Use A New External Resource</option>{resources.map((resource) => <option key={resource.id} value={resource.id}>{resource.title}</option>)}</select><input required={!step.resourceId} value={step.externalTitle || ''} onChange={(event) => setPathSteps(pathSteps.map((item) => item.id === step.id ? { ...item, externalTitle: event.target.value } : item))} placeholder="External resource title" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /><input required={!step.resourceId} type="url" value={step.externalUrl || ''} onChange={(event) => setPathSteps(pathSteps.map((item) => item.id === step.id ? { ...item, externalUrl: event.target.value } : item))} placeholder="https://example.org/resource" className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /></>}
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => setPathSteps([...pathSteps, { id: `step-${Date.now()}`, level: pathSteps.length + 1, title: '', purpose: '', type: 'article' }])} className="w-full rounded border border-dashed border-gold/50 px-3 py-2 text-xs font-bold text-gold hover:bg-gold/10">+ Add Next Step</button>
+                  </div>
                 </>
               )}
 

@@ -89,6 +89,21 @@ export interface LearningPath {
   difficultyRangeAm?: string;
   totalReadingTime: number; // in minutes
   articleSlugs: string[]; // Ordered list of article slugs
+  steps?: LearningPathStep[];
+}
+
+export interface LearningPathStep {
+  id: string;
+  level: number;
+  title: string;
+  titleAm?: string;
+  purpose: string;
+  purposeAm?: string;
+  type: 'article' | 'resource' | 'milestone';
+  articleSlug?: string;
+  resourceId?: string;
+  externalTitle?: string;
+  externalUrl?: string;
 }
 
 export interface Resource {

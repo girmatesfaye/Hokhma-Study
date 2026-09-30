@@ -153,7 +153,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [articles, setArticles] = useState<Article[]>(() => getStoredValue('hokhma_articles', INITIAL_ARTICLES));
   const [topics, setTopics] = useState<Topic[]>(() => getStoredValue('hokhma_topics', INITIAL_TOPICS));
   const [questions, setQuestions] = useState<Question[]>(() => getStoredValue('hokhma_questions', INITIAL_QUESTIONS));
-  const [paths, setPaths] = useState<LearningPath[]>(() => getStoredValue('hokhma_paths', INITIAL_PATHS));
+  const [paths, setPaths] = useState<LearningPath[]>(() => {
+    const storedPaths = getStoredValue('hokhma_paths', INITIAL_PATHS);
+    const jesusPath = INITIAL_PATHS.find((path) => path.slug === 'jesus-as');
+    return jesusPath && !storedPaths.some((path) => path.slug === jesusPath.slug) ? [...storedPaths, jesusPath] : storedPaths;
+  });
   const [resources, setResources] = useState<Resource[]>(() => getStoredValue('hokhma_resources', INITIAL_RESOURCES));
   const [comments, setComments] = useState<Comment[]>(() => getStoredValue('hokhma_comments', INITIAL_COMMENTS));
   const [contactMessages, setContactMessages] = useState<ContactMessage[]>(() => getStoredValue('hokhma_contact_messages', []));

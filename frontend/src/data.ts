@@ -464,6 +464,21 @@ export const INITIAL_QUESTIONS: Question[] = [
 
 export const INITIAL_PATHS: LearningPath[] = [
   {
+    slug: 'jesus-as',
+    title: 'Jesus As A Historical Person And Risen Lord',
+    description: 'A guided route for anyone asking who Jesus was, whether the Gospel record is trustworthy, and what the resurrection means.',
+    goal: 'By the end, you will have a clear starting point, a historical framework, and a next reading path for studying Jesus seriously.',
+    articleCount: 2,
+    difficultyRange: 'Beginner to Intermediate',
+    totalReadingTime: 18,
+    articleSlugs: ['reliability-of-gospels', 'defending-the-resurrection'],
+    steps: [
+      { id: 'jesus-as-1', level: 1, title: 'Start With The Historical Record', purpose: 'Learn how the Gospel accounts can be examined as historical documents.', type: 'article', articleSlug: 'reliability-of-gospels' },
+      { id: 'jesus-as-2', level: 2, title: 'Study The Resurrection Claim', purpose: 'Review the central historical facts surrounding Jesus death, the empty tomb, and the earliest witnesses.', type: 'article', articleSlug: 'defending-the-resurrection' },
+      { id: 'jesus-as-3', level: 3, title: 'Continue With A Scholarly Resource', purpose: 'Use a deeper historical study as your next step after the introductory articles.', type: 'resource', resourceId: 'res-2' },
+    ],
+  },
+  {
     slug: 'faith-and-reason',
     title: 'Faith and Reason: A Foundations Guide',
     description: 'For seekers and believers alike, discover the solid philosophical, scientific, and historical backing for Christian classical theism.',
@@ -476,6 +491,13 @@ export const INITIAL_PATHS: LearningPath[] = [
       'the-moral-argument',
       'reliability-of-gospels',
       'defending-the-resurrection',
+    ],
+    steps: [
+      { id: 'faith-1', level: 1, title: 'Begin With The Big Questions', purpose: 'Understand why questions about meaning, origins, and truth matter before studying individual arguments.', type: 'article', articleSlug: 'cosmological-fine-tuning' },
+      { id: 'faith-2', level: 2, title: 'Build A Moral Foundation', purpose: 'Explore whether objective moral duties point beyond personal preference.', type: 'article', articleSlug: 'the-moral-argument' },
+      { id: 'faith-3', level: 3, title: 'Check The Historical Record', purpose: 'Examine the reliability of the Gospel accounts and their historical setting.', type: 'article', articleSlug: 'reliability-of-gospels' },
+      { id: 'faith-4', level: 4, title: 'Reach The Resurrection', purpose: 'Bring the philosophical and historical work together around the central Christian claim.', type: 'article', articleSlug: 'defending-the-resurrection' },
+      { id: 'faith-5', level: 5, title: 'Go Deeper With N.T. Wright', purpose: 'Continue with a recommended scholarly resource after completing the core sequence.', type: 'resource', resourceId: 'res-2' },
     ],
   },
   {
@@ -490,6 +512,12 @@ export const INITIAL_PATHS: LearningPath[] = [
       'the-moral-argument',
       'problem-of-pain',
       'meaning-of-grace',
+    ],
+    steps: [
+      { id: 'doubt-1', level: 1, title: 'Start With Meaning And Values', purpose: 'Establish a framework for thinking about meaning, goodness, and human dignity.', type: 'article', articleSlug: 'the-moral-argument' },
+      { id: 'doubt-2', level: 2, title: 'Face The Problem Of Pain', purpose: 'Work honestly through suffering without relying on shallow answers.', type: 'article', articleSlug: 'problem-of-pain' },
+      { id: 'doubt-3', level: 3, title: 'Move Toward Grace', purpose: 'Consider how grace addresses guilt, hope, and the limits of self-repair.', type: 'article', articleSlug: 'meaning-of-grace' },
+      { id: 'doubt-4', level: 4, title: 'Reflect Before Continuing', purpose: 'Pause, write down your remaining objections, and choose the next study direction.', type: 'milestone' },
     ],
   },
 ];

@@ -5,7 +5,7 @@
 
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
-import { ArrowLeft, ChevronRight, Clock, Award, BookOpen } from 'lucide-react';
+import { ChevronRight, Clock, BookOpen, Layers3 } from 'lucide-react';
 
 export default function PathsIndex() {
   const { paths, navigateTo } = useApp();
@@ -72,9 +72,11 @@ export default function PathsIndex() {
             <div className="pt-4 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
               <span className="text-xs text-mediumgrey flex items-center gap-1">
                 <BookOpen size={12} className="text-gold" />
-                <span>{path.articleCount} {getTranslatedText('Sequential Readings', 'ቅደም ተከተላዊ ንባቦች')}</span>
+                  <span>{path.steps?.length || path.articleCount} {getTranslatedText('Guided Levels', 'የተመሩ ደረጃዎች')}</span>
               </span>
               
+              <div className="flex items-center gap-3">
+              <span className="text-xs text-gold flex items-center gap-1"><Layers3 size={13} /> {path.steps?.filter((step) => step.type === 'resource').length || 0} resources</span>
               <button
                 onClick={() => navigateTo(`/paths/${path.slug}`)}
                 className="px-4 py-2 bg-navy text-white dark:bg-gold dark:text-slate-950 hover:bg-navy/90 text-xs font-bold tracking-wider rounded inline-flex items-center gap-1 group cursor-pointer"
@@ -82,6 +84,7 @@ export default function PathsIndex() {
                 <span>{getTranslatedText('Start This Path', 'ይህን ጉዞ ይጀምሩ')}</span>
                 <ChevronRight size={13} className="group-hover:translate-x-0.5" />
               </button>
+              </div>
             </div>
           </div>
         ))}
