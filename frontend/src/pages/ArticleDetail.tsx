@@ -38,6 +38,9 @@ export default function ArticleDetail() {
     paths,
     comments,
     addComment,
+    reactions: savedReactions,
+    toggleReaction,
+    incrementArticleView,
     progress,
     toggleStepProgress,
     navigateTo
@@ -49,11 +52,11 @@ export default function ArticleDetail() {
 
   // States
   const [copiedLink, setCopiedLink] = useState(false);
-  const [reactions, setReactions] = useState<Record<string, number>>({
-    helpful: 24,
-    insightful: 15,
-    rigorous: 18
-  });
+  const [reactions, setReactions] = useState<Record<string, number>>(() => ({
+    helpful: 24 + (savedReactions[slug]?.helpful || 0),
+    insightful: 15 + (savedReactions[slug]?.insightful || 0),
+    rigorous: 18 + (savedReactions[slug]?.rigorous || 0)
+  }));
   const [userReaction, setUserReaction] = useState<string | null>(null);
 
   // Comment Form State
@@ -76,6 +79,10 @@ export default function ArticleDetail() {
 
   // Active heading tracking for Table of Contents
   const [activeHeadingId, setActiveHeadingId] = useState<string>('');
+
+  useEffect(() => {
+    if (article) incrementArticleView(article.id);
+  }, [article?.id]);
 
   // Handle article missing
   if (!article) {
@@ -119,6 +126,7 @@ export default function ArticleDetail() {
     if (userReaction === type) {
       // Toggle off
       setReactions((prev) => ({ ...prev, [type]: prev[type] - 1 }));
+      toggleReaction(slug, type, -1);
       setUserReaction(null);
     } else {
       // Change or add
@@ -130,6 +138,7 @@ export default function ArticleDetail() {
         next[type] = next[type] + 1;
         return next;
       });
+      toggleReaction(slug, type, 1);
       setUserReaction(type);
     }
   };

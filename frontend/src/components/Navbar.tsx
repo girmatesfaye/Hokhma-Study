@@ -101,16 +101,6 @@ export default function Navbar() {
     { label: t('nav.about'), hash: '/about', page: 'about' },
   ];
 
-  const handleNewsletterClick = () => {
-    const footerInput = document.getElementById('newsletter-email-footer');
-    if (footerInput) {
-      footerInput.scrollIntoView({ behavior: 'smooth' });
-      footerInput.focus();
-    } else {
-      navigateTo('/about'); // fallback
-    }
-  };
-
   return (
     <>
       <header
@@ -262,15 +252,6 @@ export default function Navbar() {
           </div>
 
           <div className="border-t border-black/5 dark:border-white/5 pt-6 flex flex-col gap-4 text-center items-center">
-            <button
-              onClick={() => {
-                setIsDrawerOpen(false);
-                handleNewsletterClick();
-              }}
-              className="w-full py-3 text-center text-sm font-bold tracking-wider bg-navy text-white dark:bg-gold dark:text-slate-950 rounded-md shadow-sm cursor-pointer"
-            >
-              {language === 'en' ? 'Get Article Updates' : 'ጽሑፎችን በኢሜይል ያግኙ'}
-            </button>
             <p className="text-xs text-mediumgrey dark:text-gray-400 font-sans">
               {t('brand.name')} {language === 'en' ? 'Apologetics · Pure academic defense.' : 'የክርስትና መከላከያ · አካዳሚያዊ ጥናት።'}
             </p>

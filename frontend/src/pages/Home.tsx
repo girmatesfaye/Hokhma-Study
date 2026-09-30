@@ -8,13 +8,11 @@ import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import DifficultyBadge from '../components/DifficultyBadge';
 import TopicIcon from '../components/TopicIcon';
-import { ArrowRight, ChevronRight, BookOpen, Clock, HelpCircle, Mail, Check } from 'lucide-react';
+import { ArrowRight, ChevronRight, BookOpen, Clock, HelpCircle } from 'lucide-react';
 
 export default function Home() {
   const { articles, topics, paths, questions, navigateTo } = useApp();
   const { language, t, getTranslatedText } = useLanguage();
-  const [emailValue, setEmailValue] = useState('');
-  const [isSubscribed, setIsSubscribed] = useState(false);
 
   // Filter published articles based on UI language setting and article lang attribute
   const publishedArticles = articles.filter(a => {
@@ -29,16 +27,6 @@ export default function Home() {
   const featuredOnly = publishedArticles.filter(a => a.featured);
   const nonFeatured = publishedArticles.filter(a => !a.featured);
   const editorsPicks = [...featuredOnly, ...nonFeatured].slice(0, 3);
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (emailValue.trim()) {
-      setIsSubscribed(true);
-      setTimeout(() => {
-        setEmailValue('');
-      }, 3000);
-    }
-  };
 
   return (
     <div id="home-page" className="animate-fade-in space-y-16">
@@ -289,55 +277,6 @@ export default function Home() {
               <ChevronRight size={18} className="text-lightgrey group-hover:text-gold transition-colors shrink-0" />
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* 6. NEWSLETTER SIGNUP BAND */}
-      <section id="newsletter-band" className="bg-navy text-white py-14 px-6 rounded-lg max-w-[1140px] mx-auto text-center space-y-6 shadow-md border border-white/5 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-0 left-0 w-32 h-32 bg-white rounded-full -translate-x-12 -translate-y-12" />
-          <div className="absolute bottom-0 right-0 w-48 h-48 bg-white rounded-full translate-x-16 translate-y-16" />
-        </div>
-        
-        <div className="relative z-10 max-w-xl mx-auto space-y-4">
-          <div className="inline-flex items-center justify-center p-2 rounded-full bg-white/5 mb-1 text-gold">
-            <Mail size={22} />
-          </div>
-          <h2 className="font-serif text-2xl md:text-3xl font-bold tracking-tight text-white">
-            {language === 'en' ? 'Get analytical articles in your inbox.' : 'በሳል ጥናታዊ ጽሑፎችን በኢሜይልዎ ያግኙ።'}
-          </h2>
-          <p className="text-xs md:text-sm text-gray-300 leading-relaxed font-serif italic max-w-xl mx-auto">
-            {language === 'en' 
-              ? "Never miss an historical manuscript overview, early creed teardown, or philosophical defense of classical belief. Direct from Rev. Dr. Sterling's writing desk."
-              : 'ታሪካዊ የብራና ጽሑፎችን፣ የቀደሙ የእምነት መግለጫዎችን ትንተናዎች ወይም የስነ-መለኮት ጥናቶችን ፈጽሞ አያምልጥዎት። በቀጥታ ከዶክተር ስተርሊንግ የጽሕፈት ጠረጴዛ የተዘጋጀ።'}
-          </p>
-
-          {isSubscribed ? (
-            <div className="p-3 bg-emerald-900/30 border border-emerald-500/30 text-emerald-400 rounded-[4px] text-xs flex items-center justify-center gap-2 max-w-sm mx-auto animate-fade-in font-sans">
-              <Check size={14} />
-              <span>{language === 'en' ? 'Subscription authorized. Thank you for joining us.' : 'በስኬት ተመዝግበዋል። ስለተቀላቀሉን እናመሰግናለን።'}</span>
-            </div>
-          ) : (
-            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto pt-2 font-sans">
-              <input
-                type="email"
-                required
-                placeholder={t('footer.newsletterPlaceholder')}
-                value={emailValue}
-                onChange={(e) => setEmailValue(e.target.value)}
-                className="flex-1 px-4 py-2.5 bg-dark-input border border-dark-border rounded-[4px] focus:outline-none focus:border-gold text-sm text-white"
-              />
-              <button
-                type="submit"
-                className="px-6 py-2.5 bg-gold text-slate-950 hover:bg-gold/90 transition-colors font-bold tracking-widest text-xs rounded-[4px] cursor-pointer"
-              >
-                {t('footer.newsletterButton')}
-              </button>
-            </form>
-          )}
-          <p className="text-[10px] text-gray-400 font-sans">
-            {language === 'en' ? 'No spam. Highly structured writing only. Bi-weekly cadence.' : 'ምንም አላስፈላጊ መልዕክቶች አይላኩም። ጠቃሚ ጥናቶች ብቻ። በየሁለት ሳምንቱ ይላካል።'}
-          </p>
         </div>
       </section>
 

@@ -16,6 +16,7 @@ import {
   HelpCircle,
   TrendingUp,
   MessageSquare,
+  Heart,
   Users,
   PlusCircle,
   Eye,
@@ -42,6 +43,9 @@ export default function AdminDashboard() {
     topics,
     paths,
     resources,
+    contactMessages,
+    questionSubmissions,
+    reactions,
     authorProfile,
     statementOfFaith,
     approveComment,
@@ -77,7 +81,6 @@ export default function AdminDashboard() {
     | 'profile'
     | 'faith'
     | 'navigation'
-    | 'subscribers'
     | 'inquiries'
     | 'submissions'
     | 'settings'
@@ -297,8 +300,10 @@ export default function AdminDashboard() {
   const metricTotalArticles = articles.length;
   const metricTotalViews = articles.reduce((sum, a) => sum + (a.views || 0), 0);
   const metricPendingComments = comments.filter((c) => !c.isApproved).length;
-  const metricNewsletterTotal = 432; // simulated subscribers count
-
+  const metricTotalReactions = Object.values(reactions).reduce(
+    (total, articleReactions) => total + Object.values(articleReactions).reduce((sum, count) => sum + count, 0),
+    0
+  );
   // Unapproved comments list (3-5 recent specified)
   const pendingCommentsList = comments.filter((c) => !c.isApproved).slice(0, 5);
 
@@ -445,7 +450,6 @@ export default function AdminDashboard() {
                 { id: 'profile' as const, icon: Users, label: 'Author Profile' },
                 { id: 'faith' as const, icon: Shield, label: 'Statement Of Faith' },
                 { id: 'navigation' as const, icon: Globe, label: 'Navigation Content' },
-                { id: 'subscribers' as const, icon: Users, label: 'Newsletter Subscribers' },
                 { id: 'inquiries' as const, icon: MessageSquare, label: 'Contact Messages' },
                 { id: 'submissions' as const, icon: HelpCircle, label: 'Question Submissions' },
               ].map((item) => {
@@ -520,12 +524,12 @@ export default function AdminDashboard() {
                     <strong className="text-2xl font-serif text-nearblack dark:text-white block">{metricPendingComments}</strong>
                   </div>
 
-                  {/* Card 4: Newsletter Subscribers */}
                   <div className="bg-white dark:bg-slate-900 p-5 rounded-lg border border-black/5 shadow-sm text-center space-y-1">
-                    <Users className="text-gold h-5 w-5 mx-auto" />
-                    <span className="text-[10px] font-bold text-mediumgrey block tracking-wider">{getTranslatedText('Newsletter Subs', 'የፈጣን ወሬ')}</span>
-                    <strong className="text-2xl font-serif text-nearblack dark:text-white block">{metricNewsletterTotal}</strong>
+                    <Heart className="text-gold h-5 w-5 mx-auto" />
+                    <span className="text-[10px] font-bold text-mediumgrey block tracking-wider">{getTranslatedText('Article Reactions', 'የጽሑፍ ምላሾች')}</span>
+                    <strong className="text-2xl font-serif text-nearblack dark:text-white block">{metricTotalReactions}</strong>
                   </div>
+
                 </div>
 
                 <section className="space-y-4" aria-labelledby="content-inventory-heading">
@@ -1054,21 +1058,33 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {(activeTab === 'subscribers' || activeTab === 'inquiries' || activeTab === 'submissions') && (
+            {(activeTab === 'inquiries' || activeTab === 'submissions') && (
               <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-sm space-y-5 animate-fade-in font-sans">
                 <div className="border-b border-black/5 pb-3 dark:border-white/5">
                   <h2 className="font-serif text-base font-bold text-nearblack dark:text-white">
-                    {activeTab === 'subscribers' && getTranslatedText('Newsletter Subscribers', 'የጋዜጣ ተመዝጋቢዎች')}
                     {activeTab === 'inquiries' && getTranslatedText('Contact Messages', 'የግንኙነት መልዕክቶች')}
                     {activeTab === 'submissions' && getTranslatedText('Public Question Submissions', 'የህዝብ ጥያቄ ማስገቢያዎች')}
                   </h2>
                   <p className="mt-1 text-xs text-mediumgrey dark:text-gray-400">{getTranslatedText('This queue is ready for backend records, moderation, and export controls.', 'ይህ ወረፋ ለኋላ ክፍል መዝገቦች፣ ለግምገማና ለማውጫ ቁጥጥሮች ዝግጁ ነው።')}</p>
                 </div>
-                <div className="rounded-xl border border-dashed border-black/10 bg-slate-50 p-8 text-center dark:border-white/10 dark:bg-slate-950/40">
-                  <MessageSquare className="mx-auto h-8 w-8 text-gold" aria-hidden="true" />
-                  <h3 className="mt-3 font-serif font-bold text-nearblack dark:text-white">{getTranslatedText('No Backend Records Yet', 'እስካሁን የኋላ ክፍል መዝገብ የለም')}</h3>
-                  <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-mediumgrey dark:text-gray-400">{getTranslatedText('The public form currently shows a confirmation locally. Connect the backend queue to receive, review, and manage real submissions here.', 'የህዝብ ቅጹ አሁን በአካባቢው ማረጋገጫ ብቻ ያሳያል። እውነተኛ ማስገቢያዎችን ለመቀበልና ለመቆጣጠር የኋላ ክፍል ወረፋውን ያገናኙ።')}</p>
-                </div>
+                {activeTab === 'inquiries' ? (
+                  contactMessages.length > 0 ? contactMessages.map((message) => (
+                    <article key={message.id} className="rounded-lg border border-black/5 p-4 dark:border-white/5 space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div><h3 className="font-semibold text-nearblack dark:text-white">{message.subject}</h3><p className="text-xs text-mediumgrey">{message.name} · {message.email}</p></div>
+                        <time className="text-[10px] text-lightgrey">{new Date(message.submittedAt).toLocaleString()}</time>
+                      </div>
+                      <p className="text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{message.message}</p>
+                    </article>
+                  )) : <p className="rounded-xl border border-dashed border-black/10 p-8 text-center text-sm text-mediumgrey dark:border-white/10">No contact messages yet.</p>
+                ) : (
+                  questionSubmissions.length > 0 ? questionSubmissions.map((submission) => (
+                    <article key={submission.id} className="rounded-lg border border-black/5 p-4 dark:border-white/5 space-y-2">
+                      <div className="flex items-center justify-between gap-3"><span className="rounded-full bg-gold/10 px-2 py-1 text-[10px] font-bold text-gold">{submission.status}</span><time className="text-[10px] text-lightgrey">{new Date(submission.submittedAt).toLocaleString()}</time></div>
+                      <p className="text-sm text-nearblack dark:text-white">{submission.text}</p>
+                    </article>
+                  )) : <p className="rounded-xl border border-dashed border-black/10 p-8 text-center text-sm text-mediumgrey dark:border-white/10">No question submissions yet.</p>
+                )}
               </div>
             )}
 

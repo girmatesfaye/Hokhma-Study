@@ -14,7 +14,7 @@ import { Search, ChevronRight, HelpCircle, CornerDownRight, ArrowUpRight, Plus, 
 type SortOption = 'common' | 'az' | 'recent';
 
 export default function QuestionsIndex() {
-  const { questions, topics, navigateTo } = useApp();
+  const { questions, topics, navigateTo, addQuestionSubmission } = useApp();
   const { language, getTranslatedText } = useLanguage();
   
   // States
@@ -71,6 +71,12 @@ export default function QuestionsIndex() {
   const handleCustomQuestionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (customQuestionForm.trim()) {
+      addQuestionSubmission({
+        id: `submission-${Date.now()}`,
+        text: customQuestionForm.trim(),
+        submittedAt: new Date().toISOString(),
+        status: 'pending',
+      });
       setShowSubmitSuccess(true);
       setTimeout(() => {
         setCustomQuestionForm('');

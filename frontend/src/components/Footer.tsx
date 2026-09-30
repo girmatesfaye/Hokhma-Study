@@ -8,9 +8,7 @@ import { useApp } from '../context/AppContext';
 import { Mail, ArrowRight, Shield, Check, Info, FileText, Globe, Send, HelpCircle, X } from 'lucide-react';
 
 export default function Footer() {
-  const { navigateTo, isAdmin, authorProfile, statementOfFaith } = useApp();
-  const [emailValue, setEmailValue] = useState('');
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const { isAdmin, authorProfile, statementOfFaith, addContactMessage } = useApp();
   
   // Contact Modal State
   const [showContactModal, setShowContactModal] = useState(false);
@@ -20,19 +18,14 @@ export default function Footer() {
   // Statement of Faith State
   const [showFaithModal, setShowFaithModal] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (emailValue.trim()) {
-      setIsSubscribed(true);
-      setTimeout(() => {
-        setEmailValue('');
-      }, 3000);
-    }
-  };
-
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (contactForm.name && contactForm.email && contactForm.message) {
+      addContactMessage({
+        id: `contact-${Date.now()}`,
+        ...contactForm,
+        submittedAt: new Date().toISOString(),
+      });
       setContactSuccess(true);
       setTimeout(() => {
         setContactSuccess(false);

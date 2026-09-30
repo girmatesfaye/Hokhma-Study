@@ -128,6 +128,22 @@ export interface Comment {
   isApproved: boolean;
 }
 
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  submittedAt: string;
+}
+
+export interface QuestionSubmission {
+  id: string;
+  text: string;
+  submittedAt: string;
+  status: 'pending' | 'reviewed';
+}
+
 export interface AppRoute {
   path?: string;
   page?: string;

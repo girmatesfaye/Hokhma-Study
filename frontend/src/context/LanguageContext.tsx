@@ -49,7 +49,6 @@ export const uiTranslations: TranslationDictionary = {
   'admin.totalArticles': { en: 'Total Articles', am: 'አጠቃላይ ጽሑፎች' },
   'admin.monthlyReads': { en: 'Monthly Reads', am: 'የወር ንባቦች' },
   'admin.pendingComments': { en: 'Pending Comments', am: 'የሚጠበቁ አስተያየቶች' },
-  'admin.newsletterSubs': { en: 'Newsletter Subs', am: 'የጋዜጣ ተመዝጋቢዎች' },
   'admin.quickActions': { en: 'Quick Workspace Actions', am: 'ፈጣን የሥራ ቦታ እርምጃዎች' },
   'admin.writeArticle': { en: 'Write new article', am: 'አዲስ ጽሑፍ ጻፍ' },
   'admin.mapQuestion': { en: 'Map a question', am: 'ጥያቄን አያይዝ' },
@@ -97,9 +96,6 @@ export const uiTranslations: TranslationDictionary = {
   'footer.emailAddress': { en: 'Email Address', am: 'የኢሜይል አድራሻ' },
   'footer.subjectConcern': { en: 'Subject / Concern', am: 'ርዕስ / ጉዳይ' },
   'footer.details': { en: 'Inquiry Details', am: 'የጥያቄው ዝርዝር' },
-  'footer.newsletter': { en: 'Keep Guarded', am: 'መረጃ ያግኙ' },
-  'footer.newsletterPlaceholder': { en: 'Email address...', am: 'የኢሜይል አድራሻ...' },
-  'footer.newsletterButton': { en: 'Subscribe to Letters', am: 'ይመዝገቡ' },
   'footer.copyright': { en: 'All rights reserved.', am: 'መብቱ በህግ የተጠበቀ ነው።' },
 
   // Article detail

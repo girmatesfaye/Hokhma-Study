@@ -4,7 +4,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Article, Topic, Question, LearningPath, Resource, Comment, AppRoute, AuthorProfile, FaithStatement } from '../types';
+import { Article, Topic, Question, LearningPath, Resource, Comment, AppRoute, AuthorProfile, FaithStatement, ContactMessage, QuestionSubmission } from '../types';
 import {
   INITIAL_ARTICLES,
   INITIAL_TOPICS,
@@ -25,6 +25,9 @@ interface AppContextType {
   paths: LearningPath[];
   resources: Resource[];
   comments: Comment[];
+  contactMessages: ContactMessage[];
+  questionSubmissions: QuestionSubmission[];
+  reactions: Record<string, Record<string, number>>;
   authorProfile: AuthorProfile;
   statementOfFaith: FaithStatement[];
   isAdmin: boolean;
@@ -54,6 +57,10 @@ interface AppContextType {
   approveComment: (id: string) => void;
   deleteComment: (id: string) => void;
   addQuestion: (q: Question) => void;
+  addContactMessage: (message: ContactMessage) => void;
+  addQuestionSubmission: (submission: QuestionSubmission) => void;
+  toggleReaction: (articleSlug: string, reaction: string, delta: number) => void;
+  incrementArticleView: (articleId: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -149,6 +156,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [paths, setPaths] = useState<LearningPath[]>(() => getStoredValue('hokhma_paths', INITIAL_PATHS));
   const [resources, setResources] = useState<Resource[]>(() => getStoredValue('hokhma_resources', INITIAL_RESOURCES));
   const [comments, setComments] = useState<Comment[]>(() => getStoredValue('hokhma_comments', INITIAL_COMMENTS));
+  const [contactMessages, setContactMessages] = useState<ContactMessage[]>(() => getStoredValue('hokhma_contact_messages', []));
+  const [questionSubmissions, setQuestionSubmissions] = useState<QuestionSubmission[]>(() => getStoredValue('hokhma_question_submissions', []));
+  const [reactions, setReactions] = useState<Record<string, Record<string, number>>>(() => getStoredValue('hokhma_reactions', {}));
   const [authorProfile, setAuthorProfile] = useState<AuthorProfile>(() => getStoredValue('hokhma_author_profile', AUTHOR_BIO));
   const [statementOfFaith, setStatementOfFaith] = useState<FaithStatement[]>(() => getStoredValue('hokhma_statement_of_faith', STATEMENT_OF_FAITH));
   const [isAdmin, setIsAdmin] = useState<boolean>(() => getStoredValue('hokhma_is_admin', false));
@@ -210,6 +220,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setStoredValue('hokhma_comments', comments);
   }, [comments]);
+
+  useEffect(() => {
+    setStoredValue('hokhma_contact_messages', contactMessages);
+  }, [contactMessages]);
+
+  useEffect(() => {
+    setStoredValue('hokhma_question_submissions', questionSubmissions);
+  }, [questionSubmissions]);
+
+  useEffect(() => {
+    setStoredValue('hokhma_reactions', reactions);
+  }, [reactions]);
 
   useEffect(() => {
     setStoredValue('hokhma_author_profile', authorProfile);
@@ -379,6 +401,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setQuestions((prev) => [newQ, ...prev]);
   };
 
+  const addContactMessage = (message: ContactMessage) => {
+    setContactMessages((prev) => [message, ...prev]);
+  };
+
+  const addQuestionSubmission = (submission: QuestionSubmission) => {
+    setQuestionSubmissions((prev) => [submission, ...prev]);
+  };
+
+  const toggleReaction = (articleSlug: string, reaction: string, delta: number) => {
+    setReactions((prev) => {
+      const articleReactions: Record<string, number> = { helpful: 0, insightful: 0, rigorous: 0, ...(prev[articleSlug] || {}) };
+      articleReactions[reaction] = Math.max(0, (articleReactions[reaction] || 0) + delta);
+      return { ...prev, [articleSlug]: articleReactions };
+    });
+  };
+
+  const incrementArticleView = (articleId: string) => {
+    setArticles((prev) => prev.map((article) => (
+      article.id === articleId ? { ...article, views: (article.views || 0) + 1 } : article
+    )));
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -390,6 +434,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         paths,
         resources,
         comments,
+        contactMessages,
+        questionSubmissions,
+        reactions,
         authorProfile,
         statementOfFaith,
         isAdmin,
@@ -419,6 +466,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         approveComment,
         deleteComment,
         addQuestion,
+        addContactMessage,
+        addQuestionSubmission,
+        toggleReaction,
+        incrementArticleView,
       }}
     >
       {children}
