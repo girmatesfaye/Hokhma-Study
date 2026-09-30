@@ -19,7 +19,6 @@ import {
   Heart,
   Users,
   PlusCircle,
-  Eye,
   Trash2,
   Check,
   Edit,
@@ -30,9 +29,7 @@ import {
   Route,
   Settings,
   X,
-  RefreshCw,
-  MapPin,
-  ListCollapse
+  RefreshCw
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -69,7 +66,7 @@ export default function AdminDashboard() {
     isAdmin
   } = useApp();
 
-  const { language, getTranslatedText } = useLanguage();
+  const { getTranslatedText } = useLanguage();
   const [activeTab, setActiveTab] = useState<
     | 'dashboard'
     | 'articles'
@@ -975,7 +972,7 @@ export default function AdminDashboard() {
                         <div className="mt-4 space-y-4">
                           <p className="text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText(path.description, path.descriptionAm)}</p>
                           <div className="rounded-lg border border-black/5 bg-white p-4 dark:border-white/5 dark:bg-slate-900"><p className="text-[10px] font-bold uppercase tracking-wider text-gold">{getTranslatedText('Learning Goal', 'የጥናት ግብ')}</p><p className="mt-2 text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText(path.goal, path.goalAm)}</p></div>
-                          <div><h4 className="text-xs font-bold uppercase tracking-wider text-nearblack dark:text-white">{getTranslatedText('Articles In This Path', 'በዚህ መንገድ ውስጥ ያሉ ጽሑፎች')} ({pathArticles.length})</h4><div className="mt-3 space-y-2">{pathArticles.map((article, index) => <div key={article.id} className="flex items-center justify-between gap-3 rounded-lg border border-black/5 bg-white p-3 dark:border-white/5 dark:bg-slate-900"><div className="flex min-w-0 items-center gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold/10 text-xs font-bold text-gold">{index + 1}</span><p className="truncate text-sm font-semibold text-nearblack dark:text-white">{getTranslatedText(article.title, article.titleAm)}</p></div><button onClick={() => navigateTo(`/admin/articles/${article.id}/edit`)} className="shrink-0 text-xs font-bold text-gold hover:underline">{getTranslatedText('Edit Article', 'ጽሑፉን ያስተካክሉ')}</button></div>)}</div></div>
+                          <div><h4 className="text-xs font-bold uppercase tracking-wider text-nearblack dark:text-white">{getTranslatedText('Guided Levels In This Path', 'በዚህ መንገድ ውስጥ ያሉ ደረጃዎች')} ({path.steps?.length || pathArticles.length})</h4><div className="mt-3 space-y-2">{(path.steps || pathArticles.map((article, index) => ({ id: article.id, level: index + 1, title: article.title, purpose: article.excerpt, type: 'article' as const, articleSlug: article.slug }))).map((step) => <div key={step.id} className="flex items-center justify-between gap-3 rounded-lg border border-black/5 bg-white p-3 dark:border-white/5 dark:bg-slate-900"><div className="flex min-w-0 items-center gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold/10 text-xs font-bold text-gold">{step.level}</span><p className="truncate text-sm font-semibold text-nearblack dark:text-white">{step.title}</p></div>{step.articleSlug && <button onClick={() => navigateTo(`/articles/${step.articleSlug}`)} className="shrink-0 text-xs font-bold text-gold hover:underline">{getTranslatedText('Open Article', 'ጽሑፉን ይክፈቱ')}</button>}</div>)}</div></div>
                         </div>
                       );
                     })()}

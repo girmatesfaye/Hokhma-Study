@@ -25,9 +25,7 @@ import {
   BadgeCheck,
   Send,
   MessageSquare,
-  Check,
-  Volume2,
-  Square
+  Check
 } from 'lucide-react';
 
 export default function ArticleDetail() {
@@ -62,20 +60,6 @@ export default function ArticleDetail() {
   // Comment Form State
   const [commentForm, setCommentForm] = useState({ name: '', text: '' });
   const [commentPendingMsg, setCommentPendingMsg] = useState(false);
-
-  // Bookmark / Save state
-  const [isBookmarked, setIsBookmarked] = useState<boolean>(() => {
-    try {
-      const saved = localStorage.getItem('hokhmastudy_user_bookmarks') || localStorage.getItem('apologia_user_bookmarks');
-      const list = saved ? JSON.parse(saved) : [];
-      return list.includes(slug);
-    } catch {
-      return false;
-    }
-  });
-
-  // Audio / listen mode speech state
-  const [isPlayingSpeech, setIsPlayingSpeech] = useState(false);
 
   // Active heading tracking for Table of Contents
   const [activeHeadingId, setActiveHeadingId] = useState<string>('');
@@ -150,67 +134,10 @@ export default function ArticleDetail() {
     setTimeout(() => setCopiedLink(false), 2550);
   };
 
-  // Toggle local Bookmark
-  const handleToggleBookmark = () => {
-    try {
-      const saved = localStorage.getItem('hokhmastudy_user_bookmarks') || localStorage.getItem('apologia_user_bookmarks');
-      let list = saved ? JSON.parse(saved) : [];
-      if (list.includes(slug)) {
-        list = list.filter((s: string) => s !== slug);
-        setIsBookmarked(false);
-      } else {
-        list.push(slug);
-        setIsBookmarked(true);
-      }
-      localStorage.setItem('hokhmastudy_user_bookmarks', JSON.stringify(list));
-    } catch (e) {
-      console.error('Failed to update bookmarks:', e);
-    }
-  };
-
   // Simulated PDF download (opening print utility is standard and robust)
   const handlePrint = () => {
     window.print();
   };
-
-  // Text-To-Speech (TTS) Listening speech Synthesis
-  const handleToggleSpeech = () => {
-    if (isPlayingSpeech) {
-      window.speechSynthesis.cancel();
-      setIsPlayingSpeech(false);
-    } else {
-      if (!article) return;
-      // Gather text from article title, description, and blocks
-      const listText: string[] = [];
-      listText.push(article.title);
-      listText.push(article.excerpt);
-      article.content.forEach((sec) => {
-        if (sec.text) listText.push(sec.text);
-      });
-      const fullSpeechText = listText.join(". ");
-
-      const utterance = new SpeechSynthesisUtterance(fullSpeechText);
-      
-      utterance.onend = () => {
-        setIsPlayingSpeech(false);
-      };
-      utterance.onerror = () => {
-        setIsPlayingSpeech(false);
-      };
-
-      // Cancel anything reading currently, then speak new
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
-      setIsPlayingSpeech(true);
-    }
-  };
-
-  // Make sure to stop speech if navigating away
-  useEffect(() => {
-    return () => {
-      window.speechSynthesis.cancel();
-    };
-  }, []);
 
   // Post Comment Handler
   const handleCommentSubmit = (e: React.FormEvent) => {
@@ -329,13 +256,7 @@ export default function ArticleDetail() {
             <ChevronRight size={14} className="group-hover:translate-x-0.5" />
           </button>
         </div>
-      ) : (
-        <div className="bg-emerald-950/40 text-emerald-400 p-6 rounded-lg text-center border border-emerald-800/40 text-sm flex flex-col items-center gap-2">
-          <BadgeCheck size={28} className="text-gold" />
-          <h4 className="font-serif font-bold text-white">Congratulations! Path Complete</h4>
-          <p className="text-xs max-w-sm text-gray-300">You have completed all sequential steps of the <strong>{currentPath.title}</strong> curriculum sequence.</p>
-        </div>
-      );
+      ) : null;
     }
   }
 
@@ -753,37 +674,7 @@ export default function ArticleDetail() {
 
             {/* Share and Print Panel */}
             <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-4 shadow-sm text-xs">
-              <h4 className="font-serif text-[11px] tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
-                Actions & Distribution
-              </h4>
-              
               <div className="space-y-2.5">
-                {/* Audio Listening Mode */}
-                <button
-                  onClick={handleToggleSpeech}
-                  className={`w-full py-2 font-semibold rounded flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
-                    isPlayingSpeech 
-                      ? 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/40 animate-pulse' 
-                      : 'bg-[#F9F8F6] dark:bg-slate-800 hover:bg-gold/15 dark:hover:bg-gold/15 text-nearblack dark:text-white border-black/5 dark:border-white/5'
-                  }`}
-                >
-                  {isPlayingSpeech ? <Square size={13} className="text-red-500" /> : <Volume2 size={13} className="text-gold" />}
-                  <span>{isPlayingSpeech ? 'Stop Listening' : 'Listen to Paper'}</span>
-                </button>
-
-                {/* bookmark save button */}
-                <button
-                  onClick={handleToggleBookmark}
-                  className={`w-full py-2 font-semibold rounded flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
-                    isBookmarked 
-                      ? 'bg-amber-50 dark:bg-amber-950/20 text-gold border-gold/40' 
-                      : 'bg-offwhite dark:bg-slate-800 hover:bg-gold/15 text-nearblack dark:text-white border-black/5 dark:border-white/5'
-                  }`}
-                >
-                  <BookMarked size={13} className={isBookmarked ? "text-amber-500" : "text-gold"} />
-                  <span>{isBookmarked ? 'Bookmarked / Saved' : 'Bookmark Paper'}</span>
-                </button>
-
                 {/* Print button mapped as PDF simulation */}
                 <button
                   onClick={handlePrint}

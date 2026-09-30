@@ -216,7 +216,7 @@ export default function PathDetail() {
                 />
               </div>
               <p className="text-[11px] text-lightgrey text-center pt-1 leading-relaxed">
-                {getTranslatedText('Checked off', 'እስካሁን የተጠናቀቁት፦')} <strong className="text-nearblack dark:text-white">{completedSlugs.length}</strong> {getTranslatedText('of', 'ከ')} <strong className="text-nearblack dark:text-white">{pathArticles.length}</strong> {getTranslatedText('modules.', 'አሃዶች።')}
+                {getTranslatedText('Reading progress', 'የንባብ ሂደት፦')} <strong className="text-nearblack dark:text-white">{completedSlugs.length}</strong> {getTranslatedText('of', 'ከ')} <strong className="text-nearblack dark:text-white">{pathArticles.length}</strong> {getTranslatedText('article lessons.', 'የጽሑፍ ትምህርቶች።')}
               </p>
             </div>
 
