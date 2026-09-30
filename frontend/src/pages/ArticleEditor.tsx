@@ -191,53 +191,53 @@ export default function ArticleEditor() {
   };
 
   return (
-    <div id="article-editor-page" className="animate-fade-in bg-slate-50/50 dark:bg-slate-950/40 min-h-screen py-8 px-4 md:px-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div id="article-editor-page" className="animate-fade-in min-h-screen bg-[#f4f5f2] px-3 py-4 font-sans dark:bg-dark-bg md:px-6 md:py-6">
+      <div className="mx-auto max-w-[1480px] space-y-5">
         
         {/* TOP ACTION HEADER */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
+        <div className="sticky top-3 z-40 flex flex-col items-start justify-between gap-4 rounded-2xl border border-black/5 bg-white/95 p-4 shadow-lg shadow-black/5 backdrop-blur-md dark:border-white/10 dark:bg-dark-card/95 md:flex-row md:items-center md:p-5">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigateTo('/admin')}
-              className="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-all border border-slate-100 dark:border-white/5 cursor-pointer shadow-sm"
+              className="rounded-xl border border-black/10 p-2.5 text-mediumgrey shadow-sm transition-all hover:border-gold/40 hover:bg-gold/5 hover:text-nearblack dark:border-white/10 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
               title="Return to Workroom"
             >
               <ArrowLeft size={16} />
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-sans text-xs font-bold tracking-widest text-gold">Manuscript Workspace</span>
+                <span className="font-sans text-[10px] font-bold tracking-[0.18em] text-gold">Editorial Workspace</span>
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider ${editedArticle.isPublished ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25' : 'bg-amber-500/10 text-amber-600 dark:text-gold border border-amber-500/25'}`}>
                   {editedArticle.isPublished ? 'Published' : 'Draft'}
                 </span>
               </div>
-              <h1 className="font-serif text-lg font-bold text-slate-900 dark:text-white mt-0.5 line-clamp-1">
+              <h1 className="mt-1 line-clamp-1 font-serif text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                 {editedArticle.title || 'Untitled Manuscript'}
               </h1>
             </div>
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto self-stretch md:self-auto justify-end">
-            <p className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 dark:text-gray-500 font-mono mr-2">
+            <p className="hidden items-center gap-1.5 text-[11px] text-slate-400 dark:text-gray-500 lg:flex lg:font-mono">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
               <span>{autosaveStatus}</span>
             </p>
 
             <button
               onClick={() => setPreviewMode(!previewMode)}
-              className={`px-4 py-2 text-xs font-bold tracking-wider rounded-lg border flex items-center gap-2 transition-all cursor-pointer ${
+              className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold tracking-wider transition-all ${
                 previewMode 
                   ? 'bg-slate-100 border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-900 dark:text-white' 
                   : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300'
               }`}
             >
               <Eye size={13} />
-              <span>{previewMode ? 'Edit Mode' : 'Live Preview'}</span>
+              <span>{previewMode ? 'Return To Editing' : 'Reader Preview'}</span>
             </button>
 
             <button
               onClick={handleSaveRevisions}
-              className="px-5 py-2 text-xs font-bold tracking-wider rounded-lg bg-navy hover:bg-navy/90 dark:bg-gold dark:text-slate-950 dark:hover:bg-gold/90 text-white flex items-center gap-2 transition-colors cursor-pointer shadow-sm"
+              className="flex items-center gap-2 rounded-xl bg-navy px-5 py-2.5 text-xs font-bold tracking-wider text-white shadow-sm transition-colors hover:bg-navy/90 dark:bg-gold dark:text-slate-950 dark:hover:bg-gold/90"
             >
               <Save size={13} />
               <span>Save Revisions</span>
@@ -249,7 +249,7 @@ export default function ArticleEditor() {
           /* PREMIUM PREVIEW MANUSCRIPT INTERFACE */
           <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-6 md:p-12 max-w-3xl mx-auto space-y-8 shadow-md">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-4">
-              <span className="text-[10px] uppercase tracking-widest text-gold font-mono">Simulated Reader Context</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gold font-mono">Reader Preview</span>
               <div className="flex rounded-lg bg-slate-50 dark:bg-slate-950 p-1 border dark:border-white/15">
                 <button
                   onClick={() => setPreviewLang('en')}
@@ -324,13 +324,13 @@ export default function ArticleEditor() {
           </div>
         ) : (
           /* REDESIGNED TWO-COLUMN WORKSPACE */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12 lg:gap-7">
             
             {/* LEFT COMPILER PANEL (8 Columns) */}
             <main className="lg:col-span-8 space-y-6">
               
               {/* COMPACT CHOPPED TAB COMPONENT */}
-              <div className="flex border-b border-slate-100 dark:border-white/10 overflow-x-auto bg-white dark:bg-slate-900 p-1.5 rounded-xl border shadow-sm gap-1">
+              <div className="sticky top-[94px] z-30 flex gap-1 overflow-x-auto rounded-xl border border-black/5 bg-white/95 p-1.5 shadow-md shadow-black/5 backdrop-blur-md dark:border-white/10 dark:bg-dark-card/95">
                 <button
                   type="button"
                   onClick={() => setActiveTab('en')}
@@ -382,7 +382,7 @@ export default function ArticleEditor() {
               </div>
 
               {/* CORE EDITOR WRAPPERS */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-6 shadow-sm space-y-6">
+              <div className="space-y-6 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card md:p-7">
                 
                 {activeTab === 'en' && (
                   <div className="space-y-6 animate-fade-in">
@@ -465,13 +465,13 @@ export default function ArticleEditor() {
                 {/* WYSIWYG CONTENT BLOCKS LIST (For 'en' and 'am' tabs) */}
                 {(activeTab === 'en' || activeTab === 'am') && (
                   <div className="space-y-5 border-t border-slate-100 dark:border-white/5 pt-6">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 font-sans">Manuscript Content Blocks</span>
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 font-sans">Manuscript Content Blocks</span>
                       <span className="text-[9px] font-mono text-slate-400">{editedArticle.content.length} Blocks Total</span>
                     </div>
 
                     {/* STICKY-LIKE FLOATING WYSIWYG BAR */}
-                    <div className="flex flex-wrap items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-2 rounded-xl border border-slate-150 dark:border-white/5">
+                    <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-black/5 bg-[#f4f5f2] p-2 dark:border-white/5 dark:bg-slate-950">
                       <span className="text-[9px] uppercase font-bold text-slate-400 px-2 font-sans">Insert Block:</span>
                       <div className="h-4 w-px bg-slate-200 dark:bg-white/10" />
                       
@@ -526,7 +526,7 @@ export default function ArticleEditor() {
                         return (
                           <div
                             key={idx}
-                            className={`p-4 border rounded-xl relative space-y-3 group transition-all shadow-sm ${
+                            className={`relative space-y-3 rounded-xl border p-4 shadow-sm transition-all group ${
                               isScripture
                                 ? 'bg-amber-50/10 dark:bg-[#1A1813] border-gold/25'
                                 : isHeader
@@ -823,10 +823,10 @@ export default function ArticleEditor() {
             </main>
 
             {/* RIGHT SIDEBAR CONTROLLER PANEL (4 Columns) */}
-            <aside className="lg:col-span-4 space-y-6">
+            <aside className="space-y-5 lg:col-span-4 lg:sticky lg:top-[94px] lg:self-start">
               
               {/* PUBLISHING PARAMETERS CARD */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="space-y-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
                 <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
                   <Sliders size={14} className="text-gold" />
                   <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Publish Parameters</h3>
@@ -905,7 +905,7 @@ export default function ArticleEditor() {
               </div>
 
               {/* TAXONOMY & DIFFICULTY DEPTH */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="space-y-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
                 <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
                   <BookMarked size={14} className="text-gold" />
                   <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Taxonomy Arena</h3>
@@ -982,7 +982,7 @@ export default function ArticleEditor() {
               </div>
 
               {/* COVER IMAGE FRAME CONTAINER */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="space-y-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
                 <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
                   <Image size={14} className="text-gold" />
                   <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Cover Graphic</h3>
@@ -1015,7 +1015,7 @@ export default function ArticleEditor() {
               </div>
 
               {/* MAPPED LEARNING ROADMAPS */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="space-y-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
                 <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
                   <Sparkles size={14} className="text-gold" />
                   <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Roadmap Integration</h3>
@@ -1069,7 +1069,7 @@ export default function ArticleEditor() {
               </div>
 
               {/* KEYWORD TAG CHIPS */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="space-y-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
                 <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
                   <Tag size={14} className="text-gold" />
                   <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Manuscript Tags</h3>

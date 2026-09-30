@@ -670,7 +670,7 @@ export default function ArticleDetail() {
             )}
 
             {/* Part of Path helper */}
-            {pathCardElement}
+            {/* {pathCardElement} */}
 
             {/* Share and Print Panel */}
             <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-4 shadow-sm text-xs">
