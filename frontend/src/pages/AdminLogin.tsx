@@ -5,15 +5,17 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Lock, Eye, EyeOff, Check, Heart, ShieldAlert } from 'lucide-react';
+import { Lock, Eye, EyeOff, Check, Loader2 } from 'lucide-react';
+import authService from '../services/auth';
 
 export default function AdminLogin() {
   const { loginAdmin, navigateTo, isAdmin } = useApp();
   
-  const [email, setEmail] = useState('girmaglory@gmail.com'); // Autofilled with metadata email to build comfort!
-  const [password, setPassword] = useState('sterling-theology');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   // If already logged in, redirect straight to dashboard
@@ -21,16 +23,30 @@ export default function AdminLogin() {
     setTimeout(() => navigateTo('/admin'), 100);
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim() && password.trim()) {
+    setErrorMsg('');
+
+    if (!email.trim() || !password.trim()) {
+      setErrorMsg('Please enter both your email address and password.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const data = await authService.login(email.trim(), password.trim());
       setSuccess(true);
+      loginAdmin(data.token);
       setTimeout(() => {
-        loginAdmin();
         navigateTo('/admin');
-      }, 1000);
-    } else {
-      setErrorMsg('Invalid authorship credentials. Please review entries.');
+      }, 750);
+    } catch (err: any) {
+      const serverMessage =
+        err?.response?.data?.message ||
+        'Unable to connect to authentication server. Please check your credentials.';
+      setErrorMsg(serverMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,7 +88,9 @@ export default function AdminLogin() {
               <Lock size={16} className="shrink-0 text-gold my-auto" />
               <div className="space-y-0.5 leading-relaxed">
                 <p className="font-bold tracking-wider text-[10px] text-gold">Security Notice</p>
-                <p className="font-serif text-gray-300">This gateway is configured for the single author <strong>Thomas Sterling</strong>. Registration is disabled.</p>
+                <p className="font-serif text-gray-300">
+                  This portal is reserved for ministry administrators. Public registration is disabled.
+                </p>
               </div>
             </div>
 
@@ -91,9 +109,11 @@ export default function AdminLogin() {
                 <input
                   type="email"
                   required
+                  placeholder="admin@hokhma.org"
                   value={email}
+                  disabled={isLoading}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded focus:outline-none focus:border-gold text-sm text-white font-sans"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded focus:outline-none focus:border-gold text-sm text-white font-sans disabled:opacity-50"
                 />
               </div>
 
@@ -106,9 +126,11 @@ export default function AdminLogin() {
                   <input
                     type={showPass ? 'text' : 'password'}
                     required
+                    placeholder="••••••••••••"
                     value={password}
+                    disabled={isLoading}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3.5 py-2.5 pr-10 bg-slate-900 border border-white/10 rounded focus:outline-none focus:border-gold text-sm text-white font-sans"
+                    className="w-full px-3.5 py-2.5 pr-10 bg-slate-900 border border-white/10 rounded focus:outline-none focus:border-gold text-sm text-white font-sans disabled:opacity-50"
                   />
                   <button
                     type="button"
@@ -123,9 +145,17 @@ export default function AdminLogin() {
 
             <button
               type="submit"
-              className="w-full py-3 bg-gold text-slate-950 hover:bg-gold/90 transition-all font-bold tracking-wider text-xs rounded shadow mt-2 cursor-pointer"
+              disabled={isLoading}
+              className="w-full py-3 bg-gold text-slate-950 hover:bg-gold/90 transition-all font-bold tracking-wider text-xs rounded shadow mt-2 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
             >
-              Sign in to Workroom
+              {isLoading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Authenticating...</span>
+                </>
+              ) : (
+                <span>Sign In to Workroom</span>
+              )}
             </button>
             
             <div className="text-center">

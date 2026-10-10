@@ -31,7 +31,8 @@ interface AppContextType {
   authorProfile: AuthorProfile;
   statementOfFaith: FaithStatement[];
   isAdmin: boolean;
-  loginAdmin: () => void;
+  token: string | null;
+  loginAdmin: (token: string) => void;
   logoutAdmin: () => void;
   darkMode: boolean;
   setDarkMode: (dark: boolean) => void;
@@ -165,7 +166,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [reactions, setReactions] = useState<Record<string, Record<string, number>>>(() => getStoredValue('hokhma_reactions', {}));
   const [authorProfile, setAuthorProfile] = useState<AuthorProfile>(() => getStoredValue('hokhma_author_profile', AUTHOR_BIO));
   const [statementOfFaith, setStatementOfFaith] = useState<FaithStatement[]>(() => getStoredValue('hokhma_statement_of_faith', STATEMENT_OF_FAITH));
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => getStoredValue('hokhma_is_admin', false));
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('hokhma_token'));
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => Boolean(localStorage.getItem('hokhma_token')));
   const [darkMode, setDarkMode] = useState<boolean>(() => getStoredValue('hokhma_dark_mode', false));
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [progress, setProgress] = useState<Record<string, string[]>>(() => getStoredValue('hokhma_progress', {}));
@@ -254,8 +256,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [progress]);
 
   // Actions
-  const loginAdmin = () => setIsAdmin(true);
-  const logoutAdmin = () => setIsAdmin(false);
+  const loginAdmin = (newToken: string) => {
+    localStorage.setItem('hokhma_token', newToken);
+    localStorage.setItem('hokhma_is_admin', 'true');
+    setToken(newToken);
+    setIsAdmin(true);
+  };
+
+  const logoutAdmin = () => {
+    localStorage.removeItem('hokhma_token');
+    localStorage.removeItem('hokhma_is_admin');
+    setToken(null);
+    setIsAdmin(false);
+  };
 
   const toggleStepProgress = (pathSlug: string, articleSlug: string) => {
     setProgress((prev) => {
@@ -444,6 +457,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         authorProfile,
         statementOfFaith,
         isAdmin,
+        token,
         loginAdmin,
         logoutAdmin,
         darkMode,
