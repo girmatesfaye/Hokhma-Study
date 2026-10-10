@@ -1,0 +1,7 @@
+{
+    "files.autoSave": "onWindowChange",
+    "git.repositoryScanIgnoredFolders": [
+        "node_modules",
+        ".env"
+    ]
+}
