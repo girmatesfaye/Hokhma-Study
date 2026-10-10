@@ -4,7 +4,19 @@
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Article, Topic, Question, LearningPath, Resource, Comment, AppRoute, AuthorProfile, FaithStatement, ContactMessage, QuestionSubmission } from '../types';
+import {
+  Article,
+  Topic,
+  Question,
+  LearningPath,
+  Resource,
+  Comment,
+  AppRoute,
+  AuthorProfile,
+  FaithStatement,
+  ContactMessage,
+  QuestionSubmission
+} from '../types';
 import {
   INITIAL_ARTICLES,
   INITIAL_TOPICS,
@@ -13,8 +25,19 @@ import {
   INITIAL_RESOURCES,
   INITIAL_COMMENTS,
   AUTHOR_BIO,
-  STATEMENT_OF_FAITH,
+  STATEMENT_OF_FAITH
 } from '../data';
+
+// Import frontend API services
+import * as articlesService from '../services/articles';
+import * as topicsService from '../services/topics';
+import * as questionsService from '../services/questions';
+import * as pathsService from '../services/paths';
+import * as resourcesService from '../services/resources';
+import * as commentsService from '../services/comments';
+import * as contactService from '../services/contact';
+import * as submissionsService from '../services/submissions';
+import * as settingsService from '../services/settings';
 
 interface AppContextType {
   currentRoute: AppRoute;
@@ -32,13 +55,16 @@ interface AppContextType {
   statementOfFaith: FaithStatement[];
   isAdmin: boolean;
   token: string | null;
+  isLoading: boolean;
+  error: string | null;
+  refetchData: () => Promise<void>;
   loginAdmin: (token: string) => void;
   logoutAdmin: () => void;
   darkMode: boolean;
   setDarkMode: (dark: boolean) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
-  progress: Record<string, string[]>; // Record<pathSlug, articleSlugsValue[]>
+  progress: Record<string, string[]>;
   toggleStepProgress: (pathSlug: string, articleSlug: string) => void;
   addArticle: (article: Article) => void;
   updateArticle: (article: Article) => void;
@@ -60,19 +86,22 @@ interface AppContextType {
   addQuestion: (q: Question) => void;
   addContactMessage: (message: ContactMessage) => void;
   addQuestionSubmission: (submission: QuestionSubmission) => void;
+  updateSubmissionStatus: (id: string, status: 'pending' | 'reviewed') => void;
+  deleteContactMessage: (id: string) => void;
   toggleReaction: (articleSlug: string, reaction: string, delta: number) => void;
   incrementArticleView: (articleId: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// Parse browser hash to current application route
 export function parseHash(hash: string): AppRoute {
   if (!hash || hash === '#' || hash === '#/') {
     return { page: 'home' };
   }
   const cleanHash = hash.replace(/^#/, '');
   
-  // Handle search query
+  // Handle search query route
   if (cleanHash.startsWith('/search')) {
     const qIndex = cleanHash.indexOf('?q=');
     if (qIndex !== -1) {
@@ -128,12 +157,11 @@ export function parseHash(hash: string): AppRoute {
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  // State initialization with localStorage safety checks
+  // Helper to read initial stored value from localStorage with fallback
   const getStoredValue = <T,>(key: string, defaultValue: T): T => {
     try {
       const stored = localStorage.getItem(key);
       if (stored) return JSON.parse(stored);
-      // Fallback to legacy apologia key prefix
       const legacyKey = key.replace('hokhma_', 'apologia_');
       const legacyStored = localStorage.getItem(legacyKey);
       return legacyStored ? JSON.parse(legacyStored) : defaultValue;
@@ -142,6 +170,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Helper to persist state to localStorage
   const setStoredValue = <T,>(key: string, value: T) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -150,6 +179,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Core application states
   const [currentRoute, setCurrentRoute] = useState<AppRoute>(() => parseHash(window.location.hash));
   const [articles, setArticles] = useState<Article[]>(() => getStoredValue('hokhma_articles', INITIAL_ARTICLES));
   const [topics, setTopics] = useState<Topic[]>(() => getStoredValue('hokhma_topics', INITIAL_TOPICS));
@@ -171,15 +201,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [darkMode, setDarkMode] = useState<boolean>(() => getStoredValue('hokhma_dark_mode', false));
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [progress, setProgress] = useState<Record<string, string[]>>(() => getStoredValue('hokhma_progress', {}));
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Route Synchronization
+  // Synchronize browser hash navigation
   useEffect(() => {
     const handleHashChange = () => {
       setCurrentRoute(parseHash(window.location.hash));
     };
 
     window.addEventListener('hashchange', handleHashChange);
-    // Initial check
     handleHashChange();
 
     return () => {
@@ -187,11 +218,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Update hash location on route change
   const navigateTo = (routeString: string) => {
     window.location.hash = routeString;
   };
 
-  // Dark Mode effect
+  // Toggle CSS dark theme class on document element
   useEffect(() => {
     const root = window.document.documentElement;
     if (darkMode) {
@@ -202,60 +234,79 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setStoredValue('hokhma_dark_mode', darkMode);
   }, [darkMode]);
 
-  // Persists state changes safely
-  useEffect(() => {
-    setStoredValue('hokhma_articles', articles);
-  }, [articles]);
+  // Persist local preferences and cache
+  useEffect(() => { setStoredValue('hokhma_articles', articles); }, [articles]);
+  useEffect(() => { setStoredValue('hokhma_topics', topics); }, [topics]);
+  useEffect(() => { setStoredValue('hokhma_questions', questions); }, [questions]);
+  useEffect(() => { setStoredValue('hokhma_paths', paths); }, [paths]);
+  useEffect(() => { setStoredValue('hokhma_resources', resources); }, [resources]);
+  useEffect(() => { setStoredValue('hokhma_comments', comments); }, [comments]);
+  useEffect(() => { setStoredValue('hokhma_contact_messages', contactMessages); }, [contactMessages]);
+  useEffect(() => { setStoredValue('hokhma_question_submissions', questionSubmissions); }, [questionSubmissions]);
+  useEffect(() => { setStoredValue('hokhma_reactions', reactions); }, [reactions]);
+  useEffect(() => { setStoredValue('hokhma_author_profile', authorProfile); }, [authorProfile]);
+  useEffect(() => { setStoredValue('hokhma_statement_of_faith', statementOfFaith); }, [statementOfFaith]);
+  useEffect(() => { setStoredValue('hokhma_is_admin', isAdmin); }, [isAdmin]);
+  useEffect(() => { setStoredValue('hokhma_progress', progress); }, [progress]);
 
-  useEffect(() => {
-    setStoredValue('hokhma_topics', topics);
-  }, [topics]);
+  // Fetch all initial data from backend REST API with fallback to local state
+  const refetchData = async (): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [
+        fetchedArticles,
+        fetchedTopics,
+        fetchedQuestions,
+        fetchedPaths,
+        fetchedResources,
+        fetchedSettings
+      ] = await Promise.all([
+        articlesService.getArticles({ all: isAdmin }).catch(() => null),
+        topicsService.getTopics().catch(() => null),
+        questionsService.getQuestions().catch(() => null),
+        pathsService.getPaths().catch(() => null),
+        resourcesService.getResources().catch(() => null),
+        settingsService.getPublicSettings().catch(() => null)
+      ]);
 
-  useEffect(() => {
-    setStoredValue('hokhma_questions', questions);
-  }, [questions]);
+      if (fetchedArticles && fetchedArticles.length > 0) setArticles(fetchedArticles);
+      if (fetchedTopics && fetchedTopics.length > 0) setTopics(fetchedTopics);
+      if (fetchedQuestions && fetchedQuestions.length > 0) setQuestions(fetchedQuestions);
+      if (fetchedPaths && fetchedPaths.length > 0) setPaths(fetchedPaths);
+      if (fetchedResources && fetchedResources.length > 0) setResources(fetchedResources);
+      if (fetchedSettings) {
+        if (fetchedSettings.profile) setAuthorProfile(fetchedSettings.profile);
+        if (fetchedSettings.faithStatements && fetchedSettings.faithStatements.length > 0) {
+          setStatementOfFaith(fetchedSettings.faithStatements);
+        }
+      }
 
-  useEffect(() => {
-    setStoredValue('hokhma_paths', paths);
-  }, [paths]);
+      // If authenticated as admin, fetch administrative queues
+      if (isAdmin && token) {
+        const [fetchedComments, fetchedMessages, fetchedSubmissions] = await Promise.all([
+          commentsService.getAllComments().catch(() => null),
+          contactService.getAllContactMessages().catch(() => null),
+          submissionsService.getAllSubmissions().catch(() => null)
+        ]);
+        if (fetchedComments) setComments(fetchedComments);
+        if (fetchedMessages) setContactMessages(fetchedMessages);
+        if (fetchedSubmissions) setQuestionSubmissions(fetchedSubmissions);
+      }
+    } catch (err) {
+      console.warn('[AppContext] API fetch failure, using local state:', (err as Error).message);
+      setError((err as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Initial mount data load
   useEffect(() => {
-    setStoredValue('hokhma_resources', resources);
-  }, [resources]);
+    refetchData();
+  }, [isAdmin, token]);
 
-  useEffect(() => {
-    setStoredValue('hokhma_comments', comments);
-  }, [comments]);
-
-  useEffect(() => {
-    setStoredValue('hokhma_contact_messages', contactMessages);
-  }, [contactMessages]);
-
-  useEffect(() => {
-    setStoredValue('hokhma_question_submissions', questionSubmissions);
-  }, [questionSubmissions]);
-
-  useEffect(() => {
-    setStoredValue('hokhma_reactions', reactions);
-  }, [reactions]);
-
-  useEffect(() => {
-    setStoredValue('hokhma_author_profile', authorProfile);
-  }, [authorProfile]);
-
-  useEffect(() => {
-    setStoredValue('hokhma_statement_of_faith', statementOfFaith);
-  }, [statementOfFaith]);
-
-  useEffect(() => {
-    setStoredValue('hokhma_is_admin', isAdmin);
-  }, [isAdmin]);
-
-  useEffect(() => {
-    setStoredValue('hokhma_progress', progress);
-  }, [progress]);
-
-  // Actions
+  // Authenticate admin and store token
   const loginAdmin = (newToken: string) => {
     localStorage.setItem('hokhma_token', newToken);
     localStorage.setItem('hokhma_is_admin', 'true');
@@ -263,6 +314,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setIsAdmin(true);
   };
 
+  // Sign out admin and clear credentials
   const logoutAdmin = () => {
     localStorage.removeItem('hokhma_token');
     localStorage.removeItem('hokhma_is_admin');
@@ -270,6 +322,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setIsAdmin(false);
   };
 
+  // Toggle learning path step completion progress
   const toggleStepProgress = (pathSlug: string, articleSlug: string) => {
     setProgress((prev) => {
       const currentPathProgress = prev[pathSlug] || [];
@@ -281,9 +334,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const addArticle = (newArt: Article) => {
+  // Add new article with optimistic update and API synchronization
+  const addArticle = async (newArt: Article) => {
     setArticles((prev) => [newArt, ...prev]);
-    // Sync topics count
     setTopics((topicsPrev) =>
       topicsPrev.map((t) => {
         if (t.slug === newArt.topicSlug) {
@@ -292,13 +345,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return t;
       })
     );
+    try {
+      const created = await articlesService.createArticle(newArt);
+      setArticles((prev) => prev.map((a) => (a.slug === newArt.slug ? created : a)));
+    } catch (err) {
+      console.error('[API Error] addArticle failed:', err);
+    }
   };
 
-  const updateArticle = (updatedArt: Article) => {
+  // Update article with optimistic update and API synchronization
+  const updateArticle = async (updatedArt: Article) => {
     const oldArt = articles.find((a) => a.id === updatedArt.id);
     setArticles((prev) => prev.map((art) => (art.id === updatedArt.id ? updatedArt : art)));
 
-    // Keep the ordered path index aligned when an article is moved or renamed.
     setPaths((prev) => prev.map((path) => {
       const withoutArticle = path.articleSlugs.filter((slug) => slug !== oldArt?.slug && slug !== updatedArt.slug);
       const isTargetPath = updatedArt.partInPath?.pathSlug === path.slug;
@@ -308,7 +367,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return { ...path, articleSlugs, articleCount: articleSlugs.length };
     }));
     
-    // Update topics counts if topicSlug changed
     if (oldArt && oldArt.topicSlug !== updatedArt.topicSlug) {
       setTopics((topicsPrev) =>
         topicsPrev.map((t) => {
@@ -322,9 +380,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         })
       );
     }
+
+    try {
+      await articlesService.updateArticle(updatedArt.id, updatedArt);
+    } catch (err) {
+      console.error('[API Error] updateArticle failed:', err);
+    }
   };
 
-  const deleteArticle = (id: string) => {
+  // Delete article with optimistic update and API synchronization
+  const deleteArticle = async (id: string) => {
     const target = articles.find((art) => art.id === id);
     setArticles((prev) => prev.filter((art) => art.id !== id));
     if (target) {
@@ -337,21 +402,45 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         })
       );
     }
+    try {
+      await articlesService.deleteArticle(id);
+    } catch (err) {
+      console.error('[API Error] deleteArticle failed:', err);
+    }
   };
 
-  const addTopic = (newTopic: Topic) => {
+  // Add topic with optimistic update and API synchronization
+  const addTopic = async (newTopic: Topic) => {
     setTopics((prev) => [newTopic, ...prev]);
+    try {
+      await topicsService.createTopic(newTopic);
+    } catch (err) {
+      console.error('[API Error] addTopic failed:', err);
+    }
   };
 
-  const updateTopic = (updatedTopic: Topic) => {
+  // Update topic with optimistic update and API synchronization
+  const updateTopic = async (updatedTopic: Topic) => {
     setTopics((prev) => prev.map((topic) => (topic.slug === updatedTopic.slug ? updatedTopic : topic)));
+    try {
+      await topicsService.updateTopic(updatedTopic.slug, updatedTopic);
+    } catch (err) {
+      console.error('[API Error] updateTopic failed:', err);
+    }
   };
 
-  const deleteTopic = (slug: string) => {
+  // Delete topic with optimistic update and API synchronization
+  const deleteTopic = async (slug: string) => {
     setTopics((prev) => prev.filter((topic) => topic.slug !== slug));
+    try {
+      await topicsService.deleteTopic(slug);
+    } catch (err) {
+      console.error('[API Error] deleteTopic failed:', err);
+    }
   };
 
-  const addPath = (newPath: LearningPath) => {
+  // Add learning path with optimistic update and API synchronization
+  const addPath = async (newPath: LearningPath) => {
     setPaths((prev) => [newPath, ...prev]);
     setArticles((prev) => prev.map((article) => {
       const position = newPath.articleSlugs.indexOf(article.slug);
@@ -359,9 +448,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ? article
         : { ...article, partInPath: { pathSlug: newPath.slug, position: position + 1 } };
     }));
+    try {
+      await pathsService.createPath(newPath);
+    } catch (err) {
+      console.error('[API Error] addPath failed:', err);
+    }
   };
 
-  const updatePath = (updatedPath: LearningPath) => {
+  // Update learning path with optimistic update and API synchronization
+  const updatePath = async (updatedPath: LearningPath) => {
     setPaths((prev) => prev.map((path) => (path.slug === updatedPath.slug ? updatedPath : path)));
     setArticles((prev) => prev.map((article) => {
       const position = updatedPath.articleSlugs.indexOf(article.slug);
@@ -374,66 +469,182 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
       return article;
     }));
+    try {
+      await pathsService.updatePath(updatedPath.slug, updatedPath);
+    } catch (err) {
+      console.error('[API Error] updatePath failed:', err);
+    }
   };
 
-  const deletePath = (slug: string) => {
+  // Delete learning path with optimistic update and API synchronization
+  const deletePath = async (slug: string) => {
     setPaths((prev) => prev.filter((path) => path.slug !== slug));
+    try {
+      await pathsService.deletePath(slug);
+    } catch (err) {
+      console.error('[API Error] deletePath failed:', err);
+    }
   };
 
-  const addResource = (newResource: Resource) => {
+  // Add reference resource with optimistic update and API synchronization
+  const addResource = async (newResource: Resource) => {
     setResources((prev) => [newResource, ...prev]);
+    try {
+      await resourcesService.createResource(newResource);
+    } catch (err) {
+      console.error('[API Error] addResource failed:', err);
+    }
   };
 
-  const updateResource = (updatedResource: Resource) => {
+  // Update reference resource with optimistic update and API synchronization
+  const updateResource = async (updatedResource: Resource) => {
     setResources((prev) => prev.map((resource) => (resource.id === updatedResource.id ? updatedResource : resource)));
+    try {
+      await resourcesService.updateResource(updatedResource.id, updatedResource);
+    } catch (err) {
+      console.error('[API Error] updateResource failed:', err);
+    }
   };
 
-  const deleteResource = (id: string) => {
+  // Delete reference resource with optimistic update and API synchronization
+  const deleteResource = async (id: string) => {
     setResources((prev) => prev.filter((resource) => resource.id !== id));
+    try {
+      await resourcesService.deleteResource(id);
+    } catch (err) {
+      console.error('[API Error] deleteResource failed:', err);
+    }
   };
 
-  const updateAuthorProfile = (profile: AuthorProfile) => {
+  // Update author profile with optimistic update and API synchronization
+  const updateAuthorProfile = async (profile: AuthorProfile) => {
     setAuthorProfile(profile);
+    try {
+      await settingsService.updateAuthorProfile(profile);
+    } catch (err) {
+      console.error('[API Error] updateAuthorProfile failed:', err);
+    }
   };
 
-  const updateStatementOfFaith = (statements: FaithStatement[]) => {
+  // Update statement of faith with optimistic update and API synchronization
+  const updateStatementOfFaith = async (statements: FaithStatement[]) => {
     setStatementOfFaith(statements);
+    try {
+      await settingsService.updateFaithStatements(statements);
+    } catch (err) {
+      console.error('[API Error] updateStatementOfFaith failed:', err);
+    }
   };
 
-  const addComment = (newComment: Comment) => {
+  // Submit reader comment with optimistic update and API synchronization
+  const addComment = async (newComment: Comment) => {
     setComments((prev) => [newComment, ...prev]);
+    try {
+      await commentsService.submitComment(newComment);
+    } catch (err) {
+      console.error('[API Error] addComment failed:', err);
+    }
   };
 
-  const approveComment = (commentId: string) => {
+  // Approve comment with optimistic update and API synchronization
+  const approveComment = async (commentId: string) => {
     setComments((prev) =>
       prev.map((c) => (c.id === commentId ? { ...c, isApproved: true } : c))
     );
+    try {
+      await commentsService.approveComment(commentId);
+    } catch (err) {
+      console.error('[API Error] approveComment failed:', err);
+    }
   };
 
-  const deleteComment = (commentId: string) => {
+  // Delete comment with optimistic update and API synchronization
+  const deleteComment = async (commentId: string) => {
     setComments((prev) => prev.filter((c) => c.id !== commentId));
+    try {
+      await commentsService.deleteComment(commentId);
+    } catch (err) {
+      console.error('[API Error] deleteComment failed:', err);
+    }
   };
 
-  const addQuestion = (newQ: Question) => {
+  // Add theological question with optimistic update and API synchronization
+  const addQuestion = async (newQ: Question) => {
     setQuestions((prev) => [newQ, ...prev]);
+    try {
+      await questionsService.createQuestion(newQ);
+    } catch (err) {
+      console.error('[API Error] addQuestion failed:', err);
+    }
   };
 
-  const addContactMessage = (message: ContactMessage) => {
+  // Submit reader contact inquiry with optimistic update and API synchronization
+  const addContactMessage = async (message: ContactMessage) => {
     setContactMessages((prev) => [message, ...prev]);
+    try {
+      await contactService.submitContactMessage(message);
+    } catch (err) {
+      console.error('[API Error] addContactMessage failed:', err);
+    }
   };
 
-  const addQuestionSubmission = (submission: QuestionSubmission) => {
+  // Submit reader question or objection with optimistic update and API synchronization
+  const addQuestionSubmission = async (submission: QuestionSubmission) => {
     setQuestionSubmissions((prev) => [submission, ...prev]);
+    try {
+      await submissionsService.submitQuestion(submission);
+    } catch (err) {
+      console.error('[API Error] addQuestionSubmission failed:', err);
+    }
   };
 
-  const toggleReaction = (articleSlug: string, reaction: string, delta: number) => {
+  // Update submission review status with optimistic update and API synchronization
+  const updateSubmissionStatus = async (id: string, status: 'pending' | 'reviewed') => {
+    setQuestionSubmissions((prev) =>
+      prev.map((sub) => (sub.id === id ? { ...sub, status } : sub))
+    );
+    try {
+      await submissionsService.updateSubmissionStatus(id, status);
+    } catch (err) {
+      console.error('[API Error] updateSubmissionStatus failed:', err);
+    }
+  };
+
+  // Delete contact inquiry with optimistic update and API synchronization
+  const deleteContactMessage = async (id: string) => {
+    setContactMessages((prev) => prev.filter((msg) => msg.id !== id));
+    try {
+      await contactService.deleteContactMessage(id);
+    } catch (err) {
+      console.error('[API Error] deleteContactMessage failed:', err);
+    }
+  };
+
+  // Toggle reader reaction with optimistic local update and background API synchronization
+  const toggleReaction = async (articleSlug: string, reaction: string, delta: number) => {
     setReactions((prev) => {
-      const articleReactions: Record<string, number> = { helpful: 0, insightful: 0, rigorous: 0, ...(prev[articleSlug] || {}) };
+      const articleReactions: Record<string, number> = {
+        helpful: 0,
+        insightful: 0,
+        rigorous: 0,
+        ...(prev[articleSlug] || {})
+      };
       articleReactions[reaction] = Math.max(0, (articleReactions[reaction] || 0) + delta);
       return { ...prev, [articleSlug]: articleReactions };
     });
+
+    try {
+      await articlesService.toggleArticleReaction(
+        articleSlug,
+        reaction as 'helpful' | 'insightful' | 'rigorous',
+        delta === -1 ? -1 : 1
+      );
+    } catch (err) {
+      console.error('[API Error] toggleReaction failed:', err);
+    }
   };
 
+  // Increment article view count locally
   const incrementArticleView = (articleId: string) => {
     setArticles((prev) => prev.map((article) => (
       article.id === articleId ? { ...article, views: (article.views || 0) + 1 } : article
@@ -458,6 +669,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         statementOfFaith,
         isAdmin,
         token,
+        isLoading,
+        error,
+        refetchData,
         loginAdmin,
         logoutAdmin,
         darkMode,
@@ -486,6 +700,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         addQuestion,
         addContactMessage,
         addQuestionSubmission,
+        updateSubmissionStatus,
+        deleteContactMessage,
         toggleReaction,
         incrementArticleView,
       }}
@@ -495,6 +711,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Hook to access application context
 export function useApp() {
   const context = useContext(AppContext);
   if (!context) {
