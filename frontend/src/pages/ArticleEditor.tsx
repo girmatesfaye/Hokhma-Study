@@ -31,8 +31,11 @@ import {
   Sliders,
   AlignLeft,
   Heading2,
-  List
+  List,
+  Upload,
+  Loader2
 } from 'lucide-react';
+import { uploadCoverImage } from '../services/upload';
 
 export default function ArticleEditor() {
   const { currentRoute, articles, topics, paths, updateArticle, navigateTo, isAdmin } = useApp();
@@ -48,6 +51,33 @@ export default function ArticleEditor() {
   const [previewMode, setPreviewMode] = useState(false);
   const [previewLang, setPreviewLang] = useState<'en' | 'am'>('en');
   const [activeTab, setActiveTab] = useState<'en' | 'am' | 'footnotes' | 'seo'>('en');
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Handle file selection and upload cover image to server
+  const handleCoverImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image size must be smaller than 5 MB.');
+      return;
+    }
+
+    setIsUploadingCover(true);
+    setUploadError(null);
+    try {
+      const result = await uploadCoverImage(file);
+      updateField('coverImage', result.url);
+      setAutosaveStatus('Cover image uploaded...');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'Failed to upload cover image. Please try again.';
+      setUploadError(msg);
+    } finally {
+      setIsUploadingCover(false);
+      if (e.target) e.target.value = '';
+    }
+  };
 
   // Synchronize initial article
   useEffect(() => {
@@ -981,11 +1011,11 @@ export default function ArticleEditor() {
                 </div>
               </div>
 
-              {/* COVER IMAGE FRAME CONTAINER */}
+              {/* Cover image container */}
               <div className="space-y-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
                 <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
                   <Image size={14} className="text-gold" />
-                  <h3 className="font-serif text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Cover Graphic</h3>
+                  <h3 className="font-serif text-xs font-bold tracking-wider text-slate-900 dark:text-white">Cover Graphic</h3>
                 </div>
 
                 {editedArticle.coverImage && (
@@ -995,18 +1025,54 @@ export default function ArticleEditor() {
                       type="button"
                       onClick={() => updateField('coverImage', '')}
                       className="absolute top-2 right-2 p-1 bg-slate-950/80 hover:bg-slate-950 text-white rounded-full text-xs transition-colors"
-                      title="Clear image URL"
+                      title="Clear image"
                     >
                       <X size={12} />
                     </button>
                   </div>
                 )}
                 
-                <div className="space-y-1 text-xs">
-                  <label className="font-bold text-slate-800 dark:text-gray-200 block">Cover Image URL</label>
+                {uploadError && (
+                  <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[11px]">
+                    {uploadError}
+                  </div>
+                )}
+
+                {/* File upload input */}
+                <div className="space-y-2">
+                  <label className="font-bold text-slate-800 dark:text-gray-200 block text-xs">Upload Cover Image</label>
+                  <label className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+                    isUploadingCover
+                      ? 'border-gold/50 bg-gold/5'
+                      : 'border-slate-200 dark:border-white/10 hover:border-gold/60 bg-slate-50 dark:bg-slate-950/50'
+                  }`}>
+                    {isUploadingCover ? (
+                      <div className="flex items-center gap-2 text-gold text-xs">
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>Uploading Image...</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1.5 text-center">
+                        <Upload size={18} className="text-gold" />
+                        <span className="text-xs font-semibold text-slate-700 dark:text-gray-200">Choose Image File</span>
+                        <span className="text-[10px] text-gray-400">PNG, JPG, WEBP, or GIF up to 5 MB</span>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={isUploadingCover}
+                      onChange={handleCoverImageFileChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                <div className="space-y-1 text-xs pt-1">
+                  <label className="font-bold text-slate-800 dark:text-gray-200 block">Or Enter Direct Image URL</label>
                   <input
                     type="text"
-                    placeholder="E.g., https://images.unsplash.com/photo-..."
+                    placeholder="https://images.unsplash.com/..."
                     value={editedArticle.coverImage || ''}
                     onChange={(e) => updateField('coverImage', e.target.value)}
                     className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 rounded-xl focus:outline-none focus:border-gold"

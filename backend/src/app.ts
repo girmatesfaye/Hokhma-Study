@@ -65,6 +65,12 @@ app.get('/api/health', (_req: Request, res: Response) => {
   });
 });
 
+import path from 'path';
+import uploadRoutes from './routes/upload.routes.js';
+
+// Static directory for serving uploaded files in local development
+app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
+
 // Mount application API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/articles', articlesRoutes);
@@ -77,6 +83,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/submissions', submissionsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Catch-all 404 handler for unknown routes
 app.use(notFoundHandler);

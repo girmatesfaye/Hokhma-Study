@@ -11,3 +11,4 @@ export * from './contact';
 export * from './submissions';
 export * from './settings';
 export * from './search';
+export * from './upload';
