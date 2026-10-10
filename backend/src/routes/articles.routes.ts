@@ -10,6 +10,8 @@ import {
   deleteArticle
 } from '../controllers/articles.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
+// Import express-validator article creation validation rules
+import { validateArticle } from '../middleware/validation.middleware.js';
 
 const router = Router();
 
@@ -34,11 +36,11 @@ router.post('/:slug/react', reactionLimiter, reactToArticle);
 // Retrieve approved public comments for an article
 router.get('/:slug/comments', getArticleComments);
 
-// Create a new article (admin only)
-router.post('/', verifyToken, createArticle);
+// Create a new article with payload validation (admin only)
+router.post('/', verifyToken, validateArticle, createArticle);
 
 // Update an existing article by ID (admin only)
-router.put('/:id', verifyToken, updateArticle);
+router.put('/:id', verifyToken, validateArticle, updateArticle);
 
 // Delete an article by ID (admin only)
 router.delete('/:id', verifyToken, deleteArticle);

@@ -31,6 +31,8 @@ import {
   X,
   RefreshCw
 } from 'lucide-react';
+// Import AdminStatistics component for visit tracking and traffic reporting
+import AdminStatistics from '../components/admin/AdminStatistics';
 
 export default function AdminDashboard() {
   const {
@@ -69,6 +71,7 @@ export default function AdminDashboard() {
   const { getTranslatedText } = useLanguage();
   const [activeTab, setActiveTab] = useState<
     | 'dashboard'
+    | 'statistics'
     | 'articles'
     | 'topics'
     | 'paths'
@@ -394,6 +397,19 @@ export default function AdminDashboard() {
               >
                 <LayoutDashboard size={15} />
                 <span>{getTranslatedText('Dashboard Home', 'የማስተዳደሪያ ገጽ')}</span>
+              </button>
+
+              {/* Statistics */}
+              <button
+                onClick={() => setActiveTab('statistics')}
+                className={`w-full text-left py-2.5 px-3.5 rounded-lg text-xs font-bold tracking-wider transition-all flex items-center gap-2.5 cursor-pointer ${
+                  activeTab === 'statistics'
+                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950'
+                    : 'text-mediumgrey hover:bg-slate-50 dark:hover:bg-slate-800'
+                }`}
+              >
+                <TrendingUp size={15} />
+                <span>{getTranslatedText('Statistics', 'የድር ጣቢያ ስታቲስቲክስ')}</span>
               </button>
               
               {/* Articles */}
@@ -744,6 +760,11 @@ export default function AdminDashboard() {
                 </div>
 
               </div>
+            )}
+
+            {/* Tab: Website Visit Statistics */}
+            {activeTab === 'statistics' && (
+              <AdminStatistics />
             )}
 
             {/* Tab: Articles Full Catalog List */}

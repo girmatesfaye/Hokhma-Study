@@ -6,7 +6,10 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Search, Menu, X, Sun, Moon, ShieldAlert, BadgeInfo, Globe, Compass, BookOpen, HelpCircle } from 'lucide-react';
+// Import lucide icons for navigation and search loading
+import { Search, Menu, X, Sun, Moon, ShieldAlert, BadgeInfo, Globe, Compass, BookOpen, HelpCircle, Loader2 } from 'lucide-react';
+// Import live search API service and return types
+import { searchAll, SearchResults as ApiSearchResults } from '../services/search';
 
 export default function Navbar() {
   const { currentRoute, navigateTo, darkMode, setDarkMode, isAdmin, articles, topics, questions } = useApp();
@@ -15,6 +18,10 @@ export default function Navbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [localSearchVal, setLocalSearchVal] = useState('');
+  // State for live backend search API response
+  const [liveResults, setLiveResults] = useState<ApiSearchResults | null>(null);
+  // State tracking ongoing debounce network request
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,6 +49,30 @@ export default function Navbar() {
     setIsSearchOpen(false);
   }, [currentRoute]);
 
+  // Debounce live backend search queries by 300ms
+  useEffect(() => {
+    const trimmed = localSearchVal.trim();
+    if (!trimmed) {
+      setLiveResults(null);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const debounceTimer = setTimeout(async () => {
+      try {
+        const results = await searchAll(trimmed);
+        setLiveResults(results);
+      } catch (err) {
+        console.warn('Backend search fallback to client index:', err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [localSearchVal]);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (localSearchVal.trim()) {
@@ -50,8 +81,8 @@ export default function Navbar() {
     }
   };
 
-  // Filter for live search overlay results
-  const filteredArticles = localSearchVal.trim()
+  // Instant local fallback for articles matching the active query
+  const fallbackArticles = localSearchVal.trim()
     ? articles.filter(
         (art) =>
           art &&
@@ -64,7 +95,8 @@ export default function Navbar() {
       )
     : [];
 
-  const filteredQuestions = localSearchVal.trim()
+  // Instant local fallback for questions matching the active query
+  const fallbackQuestions = localSearchVal.trim()
     ? questions.filter(
         (q) =>
           q &&
@@ -73,7 +105,8 @@ export default function Navbar() {
       )
     : [];
 
-  const filteredTopics = localSearchVal.trim()
+  // Instant local fallback for topics matching the active query
+  const fallbackTopics = localSearchVal.trim()
     ? topics.filter(
         (t) =>
           t &&
@@ -81,6 +114,13 @@ export default function Navbar() {
             (t.nameAm && t.nameAm.toLowerCase().includes(localSearchVal.toLowerCase())))
       )
     : [];
+
+  // Use live API results when available or instant local fallback
+  const displayedArticles = liveResults ? liveResults.articles : fallbackArticles;
+  // Use live API question results when available or instant local fallback
+  const displayedQuestions = liveResults ? liveResults.questions : fallbackQuestions;
+  // Use live API topic results when available or instant local fallback
+  const displayedTopics = liveResults ? liveResults.topics : fallbackTopics;
 
   const isActive = (pageName: string) => {
     const current = currentRoute.page;
@@ -272,7 +312,12 @@ export default function Navbar() {
             {/* Header / Input Area */}
             <div className="p-4 md:p-6 border-b border-black/5 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/40">
               <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 border border-black/5 dark:border-white/5 rounded-full px-4.5 py-2.5 focus-within:ring-2 focus-within:ring-gold/40 focus-within:border-gold transition-all duration-200">
-                <Search className="text-gold h-5 w-5 shrink-0" />
+                {/* Search icon or live search spinning loader */}
+                {isSearching ? (
+                  <Loader2 className="animate-spin text-gold h-5 w-5 shrink-0" />
+                ) : (
+                  <Search className="text-gold h-5 w-5 shrink-0" />
+                )}
                 <input
                   type="text"
                   value={localSearchVal}
@@ -284,13 +329,16 @@ export default function Navbar() {
                       setIsSearchOpen(false);
                     }
                   }}
-                  placeholder={t('nav.search') || "Search papers, objections, topics..."}
+                  placeholder={t('nav.search') || "Search Papers, Objections, Topics..."}
                   className="w-full bg-transparent !border-none !ring-0 !outline-none text-sm md:text-base text-nearblack dark:text-white placeholder-mediumgrey/60 font-sans p-0! h-auto! min-w-0"
                   autoFocus
                 />
                 {localSearchVal.trim() !== '' && (
                   <button 
-                    onClick={() => setLocalSearchVal('')}
+                    onClick={() => {
+                      setLocalSearchVal('');
+                      setLiveResults(null);
+                    }}
                     className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-mediumgrey hover:text-nearblack dark:hover:text-white transition-colors cursor-pointer shrink-0"
                     title="Clear text"
                   >
@@ -306,7 +354,7 @@ export default function Navbar() {
                 /* Recent / Suggested searches */
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-[10px] uppercase tracking-wider font-bold text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans">
+                    <h4 className="text-xs font-semibold tracking-wide text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans">
                       Suggested Apologetics Topics
                     </h4>
                     <div className="flex flex-wrap gap-2">
@@ -326,7 +374,7 @@ export default function Navbar() {
                   </div>
 
                   <div>
-                    <h4 className="text-[10px] uppercase tracking-wider font-bold text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans">
+                    <h4 className="text-xs font-semibold tracking-wide text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans">
                       Common Objections
                     </h4>
                     <div className="space-y-2">
@@ -347,17 +395,17 @@ export default function Navbar() {
                   </div>
                 </div>
               ) : (
-                /* Dynamic filtered results */
+                /* Dynamic live and filtered results */
                 <div className="space-y-4">
                   {/* Category: Papers / Articles */}
-                  {filteredArticles.length > 0 && (
+                  {displayedArticles.length > 0 && (
                     <div>
-                      <h4 className="text-[10px] uppercase tracking-wider font-bold text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans flex justify-between items-center">
+                      <h4 className="text-xs font-semibold tracking-wide text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans flex justify-between items-center">
                         <span>Papers & Articles</span>
-                        <span className="font-mono text-[9px] bg-gold/10 text-gold dark:bg-gold/15 dark:text-gold border border-gold/10 dark:border-gold/20 px-2 py-0.5 rounded-full">{filteredArticles.length}</span>
+                        <span className="font-mono text-[9px] bg-gold/10 text-gold dark:bg-gold/15 dark:text-gold border border-gold/10 dark:border-gold/20 px-2 py-0.5 rounded-full">{displayedArticles.length}</span>
                       </h4>
                       <div className="space-y-1.5">
-                        {filteredArticles.slice(0, 4).map((art) => (
+                        {displayedArticles.slice(0, 4).map((art) => (
                           <button
                             key={art.id}
                             onClick={() => {
@@ -375,14 +423,14 @@ export default function Navbar() {
                   )}
 
                   {/* Category: Objections */}
-                  {filteredQuestions.length > 0 && (
+                  {displayedQuestions.length > 0 && (
                     <div>
-                      <h4 className="text-[10px] uppercase tracking-wider font-bold text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans flex justify-between items-center">
+                      <h4 className="text-xs font-semibold tracking-wide text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans flex justify-between items-center">
                         <span>Skeptical Objections</span>
-                        <span className="font-mono text-[9px] bg-gold/10 text-gold dark:bg-gold/15 dark:text-gold border border-gold/10 dark:border-gold/20 px-2 py-0.5 rounded-full">{filteredQuestions.length}</span>
+                        <span className="font-mono text-[9px] bg-gold/10 text-gold dark:bg-gold/15 dark:text-gold border border-gold/10 dark:border-gold/20 px-2 py-0.5 rounded-full">{displayedQuestions.length}</span>
                       </h4>
                       <div className="space-y-1.5">
-                        {filteredQuestions.slice(0, 3).map((q) => (
+                        {displayedQuestions.slice(0, 3).map((q) => (
                           <button
                             key={q.id}
                             onClick={() => {
@@ -400,14 +448,14 @@ export default function Navbar() {
                   )}
 
                   {/* Category: Topics */}
-                  {filteredTopics.length > 0 && (
+                  {displayedTopics.length > 0 && (
                     <div>
-                      <h4 className="text-[10px] uppercase tracking-wider font-bold text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans flex justify-between items-center">
+                      <h4 className="text-xs font-semibold tracking-wide text-mediumgrey/80 dark:text-gray-400 mb-2 font-sans flex justify-between items-center">
                         <span>Topics</span>
-                        <span className="font-mono text-[9px] bg-gold/10 text-gold dark:bg-gold/15 dark:text-gold border border-gold/10 dark:border-gold/20 px-2 py-0.5 rounded-full">{filteredTopics.length}</span>
+                        <span className="font-mono text-[9px] bg-gold/10 text-gold dark:bg-gold/15 dark:text-gold border border-gold/10 dark:border-gold/20 px-2 py-0.5 rounded-full">{displayedTopics.length}</span>
                       </h4>
                       <div className="space-y-1.5">
-                        {filteredTopics.slice(0, 3).map((t) => (
+                        {displayedTopics.slice(0, 3).map((t) => (
                           <button
                             key={t.slug}
                             onClick={() => {
@@ -424,7 +472,7 @@ export default function Navbar() {
                     </div>
                   )}
 
-                  {filteredArticles.length === 0 && filteredQuestions.length === 0 && filteredTopics.length === 0 && (
+                  {displayedArticles.length === 0 && displayedQuestions.length === 0 && displayedTopics.length === 0 && (
                     <div className="text-center py-8 text-mediumgrey font-sans">
                       No results found for "<strong>{localSearchVal}</strong>". Press Enter to search on the main results page.
                     </div>
@@ -436,7 +484,7 @@ export default function Navbar() {
             {/* Footer containing quick helper */}
             <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border-t border-black/5 dark:border-white/5 text-[10px] text-mediumgrey flex justify-between items-center font-mono">
               <span>Press <kbd className="bg-white dark:bg-slate-800 px-1 border border-black/10 dark:border-white/10 rounded">Enter</kbd> to view full library search results</span>
-              <span>ESC to close</span>
+              <span>Esc to Close</span>
             </div>
           </div>
         </div>

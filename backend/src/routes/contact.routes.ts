@@ -7,6 +7,8 @@ import {
   deleteContactMessage
 } from '../controllers/contact.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
+// Import express-validator contact form payload validation rules
+import { validateContactMessage } from '../middleware/validation.middleware.js';
 
 const router = Router();
 
@@ -19,8 +21,8 @@ const contactLimiter = rateLimit({
   message: { message: 'Too many contact submissions. Please try again after 15 minutes.' }
 });
 
-// Submit a contact inquiry (public)
-router.post('/', contactLimiter, submitContactMessage);
+// Submit a contact inquiry with rate limiting and payload validation (public)
+router.post('/', contactLimiter, validateContactMessage, submitContactMessage);
 
 // Retrieve all contact inquiries (admin only)
 router.get('/', verifyToken, getAllContactMessages);

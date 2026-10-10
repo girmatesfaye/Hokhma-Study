@@ -7,6 +7,8 @@ import {
   deleteSubmission
 } from '../controllers/submissions.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
+// Import express-validator question submission validation rules
+import { validateQuestionSubmission } from '../middleware/validation.middleware.js';
 
 const router = Router();
 
@@ -19,8 +21,8 @@ const submissionLimiter = rateLimit({
   message: { message: 'Too many submissions. Please try again after 15 minutes.' }
 });
 
-// Submit a question or objection (public)
-router.post('/', submissionLimiter, submitQuestion);
+// Submit a question or objection with rate limiting and payload validation (public)
+router.post('/', submissionLimiter, validateQuestionSubmission, submitQuestion);
 
 // Retrieve all question submissions (admin only)
 router.get('/', verifyToken, getAllSubmissions);

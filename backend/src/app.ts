@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 // Route imports
+import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth.routes.js';
 import articlesRoutes from './routes/articles.routes.js';
 import topicsRoutes from './routes/topics.routes.js';
@@ -18,16 +19,15 @@ import contactRoutes from './routes/contact.routes.js';
 import submissionsRoutes from './routes/submissions.routes.js';
 import settingsRoutes from './routes/settings.routes.js';
 import searchRoutes from './routes/search.routes.js';
+// Import analytics routes for page-view tracking and visit reports
+import analyticsRoutes from './routes/analytics.routes.js';
 
 // Error handler imports
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app: Application = express();
 
-// Security HTTP headers
-app.use(helmet());
-
-// Cross-Origin Resource Sharing configuration
+// Cross-Origin Resource Sharing configuration with origin whitelist
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
   'http://localhost:3000',
@@ -36,25 +36,55 @@ const allowedOrigins = [
   'http://127.0.0.1:5173'
 ].filter((origin): origin is string => Boolean(origin));
 
+// Security HTTP headers with strict Content Security Policy
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
+      connectSrc: ["'self'", ...allowedOrigins]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+
+// CORS middleware enforcing authorized origin verification
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow server-to-server or development requests
-    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+    // Allow non-browser requests or verified whitelist origins
+    if (!origin || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    return callback(null, true);
+    return callback(new Error('Access Denied: CORS policy restricts access from this origin.'));
   },
   credentials: true
 }));
 
-// HTTP request logger
+// Global API rate limiter protecting all endpoints from automated flooding
+const globalApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many requests from this IP. Please try again later.' }
+});
+app.use('/api', globalApiLimiter);
+
+// Structured HTTP request logger with sensitive parameter redaction
 if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('dev'));
+  morgan.token('safe-url', (req: Request) => {
+    const raw = req.originalUrl || req.url;
+    return raw.replace(/([?&](token|password|secret|key)=)[^&]*/gi, '$1[REDACTED]');
+  });
+  app.use(morgan(':method :safe-url :status :res[content-length] - :response-time ms'));
 }
 
-// Request body parsers
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Request body parsers with capped size limits
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // Health Check Endpoint (public)
 app.get('/api/health', (_req: Request, res: Response) => {
@@ -84,6 +114,8 @@ app.use('/api/submissions', submissionsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/upload', uploadRoutes);
+// Mount analytics routes for traffic ingestion and reporting
+app.use('/api/analytics', analyticsRoutes);
 
 // Catch-all 404 handler for unknown routes
 app.use(notFoundHandler);

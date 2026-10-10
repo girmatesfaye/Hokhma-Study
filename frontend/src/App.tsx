@@ -26,9 +26,13 @@ import SearchResults from './pages/SearchResults';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import ArticleEditor from './pages/ArticleEditor';
+// Import anonymous analytics tracker hook
+import { useAnalyticsTracker } from './hooks/useAnalyticsTracker';
 
 function MainAppRouter() {
   const { currentRoute } = useApp();
+  // Activate anonymous route-change tracking across public pages
+  useAnalyticsTracker();
 
   // Scroll to top on route change to prevent showing a blank/white section when transitioning from tall pages
   useEffect(() => {
