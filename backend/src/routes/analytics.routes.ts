@@ -1,6 +1,13 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { recordEvent, getReport } from '../controllers/analytics.controller.js';
+import {
+  recordEvent,
+  getReport,
+  getSummary,
+  getTimeseries,
+  getPages,
+  getReferrers
+} from '../controllers/analytics.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 
 const router = Router();
@@ -17,7 +24,19 @@ const ingestionLimiter = rateLimit({
 // Public ingestion route for anonymous page-view events
 router.post('/events', ingestionLimiter, recordEvent);
 
-// Protected report route accessible only to authenticated admins
+// Protected report route returning full aggregated metrics (admin only)
 router.get('/report', verifyToken, getReport);
+
+// Protected summary route (admin only)
+router.get('/summary', verifyToken, getSummary);
+
+// Protected timeseries chart route (admin only)
+router.get('/timeseries', verifyToken, getTimeseries);
+
+// Protected popular pages route (admin only)
+router.get('/pages', verifyToken, getPages);
+
+// Protected traffic referrers route (admin only)
+router.get('/referrers', verifyToken, getReferrers);
 
 export default router;
