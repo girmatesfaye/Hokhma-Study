@@ -80,7 +80,7 @@ function MainAppRouter() {
 
   if (isMinimalLayout) {
     return (
-      <main id="distraction-free-viewport" className="min-h-screen bg-slate-50 dark:bg-slate-950 text-nearblack dark:text-white relative">
+      <main key={currentRoute.path || currentRoute.page} id="distraction-free-viewport" className="min-h-screen bg-slate-50 dark:bg-slate-950 text-nearblack dark:text-white relative animate-fade-in">
         {pageComponent}
       </main>
     );
@@ -93,7 +93,7 @@ function MainAppRouter() {
       <Navbar />
 
       {/* Main Viewport Grid Wrapper */}
-      <main className="flex-grow">
+      <main key={currentRoute.path || currentRoute.page} className="flex-grow animate-fade-in">
         {pageComponent}
       </main>
 

@@ -327,7 +327,7 @@ export default function AdminDashboard() {
 
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold font-sans">
+            <p className="text-xs font-semibold text-gold font-sans">
               {getTranslatedText('Private Author Workroom', 'የግል የጸሐፊ የሥራ ክፍል')}
             </p>
             <h1 className="mt-1 font-serif text-3xl font-bold tracking-tight text-nearblack dark:text-white text-balance">
@@ -361,7 +361,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigateTo('/')}
-              className="text-xs font-semibold text-mediumgrey hover:text-navy dark:hover:text-white transition-colors tracking-wider block cursor-pointer font-sans"
+              className="btn-press text-xs font-semibold text-mediumgrey hover:text-navy dark:hover:text-white transition-colors block cursor-pointer font-sans"
             >
               {getTranslatedText('Public Hub', 'ይፋዊ ድረ-ገጽ')}
             </button>
@@ -371,7 +371,7 @@ export default function AdminDashboard() {
                 logoutAdmin();
                 navigateTo('/');
               }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold cursor-pointer font-sans"
+              className="btn-press inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold cursor-pointer font-sans transition-colors"
               title="Logout session"
             >
               <LogOut size={13} />
@@ -574,39 +574,39 @@ export default function AdminDashboard() {
                   <div className="grid gap-4 md:grid-cols-3">
                     <div className="rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-slate-900">
                       <Compass className="h-5 w-5 text-gold" aria-hidden="true" />
-                      <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-mediumgrey dark:text-gray-400">
+                      <p className="mt-4 text-xs font-semibold text-mediumgrey dark:text-gray-400">
                         {getTranslatedText('Topics', 'ርዕሶች')}
                       </p>
                       <p className="mt-1 font-serif text-3xl font-bold text-nearblack dark:text-white">{topics.length}</p>
                       <button
                         onClick={() => navigateTo('/topics')}
-                        className="mt-4 text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+                        className="btn-press mt-4 text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
                       >
                         {getTranslatedText('View Public Topics', 'የህዝብ ርዕሶችን ይመልከቱ')}
                       </button>
                     </div>
                     <div className="rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-slate-900">
                       <Route className="h-5 w-5 text-gold" aria-hidden="true" />
-                      <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-mediumgrey dark:text-gray-400">
+                      <p className="mt-4 text-xs font-semibold text-mediumgrey dark:text-gray-400">
                         {getTranslatedText('Learning Paths', 'የጥናት መንገዶች')}
                       </p>
                       <p className="mt-1 font-serif text-3xl font-bold text-nearblack dark:text-white">{paths.length}</p>
                       <button
                         onClick={() => navigateTo('/paths')}
-                        className="mt-4 text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+                        className="btn-press mt-4 text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
                       >
                         {getTranslatedText('View Public Paths', 'የህዝብ መንገዶችን ይመልከቱ')}
                       </button>
                     </div>
                     <div className="rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/5 dark:bg-slate-900">
                       <BookOpen className="h-5 w-5 text-gold" aria-hidden="true" />
-                      <p className="mt-4 text-[10px] font-bold uppercase tracking-wider text-mediumgrey dark:text-gray-400">
+                      <p className="mt-4 text-xs font-semibold text-mediumgrey dark:text-gray-400">
                         {getTranslatedText('Resources', 'ግብዓቶች')}
                       </p>
                       <p className="mt-1 font-serif text-3xl font-bold text-nearblack dark:text-white">{resources.length}</p>
                       <button
                         onClick={() => navigateTo('/resources')}
-                        className="mt-4 text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+                        className="btn-press mt-4 text-xs font-bold text-gold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
                       >
                         {getTranslatedText('View Public Resources', 'የህዝብ ግብዓቶችን ይመልከቱ')}
                       </button>
@@ -953,14 +953,14 @@ export default function AdminDashboard() {
                   <div className="rounded-xl border border-gold/30 bg-gold/5 p-5 dark:bg-gold/10">
                     <div className="flex items-start justify-between gap-4 border-b border-gold/20 pb-4">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-gold">{getTranslatedText('Content Detail', 'የይዘት ዝርዝር')}</p>
+                        <p className="text-xs font-semibold text-gold">{getTranslatedText('Content Detail', 'የይዘት ዝርዝር')}</p>
                         <h3 className="mt-1 font-serif text-xl font-bold text-nearblack dark:text-white">
                           {detailContent.type === 'topic' && topics.find((topic) => topic.slug === detailContent.id)?.name}
                           {detailContent.type === 'path' && paths.find((path) => path.slug === detailContent.id)?.title}
                           {detailContent.type === 'resource' && resources.find((resource) => resource.id === detailContent.id)?.title}
                         </h3>
                       </div>
-                      <button onClick={closeContentDetail} className="rounded border border-black/10 px-3 py-1.5 text-xs font-bold text-mediumgrey hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 dark:border-white/10 dark:hover:bg-slate-800">{getTranslatedText('Back To List', 'ወደ ዝርዝሩ ተመለስ')}</button>
+                      <button onClick={closeContentDetail} className="btn-press rounded border border-black/10 px-3 py-1.5 text-xs font-bold text-mediumgrey hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 dark:border-white/10 dark:hover:bg-slate-800 transition-colors">{getTranslatedText('Back To List', 'ወደ ዝርዝሩ ተመለስ')}</button>
                     </div>
 
                     {detailContent.type === 'topic' && (() => {
@@ -971,12 +971,12 @@ export default function AdminDashboard() {
                         <div className="mt-4 space-y-4">
                           <p className="text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText(topic.description, topic.descriptionAm)}</p>
                           <div>
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-nearblack dark:text-white">{getTranslatedText('Articles In This Topic', 'በዚህ ርዕስ ውስጥ ያሉ ጽሑፎች')} ({topicArticles.length})</h4>
+                            <h4 className="text-xs font-bold text-nearblack dark:text-white">{getTranslatedText('Articles In This Topic', 'በዚህ ርዕስ ውስጥ ያሉ ጽሑፎች')} ({topicArticles.length})</h4>
                             <div className="mt-3 space-y-2">
                               {topicArticles.length > 0 ? topicArticles.map((article) => (
                                 <div key={article.id} className="flex items-center justify-between gap-3 rounded-lg border border-black/5 bg-white p-3 dark:border-white/5 dark:bg-slate-900">
                                   <div className="min-w-0"><p className="truncate text-sm font-semibold text-nearblack dark:text-white">{getTranslatedText(article.title, article.titleAm)}</p><p className="mt-1 text-[11px] text-mediumgrey dark:text-gray-400">{article.isPublished ? getTranslatedText('Published', 'የታተመ') : getTranslatedText('Draft', 'ረቂቅ')} · {article.readingTime} min</p></div>
-                                  <button onClick={() => navigateTo(`/admin/articles/${article.id}/edit`)} className="shrink-0 text-xs font-bold text-gold hover:underline">{getTranslatedText('Edit Article', 'ጽሑፉን ያስተካክሉ')}</button>
+                                  <button onClick={() => navigateTo(`/admin/articles/${article.id}/edit`)} className="btn-press shrink-0 text-xs font-bold text-gold hover:underline">{getTranslatedText('Edit Article', 'ጽሑፉን ያስተካክሉ')}</button>
                                 </div>
                               )) : <p className="rounded-lg border border-dashed border-black/10 p-4 text-xs text-mediumgrey dark:border-white/10">{getTranslatedText('No articles are assigned to this topic yet.', 'እስካሁን ምንም ጽሑፍ ከዚህ ርዕስ ጋር አልተመደበም።')}</p>}
                             </div>
@@ -992,8 +992,8 @@ export default function AdminDashboard() {
                       return (
                         <div className="mt-4 space-y-4">
                           <p className="text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText(path.description, path.descriptionAm)}</p>
-                          <div className="rounded-lg border border-black/5 bg-white p-4 dark:border-white/5 dark:bg-slate-900"><p className="text-[10px] font-bold uppercase tracking-wider text-gold">{getTranslatedText('Learning Goal', 'የጥናት ግብ')}</p><p className="mt-2 text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText(path.goal, path.goalAm)}</p></div>
-                          <div><h4 className="text-xs font-bold uppercase tracking-wider text-nearblack dark:text-white">{getTranslatedText('Guided Levels In This Path', 'በዚህ መንገድ ውስጥ ያሉ ደረጃዎች')} ({path.steps?.length || pathArticles.length})</h4><div className="mt-3 space-y-2">{(path.steps || pathArticles.map((article, index) => ({ id: article.id, level: index + 1, title: article.title, purpose: article.excerpt, type: 'article' as const, articleSlug: article.slug }))).map((step) => <div key={step.id} className="flex items-center justify-between gap-3 rounded-lg border border-black/5 bg-white p-3 dark:border-white/5 dark:bg-slate-900"><div className="flex min-w-0 items-center gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold/10 text-xs font-bold text-gold">{step.level}</span><p className="truncate text-sm font-semibold text-nearblack dark:text-white">{step.title}</p></div>{step.articleSlug && <button onClick={() => navigateTo(`/articles/${step.articleSlug}`)} className="shrink-0 text-xs font-bold text-gold hover:underline">{getTranslatedText('Open Article', 'ጽሑፉን ይክፈቱ')}</button>}</div>)}</div></div>
+                          <div className="rounded-lg border border-black/5 bg-white p-4 dark:border-white/5 dark:bg-slate-900"><p className="text-xs font-semibold text-gold">{getTranslatedText('Learning Goal', 'የጥናት ግብ')}</p><p className="mt-2 text-sm leading-relaxed text-mediumgrey dark:text-gray-300">{getTranslatedText(path.goal, path.goalAm)}</p></div>
+                          <div><h4 className="text-xs font-bold text-nearblack dark:text-white">{getTranslatedText('Guided Levels In This Path', 'በዚህ መንገድ ውስጥ ያሉ ደረጃዎች')} ({path.steps?.length || pathArticles.length})</h4><div className="mt-3 space-y-2">{(path.steps || pathArticles.map((article, index) => ({ id: article.id, level: index + 1, title: article.title, purpose: article.excerpt, type: 'article' as const, articleSlug: article.slug }))).map((step) => <div key={step.id} className="flex items-center justify-between gap-3 rounded-lg border border-black/5 bg-white p-3 dark:border-white/5 dark:bg-slate-900"><div className="flex min-w-0 items-center gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold/10 text-xs font-bold text-gold">{step.level}</span><p className="truncate text-sm font-semibold text-nearblack dark:text-white">{step.title}</p></div>{step.articleSlug && <button onClick={() => navigateTo(`/articles/${step.articleSlug}`)} className="btn-press shrink-0 text-xs font-bold text-gold hover:underline">{getTranslatedText('Open Article', 'ጽሑፉን ይክፈቱ')}</button>}</div>)}</div></div>
                         </div>
                       );
                     })()}
@@ -1059,11 +1059,11 @@ export default function AdminDashboard() {
                 {editingProfile ? (
                   <div className="grid gap-4 sm:grid-cols-2">
                     {([['name', 'Name'], ['role', 'Role'], ['email', 'Email'], ['avatar', 'Avatar URL'], ['tagline', 'Tagline'], ['bio', 'Bio'], ['mission', 'Mission']] as const).map(([field, label]) => (
-                      <label key={field} className={`block space-y-1.5 ${field === 'bio' || field === 'mission' ? 'sm:col-span-2' : ''}`}><span className="text-[10px] font-bold uppercase tracking-wider text-mediumgrey">{label}</span>{field === 'bio' || field === 'mission' ? <textarea rows={3} value={profileDraft[field]} onChange={(event) => setProfileDraft({ ...profileDraft, [field]: event.target.value })} className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /> : <input type={field === 'email' ? 'email' : 'text'} value={profileDraft[field]} onChange={(event) => setProfileDraft({ ...profileDraft, [field]: event.target.value })} className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" />}</label>
+                      <label key={field} className={`block space-y-1.5 ${field === 'bio' || field === 'mission' ? 'sm:col-span-2' : ''}`}><span className="text-xs font-semibold text-mediumgrey">{label}</span>{field === 'bio' || field === 'mission' ? <textarea rows={3} value={profileDraft[field]} onChange={(event) => setProfileDraft({ ...profileDraft, [field]: event.target.value })} className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" /> : <input type={field === 'email' ? 'email' : 'text'} value={profileDraft[field]} onChange={(event) => setProfileDraft({ ...profileDraft, [field]: event.target.value })} className="w-full rounded border border-black/10 px-3 py-2 dark:border-white/10" />}</label>
                     ))}
-                    <div className="flex justify-end gap-3 sm:col-span-2"><button onClick={() => setEditingProfile(false)} className="rounded border border-black/10 px-3 py-2 text-xs font-bold dark:border-white/10">{getTranslatedText('Cancel', 'ይቅር')}</button><button onClick={handleProfileSave} className="rounded bg-navy px-3 py-2 text-xs font-bold text-white dark:bg-gold dark:text-slate-950">{getTranslatedText('Save Profile', 'መገለጫውን አስቀምጥ')}</button></div>
+                    <div className="flex justify-end gap-3 sm:col-span-2"><button onClick={() => setEditingProfile(false)} className="btn-press rounded border border-black/10 px-3 py-2 text-xs font-bold dark:border-white/10">{getTranslatedText('Cancel', 'ይቅር')}</button><button onClick={handleProfileSave} className="btn-press rounded bg-navy px-3 py-2 text-xs font-bold text-white dark:bg-gold dark:text-slate-950">{getTranslatedText('Save Profile', 'መገለጫውን አስቀምጥ')}</button></div>
                   </div>
-                ) : <div className="grid gap-4 sm:grid-cols-2">{[['Name', authorProfile.name], ['Role', authorProfile.role], ['Email', authorProfile.email], ['Tagline', authorProfile.tagline]].map(([label, value]) => <div key={label} className="rounded-lg border border-black/5 p-4 dark:border-white/5"><p className="text-[10px] font-bold uppercase tracking-wider text-mediumgrey dark:text-gray-400">{label}</p><p className="mt-2 break-words text-sm font-semibold text-nearblack dark:text-white">{value}</p></div>)}</div>}
+                ) : <div className="grid gap-4 sm:grid-cols-2">{[['Name', authorProfile.name], ['Role', authorProfile.role], ['Email', authorProfile.email], ['Tagline', authorProfile.tagline]].map(([label, value]) => <div key={label} className="rounded-lg border border-black/5 p-4 dark:border-white/5"><p className="text-xs font-semibold text-mediumgrey dark:text-gray-400">{label}</p><p className="mt-2 break-words text-sm font-semibold text-nearblack dark:text-white">{value}</p></div>)}</div>}
               </div>
             )}
 
@@ -1185,7 +1185,7 @@ export default function AdminDashboard() {
           >
             <div className="flex items-center justify-between border-b border-black/5 p-5 dark:border-white/5">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gold">{getTranslatedText(editingContentId ? 'Update Public Content' : 'Create Public Content', editingContentId ? 'የህዝብ ይዘት ያዘምኑ' : 'የህዝብ ይዘት ይፍጠሩ')}</p>
+                <p className="text-xs font-semibold text-gold">{getTranslatedText(editingContentId ? 'Update Public Content' : 'Create Public Content', editingContentId ? 'የህዝብ ይዘት ያዘምኑ' : 'የህዝብ ይዘት ይፍጠሩ')}</p>
                 <h2 id="content-modal-title" className="mt-1 font-serif text-lg font-bold">
                   {contentModal === 'topic' && getTranslatedText(editingContentId ? 'Update Topic' : 'Add Topic', editingContentId ? 'ርዕስ ያዘምኑ' : 'ርዕስ ይጨምሩ')}
                   {contentModal === 'path' && getTranslatedText(editingContentId ? 'Update Learning Path' : 'Add Learning Path', editingContentId ? 'የጥናት መንገድ ያዘምኑ' : 'የጥናት መንገድ ይጨምሩ')}

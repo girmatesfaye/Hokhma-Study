@@ -86,14 +86,14 @@ export default function Topics() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar touch-manipulation">
           {/* ALL ARTICLES TAB */}
           <button
             type="button"
             onClick={() => setSelectedTopicSlug('all')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
+            className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-[background-color,color,box-shadow,transform] duration-150 ease-out whitespace-nowrap cursor-pointer flex items-center gap-2 btn-press min-h-[40px] touch-manipulation ${
               selectedTopicSlug === 'all'
-                ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-sm'
+                ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-xs'
                 : 'bg-offwhite dark:bg-slate-800 text-nearblack dark:text-gray-200 hover:bg-black/5 dark:hover:bg-slate-700'
             }`}
           >
@@ -115,9 +115,9 @@ export default function Topics() {
                 key={t.slug}
                 type="button"
                 onClick={() => setSelectedTopicSlug(t.slug)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
+                className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-[background-color,color,box-shadow,transform] duration-150 ease-out whitespace-nowrap cursor-pointer flex items-center gap-2 btn-press min-h-[40px] touch-manipulation ${
                   isSelected
-                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-sm'
+                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-xs'
                     : 'bg-offwhite dark:bg-slate-800 text-nearblack dark:text-gray-200 hover:bg-black/5 dark:hover:bg-slate-700'
                 }`}
               >
@@ -185,19 +185,19 @@ export default function Topics() {
         </div>
 
         {/* Difficulty Filter Selector */}
-        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto justify-start md:justify-end">
-          <span className="text-xs font-semibold text-mediumgrey dark:text-gray-400 font-sans flex items-center gap-1 whitespace-nowrap">
+        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto justify-start md:justify-end no-scrollbar pb-0.5 touch-manipulation">
+          <span className="text-xs font-semibold text-mediumgrey dark:text-gray-400 font-sans flex items-center gap-1 whitespace-nowrap shrink-0">
             <Filter size={12} className="text-gold" />
             <span>{getTranslatedText('Level:', 'ደረጃ፦')}</span>
           </span>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5 shrink-0">
             {difficultyOptions.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => setDifficultyFilter(opt.value)}
-                className={`px-3 py-1.5 text-xs font-bold rounded-lg tracking-wide transition-all cursor-pointer whitespace-nowrap ${
+                className={`btn-press px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap min-h-[38px] flex items-center touch-manipulation ${
                   difficultyFilter === opt.value
-                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-sm'
+                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-xs'
                     : 'bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-nearblack dark:text-gray-200'
                 }`}
               >
@@ -219,7 +219,7 @@ export default function Topics() {
                 key={art.id}
                 id={`article-card-${art.id}`}
                 onClick={() => navigateTo(`/articles/${art.slug}`)}
-                className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl overflow-hidden flex flex-col justify-between group cursor-pointer shadow-sm hover:shadow-md transition-all duration-300"
+                className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl overflow-hidden flex flex-col justify-between group cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-1 active:scale-[0.99] transition-[border-color,box-shadow,transform] duration-200 ease-out"
               >
                 {/* Article Cover Image Header */}
                 {art.coverImage ? (
@@ -227,10 +227,10 @@ export default function Topics() {
                     <img
                       src={art.coverImage}
                       alt={art.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300 ease-out"
                     />
                     <div className="absolute top-3 left-3 flex gap-2">
-                      <span className="px-2.5 py-1 rounded-md bg-navy/90 text-white backdrop-blur-md text-[10px] font-bold tracking-wide flex items-center gap-1 shadow-sm font-sans">
+                      <span className="px-2.5 py-1 rounded-md bg-navy/90 text-white backdrop-blur-md text-[10px] font-bold tracking-wide flex items-center gap-1 shadow-xs font-sans">
                         {topic && <TopicIcon name={topic.icon} size={11} className="text-gold" />}
                         <span>{topic ? getTranslatedText(topic.name, topic.nameAm) : art.topicSlug}</span>
                       </span>
@@ -238,7 +238,7 @@ export default function Topics() {
                   </div>
                 ) : (
                   <div className="p-4 bg-gradient-to-r from-navy/10 to-gold/10 dark:from-slate-800 dark:to-slate-850 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-gold font-sans uppercase tracking-wider flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-gold font-sans tracking-wide flex items-center gap-1">
                       {topic && <TopicIcon name={topic.icon} size={12} />}
                       <span>{topic ? getTranslatedText(topic.name, topic.nameAm) : art.topicSlug}</span>
                     </span>
@@ -260,7 +260,7 @@ export default function Topics() {
                       </div>
                     )}
 
-                    <h3 className="font-serif text-lg font-bold text-nearblack dark:text-white leading-snug group-hover:text-gold transition-colors line-clamp-2">
+                    <h3 className="font-serif text-lg font-bold text-nearblack dark:text-white leading-snug group-hover:text-gold transition-colors duration-150 line-clamp-2">
                       {getTranslatedText(art.title, art.titleAm)}
                     </h3>
 
@@ -286,7 +286,7 @@ export default function Topics() {
 
                     <div className="flex justify-between items-center text-[11px]">
                       <span className="text-lightgrey font-mono">{art.publishDate}</span>
-                      <span className="font-bold tracking-wide text-navy dark:text-gold group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
+                      <span className="font-bold tracking-wide text-navy dark:text-gold group-hover:translate-x-1 transition-transform duration-150 ease-out flex items-center gap-0.5">
                         {getTranslatedText('Read Article', 'ጽሑፉን ያንብቡ')} <ChevronRight size={13} />
                       </span>
                     </div>

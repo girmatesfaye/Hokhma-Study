@@ -468,40 +468,40 @@ export default function ArticleDetail() {
             )}
 
             {/* Reactions Block row */}
-            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-10 shadow-sm leading-relaxed">
-              <span className="font-serif font-semibold text-nearblack dark:text-white">Did this article support your research or address your doubts?</span>
-              <div className="flex gap-2.5">
+            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-8 sm:mt-10 shadow-xs leading-relaxed">
+              <span className="font-serif font-semibold text-nearblack dark:text-white text-center md:text-left text-sm text-balance">Did this article support your research or address your doubts?</span>
+              <div className="flex flex-wrap justify-center gap-2 w-full md:w-auto">
                 <button
                   onClick={() => handleReactionClick('helpful')}
-                  className={`px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer font-semibold ${
+                  className={`btn-press min-h-[40px] px-3.5 py-1.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer font-semibold touch-manipulation ${
                     userReaction === 'helpful'
                       ? 'bg-gold/15 border-gold text-gold scale-105'
-                      : 'bg-transparent border-black/5 dark:border-white/10 text-mediumgrey dark:text-gray-300 hover:border-gold/30'
+                      : 'bg-transparent border-black/10 dark:border-white/10 text-mediumgrey dark:text-gray-300 hover:border-gold/30'
                   }`}
                 >
-                  <ThumbsUp size={13} />
+                  <ThumbsUp size={14} />
                   <span>Helpful ({reactions.helpful})</span>
                 </button>
                 <button
                   onClick={() => handleReactionClick('insightful')}
-                  className={`px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer font-semibold ${
+                  className={`btn-press min-h-[40px] px-3.5 py-1.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer font-semibold touch-manipulation ${
                     userReaction === 'insightful'
                       ? 'bg-gold/15 border-gold text-gold scale-105'
-                      : 'bg-transparent border-black/5 dark:border-white/10 text-mediumgrey dark:text-gray-300 hover:border-gold/30'
+                      : 'bg-transparent border-black/10 dark:border-white/10 text-mediumgrey dark:text-gray-300 hover:border-gold/30'
                   }`}
                 >
-                  <Smile size={13} />
+                  <Smile size={14} />
                   <span>Insightful ({reactions.insightful})</span>
                 </button>
                 <button
                   onClick={() => handleReactionClick('rigorous')}
-                  className={`px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer font-semibold ${
+                  className={`btn-press min-h-[40px] px-3.5 py-1.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer font-semibold touch-manipulation ${
                     userReaction === 'rigorous'
                       ? 'bg-gold/15 border-gold text-gold scale-105'
-                      : 'bg-transparent border-black/5 dark:border-white/10 text-mediumgrey dark:text-gray-300 hover:border-gold/30'
+                      : 'bg-transparent border-black/10 dark:border-white/10 text-mediumgrey dark:text-gray-300 hover:border-gold/30'
                   }`}
                 >
-                  <Award size={13} />
+                  <Award size={14} />
                   <span>Rigorous ({reactions.rigorous})</span>
                 </button>
               </div>

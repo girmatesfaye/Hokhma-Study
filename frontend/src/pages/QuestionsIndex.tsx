@@ -132,25 +132,82 @@ export default function QuestionsIndex() {
       {/* TWO PANEL CONTROLLERS BACKGROUND ROW */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         
-        {/* LEFT PANEL SIDEBAR (180px approximate on desktop) */}
-        <aside className="lg:col-span-3 space-y-6 lg:sticky lg:top-24 h-fit">
+        {/* MOBILE CONTROLLER (Horizontal scrollable pill bars on mobile) */}
+        <div className="lg:hidden col-span-1 space-y-3">
+          {/* Mobile Topic Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar touch-manipulation">
+            <button
+              onClick={() => setSelectedTopicSlug('all')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap btn-press min-h-[38px] flex items-center gap-1.5 touch-manipulation ${
+                selectedTopicSlug === 'all'
+                  ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold shadow-xs'
+                  : 'bg-white dark:bg-slate-900 border border-black/5 dark:border-white/10 text-nearblack dark:text-gray-200'
+              }`}
+            >
+              <span>{getTranslatedText('All Topics', 'ሁሉም አርዕስቶች')}</span>
+              <span className="opacity-75 font-mono text-[10px]">({questions.length})</span>
+            </button>
+            {topics.map((t) => {
+              const count = questions.filter((q) => q.topicSlug === t.slug).length;
+              return (
+                <button
+                  key={t.slug}
+                  onClick={() => setSelectedTopicSlug(t.slug)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap btn-press min-h-[38px] flex items-center gap-1.5 touch-manipulation ${
+                    selectedTopicSlug === t.slug
+                      ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold shadow-xs'
+                      : 'bg-white dark:bg-slate-900 border border-black/5 dark:border-white/10 text-nearblack dark:text-gray-200'
+                  }`}
+                >
+                  <span>{getTranslatedText(t.name, t.nameAm)}</span>
+                  <span className="opacity-75 font-mono text-[10px]">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mobile Difficulty Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar touch-manipulation">
+            {[
+              { val: 'all', label: getTranslatedText('All Levels', 'ሁሉም ደረጃዎች') },
+              { val: 'beginner', label: getTranslatedText('Beginner', 'ጀማሪ') },
+              { val: 'intermediate', label: getTranslatedText('Intermediate', 'መካከለኛ') },
+              { val: 'deep-dive', label: getTranslatedText('Deep Dive', 'ጥልቅ ጥናት') }
+            ].map((diff) => (
+              <button
+                key={diff.val}
+                onClick={() => setSelectedDifficulty(diff.val as any)}
+                className={`btn-press px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap min-h-[36px] flex items-center touch-manipulation ${
+                  selectedDifficulty === diff.val
+                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-xs'
+                    : 'bg-white dark:bg-slate-900 border border-black/5 dark:border-white/10 text-nearblack dark:text-gray-200'
+                }`}
+              >
+                {diff.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* DESKTOP SIDEBAR (Visible only on lg screens) */}
+        <aside className="hidden lg:block lg:col-span-3 space-y-6 lg:sticky lg:top-24 h-fit">
           
           {/* Topic Filters */}
-          <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-3 shadow-sm">
-            <h3 className="font-sans text-[11px] tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
+          <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 space-y-3 shadow-xs">
+            <h3 className="font-sans text-xs tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 dark:border-white/5 pb-2">
               {getTranslatedText('Filter By Field', 'በባህሪ ይለዩ')}
             </h3>
             <div className="flex flex-col gap-1 text-xs">
               <button
                 onClick={() => setSelectedTopicSlug('all')}
-                className={`py-2 px-2.5 rounded text-left transition-colors font-medium flex items-center justify-between ${
+                className={`btn-press py-2 px-2.5 rounded-lg text-left transition-colors font-medium flex items-center justify-between min-h-[38px] ${
                   selectedTopicSlug === 'all'
                     ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold'
                     : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-nearblack/80 dark:text-gray-200'
                 }`}
               >
                 <span>{getTranslatedText('All Topics', 'ሁሉም አርዕስቶች')}</span>
-                <span className="opacity-75">{questions.length}</span>
+                <span className="opacity-75 font-mono">{questions.length}</span>
               </button>
               
               {topics.map((t) => {
@@ -159,14 +216,14 @@ export default function QuestionsIndex() {
                   <button
                     key={t.slug}
                     onClick={() => setSelectedTopicSlug(t.slug)}
-                    className={`py-2 px-2.5 rounded text-left transition-colors font-medium flex items-center justify-between ${
+                    className={`btn-press py-2 px-2.5 rounded-lg text-left transition-colors font-medium flex items-center justify-between min-h-[38px] ${
                       selectedTopicSlug === t.slug
                         ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold'
                         : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-nearblack/80 dark:text-gray-200'
                     }`}
                   >
                     <span className="truncate pr-1">{getTranslatedText(t.name, t.nameAm)}</span>
-                    <span className="opacity-75">{count}</span>
+                    <span className="opacity-75 font-mono">{count}</span>
                   </button>
                 );
               })}
@@ -174,14 +231,14 @@ export default function QuestionsIndex() {
           </div>
 
           {/* Difficulty Filter */}
-          <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-3 shadow-sm">
-            <h3 className="font-sans text-[11px] tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
+          <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 space-y-3 shadow-xs">
+            <h3 className="font-sans text-xs tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 dark:border-white/5 pb-2">
               {getTranslatedText('Depth Level', 'የጥልቀት ደረጃ')}
             </h3>
             <div className="flex flex-col gap-1 text-xs">
               <button
                 onClick={() => setSelectedDifficulty('all')}
-                className={`flex items-center gap-2 py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 ${
+                className={`btn-press flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] ${
                   selectedDifficulty === 'all' ? 'text-gold font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
@@ -190,7 +247,7 @@ export default function QuestionsIndex() {
               </button>
               <button
                 onClick={() => setSelectedDifficulty('beginner')}
-                className={`flex items-center gap-2 py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 ${
+                className={`btn-press flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] ${
                   selectedDifficulty === 'beginner' ? 'text-nearblack dark:text-white font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
@@ -199,7 +256,7 @@ export default function QuestionsIndex() {
               </button>
               <button
                 onClick={() => setSelectedDifficulty('intermediate')}
-                className={`flex items-center gap-2 py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 ${
+                className={`btn-press flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] ${
                   selectedDifficulty === 'intermediate' ? 'text-gold font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
@@ -208,7 +265,7 @@ export default function QuestionsIndex() {
               </button>
               <button
                 onClick={() => setSelectedDifficulty('deep-dive')}
-                className={`flex items-center gap-2 py-1.5 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 ${
+                className={`btn-press flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] ${
                   selectedDifficulty === 'deep-dive' ? 'text-gold font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
@@ -291,10 +348,10 @@ export default function QuestionsIndex() {
                         <div
                           key={q.id}
                           onClick={() => navigateTo(`/articles/${q.articleSlug}`)}
-                          className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-white/15 p-5 rounded-lg flex gap-4 justify-between transition-all duration-300 cursor-pointer group shadow-sm hover:shadow"
+                          className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 p-5 rounded-xl flex gap-4 justify-between transition-[border-color,box-shadow,transform] duration-200 ease-out cursor-pointer group shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] btn-press"
                         >
                           <div className="space-y-2 flex-1">
-                            <h3 className="text-sm md:text-md font-bold text-nearblack dark:text-white group-hover:text-gold transition-colors leading-snug">
+                            <h3 className="text-sm md:text-md font-bold text-nearblack dark:text-white group-hover:text-gold transition-colors duration-150 leading-snug">
                               {getTranslatedText(q.text, q.textAm)}
                             </h3>
                             
@@ -324,7 +381,7 @@ export default function QuestionsIndex() {
                             </div>
                           </div>
                           
-                          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-offwhite dark:bg-slate-800 text-lightgrey group-hover:text-gold shrink-0 my-auto transition-colors">
+                          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-offwhite dark:bg-slate-800 text-lightgrey group-hover:text-gold group-hover:scale-110 shrink-0 my-auto transition-[color,transform] duration-150 ease-out">
                             <ArrowUpRight size={16} />
                           </div>
                         </div>

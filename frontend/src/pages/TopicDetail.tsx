@@ -23,7 +23,7 @@ export default function TopicDetail() {
       <div className="max-w-[1140px] mx-auto px-4 py-20 text-center animate-fade-in">
         <h2 className="font-serif text-2xl font-bold">{getTranslatedText('Topic Not Found', 'ርዕሰ ጉዳዩ አልተገኘም')}</h2>
         <p className="text-mediumgrey text-sm mt-2">{getTranslatedText('The topic you are looking for does not exist in our writing database.', 'የፈለጉት ርዕሰ ጉዳይ በጽሑፎቻችን ማውጫ ውስጥ የለም።')}</p>
-        <button onClick={() => navigateTo('/topics')} className="mt-6 px-4 py-2 bg-navy text-white text-xs font-bold uppercase tracking-wider rounded">
+        <button onClick={() => navigateTo('/topics')} className="btn-press mt-6 px-4 py-2 bg-navy text-white text-xs font-semibold rounded-lg shadow-sm hover:bg-navy/90 transition-colors cursor-pointer">
           {getTranslatedText('Return To Topics', 'ወደ ርዕሶች ይመለሱ')}
         </button>
       </div>
@@ -62,7 +62,7 @@ export default function TopicDetail() {
       {/* Back button */}
       <button
         onClick={() => navigateTo('/topics')}
-        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors cursor-pointer"
+        className="btn-press inline-flex items-center gap-1.5 text-xs font-semibold text-mediumgrey hover:text-navy dark:hover:text-white transition-colors cursor-pointer"
       >
         <ArrowLeft size={14} /> {getTranslatedText('Back To All Topics', 'ወደ ሁሉም አርዕስቶች ይመለሱ')}
       </button>
@@ -70,8 +70,8 @@ export default function TopicDetail() {
       {/* Page Header */}
       <div className="border-b border-black/5 dark:border-white/5 pb-8 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs uppercase tracking-widest text-gold font-bold">{getTranslatedText('Category Archive', 'የምድብ ማህደር')}</span>
-          <span className="text-xs bg-navy/5 dark:bg-white/5 text-navy dark:text-gray-300 px-3 py-1 rounded font-semibold font-sans">
+          <span className="text-xs font-semibold text-gold">{getTranslatedText('Category Archive', 'የምድብ ማህደር')}</span>
+          <span className="text-xs bg-navy/5 dark:bg-white/5 text-navy dark:text-gray-300 px-3 py-1 rounded-full font-semibold font-sans">
             {topicArticles.length} {getTranslatedText(topicArticles.length === 1 ? 'Article' : 'Articles', 'ጽሑፎች')}
           </span>
         </div>
@@ -97,7 +97,7 @@ export default function TopicDetail() {
               <button
                 key={fil.value}
                 onClick={() => setDifficultyFilter(fil.value)}
-                className={`px-3 py-1.5 text-xs font-bold rounded uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                className={`btn-press px-3.5 py-1.5 text-xs font-medium rounded-full transition-all duration-200 cursor-pointer ${
                   difficultyFilter === fil.value
                     ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-sm'
                     : 'bg-black/4 dark:bg-white/5 hover:bg-black/7 dark:hover:bg-white/10 text-nearblack dark:text-gray-200'
@@ -115,7 +115,7 @@ export default function TopicDetail() {
                 <div
                   key={art.id}
                   onClick={() => navigateTo(`/articles/${art.slug}`)}
-                  className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-white/15 h-full rounded-lg p-5 flex flex-col justify-between group cursor-pointer shadow-sm hover:shadow-md transition-all duration-300"
+                  className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-gold/30 dark:hover:border-gold/30 hover:-translate-y-1 h-full rounded-xl p-5 flex flex-col justify-between group cursor-pointer shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <div className="space-y-3.5">
                     <div className="flex items-center justify-between">
@@ -149,7 +149,7 @@ export default function TopicDetail() {
 
                     <div className="flex justify-between items-center text-[11px] font-sans pt-1">
                       <span className="text-lightgrey">{getTranslatedText('Published', 'የታተመበት ቀን')} {art.publishDate}</span>
-                      <span className="font-bold uppercase tracking-wider text-navy dark:text-gold group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
+                      <span className="font-semibold text-navy dark:text-gold group-hover:translate-x-0.5 transition-transform duration-200 flex items-center gap-1">
                         {getTranslatedText('Read', 'ያንብቡ')} <ChevronRight size={11} />
                       </span>
                     </div>
@@ -172,7 +172,7 @@ export default function TopicDetail() {
           
           {/* Related topics */}
           <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-6 space-y-4 shadow-sm">
-            <h4 className="font-serif text-md font-bold text-nearblack dark:text-white uppercase tracking-wider text-[12px] border-b border-black/5 dark:border-white/5 pb-2">
+            <h4 className="font-serif text-sm font-bold text-nearblack dark:text-white border-b border-black/5 dark:border-white/5 pb-2">
               {getTranslatedText('Related Fields', 'ተዛማጅ አውዶች')}
             </h4>
             <div className="space-y-3">
@@ -196,7 +196,7 @@ export default function TopicDetail() {
           {/* Tag cloud */}
           {tagCloud.length > 0 && (
             <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-6 space-y-4 shadow-sm">
-              <h4 className="font-serif text-md font-bold text-nearblack dark:text-white uppercase tracking-wider text-[12px] border-b border-black/5 dark:border-white/5 pb-2">
+              <h4 className="font-serif text-sm font-bold text-nearblack dark:text-white border-b border-black/5 dark:border-white/5 pb-2">
                 {getTranslatedText('Topic Tags', 'የርዕሰ ጉዳይ መለዮዎች')}
               </h4>
               <div className="flex flex-wrap gap-2 font-sans">
@@ -204,7 +204,7 @@ export default function TopicDetail() {
                   <button
                     key={tag}
                     onClick={() => navigateTo(`/tags/${tag}`)}
-                    className="inline-flex items-center gap-0.5 text-xs bg-offwhite hover:bg-gold/10 dark:bg-slate-800 dark:hover:bg-slate-700 text-mediumgrey dark:text-gray-200 px-3 py-1 rounded border border-black/5 dark:border-white/5 group transition-colors cursor-pointer"
+                    className="btn-press inline-flex items-center gap-1 text-xs bg-offwhite hover:bg-gold/10 dark:bg-slate-800 dark:hover:bg-slate-700 text-mediumgrey dark:text-gray-200 px-3 py-1 rounded-md border border-black/5 dark:border-white/5 group transition-colors cursor-pointer"
                   >
                     <Hash size={10} className="text-gold" />
                     <span>{tag}</span>

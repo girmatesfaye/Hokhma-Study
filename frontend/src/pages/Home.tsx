@@ -29,29 +29,29 @@ export default function Home() {
   const editorsPicks = [...featuredOnly, ...nonFeatured].slice(0, 3);
 
   return (
-    <div id="home-page" className="animate-fade-in space-y-16">
+    <div id="home-page" className="animate-fade-in space-y-12 sm:space-y-16">
       
       {/* 1. HERO SECTION */}
-      <header id="hero-section" className="pt-16 pb-12 px-4 md:px-12 text-center max-w-[800px] mx-auto">
-        <span className="text-xs tracking-widest text-gold font-bold bg-gold/5 dark:bg-gold/10 px-3 py-1.5 rounded-[4px] inline-block mb-4">
+      <header id="hero-section" className="pt-8 sm:pt-16 pb-8 sm:pb-12 px-4 md:px-12 text-center max-w-[800px] mx-auto">
+        <span className="text-[11px] sm:text-xs tracking-wider text-gold font-bold bg-gold/5 dark:bg-gold/10 px-3 py-1.5 rounded-full inline-block mb-3 sm:mb-4">
           {language === 'en' ? 'Intellectual Credibility · Pastoral Aesthetics' : 'አእምሯዊ ተዓማኒነት · እረኛዊ ውበት'}
         </span>
-        <h1 className="text-3xl md:text-[42px] font-serif leading-tight font-bold text-navy dark:text-white mb-4">
+        <h1 className="text-2xl sm:text-3xl md:text-[42px] font-serif leading-tight font-bold text-navy dark:text-white mb-3 sm:mb-4 text-balance">
           {t('home.heroTitle')}
         </h1>
-        <p className="text-mediumgrey dark:text-gray-300 text-base md:text-[18px] leading-relaxed mb-8 max-w-2xl mx-auto font-serif italic">
+        <p className="text-mediumgrey dark:text-gray-300 text-sm sm:text-base md:text-[18px] leading-relaxed mb-6 sm:mb-8 max-w-2xl mx-auto font-serif italic text-pretty">
           {t('home.heroSub')}
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
           <button
             onClick={() => navigateTo('/questions')}
-            className="px-8 py-3 bg-navy text-white dark:bg-gold dark:text-slate-950 font-semibold rounded-[4px] shadow-sm hover:opacity-90 active:scale-[0.98] transition-all text-sm tracking-wider cursor-pointer font-sans"
+            className="w-full sm:w-auto min-h-[48px] px-6 sm:px-8 py-3 bg-navy text-white dark:bg-gold dark:text-slate-950 font-semibold rounded-xl shadow-xs hover:opacity-95 btn-press transition-[opacity,transform] duration-150 text-sm cursor-pointer font-sans flex items-center justify-center touch-manipulation"
           >
             {t('home.exploreTopics')}
           </button>
           <button
             onClick={() => navigateTo('/paths/faith-and-reason')}
-            className="px-8 py-3 border border-navy text-navy dark:border-white/40 dark:text-white hover:bg-navy/5 dark:hover:bg-white/5 font-semibold rounded-[4px] transition-all text-sm tracking-wider cursor-pointer font-sans"
+            className="w-full sm:w-auto min-h-[48px] px-6 sm:px-8 py-3 border border-navy text-navy dark:border-white/40 dark:text-white hover:bg-navy/5 dark:hover:bg-white/5 font-semibold rounded-xl btn-press transition-[background-color,border-color,transform] duration-150 text-sm cursor-pointer font-sans flex items-center justify-center touch-manipulation"
           >
             {language === 'en' ? "Start here — I'm new" : 'ከዚህ ይጀምሩ — አዲስ ለሆናችሁ'}
           </button>
@@ -73,7 +73,7 @@ export default function Home() {
               key={art.id}
               id={`editors-pick-card-${art.id}`}
               onClick={() => navigateTo(`/articles/${art.slug}`)}
-              className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-gold/30 dark:hover:border-gold/30 rounded-lg overflow-hidden flex flex-col justify-between group cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1.5 transition-all duration-300 h-full"
+              className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl overflow-hidden flex flex-col justify-between group cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-1 active:scale-[0.99] transition-[border-color,box-shadow,transform] duration-200 ease-out h-full"
             >
               {art.coverImage && (
                 <div className="h-48 md:h-52 overflow-hidden relative border-b border-black/5 dark:border-white/5">
@@ -81,11 +81,11 @@ export default function Home() {
                     src={art.coverImage}
                     alt={getTranslatedText(art.title, art.titleAm)}
                     referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102"
+                    className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-103"
                   />
                   {art.featured && (
                     <div className="absolute top-4 left-4 flex gap-2">
-                      <span className="px-2.5 py-0.5 rounded-[4px] bg-gold text-black text-[10px] font-bold tracking-wider">
+                      <span className="px-2.5 py-0.5 rounded-[4px] bg-gold text-black text-[10px] font-bold tracking-wider shadow-xs">
                         {language === 'en' ? 'Featured Thesis' : 'የተመረጠ ጥናት'}
                       </span>
                     </div>
@@ -111,7 +111,7 @@ export default function Home() {
                     </span>
                   </div>
 
-                  <h3 className="font-serif text-lg md:text-xl font-bold leading-snug text-navy dark:text-white group-hover:text-gold transition-colors line-clamp-2">
+                  <h3 className="font-serif text-lg md:text-xl font-bold leading-snug text-navy dark:text-white group-hover:text-gold transition-colors duration-150 line-clamp-2">
                     {getTranslatedText(art.title, art.titleAm)}
                   </h3>
                   
@@ -124,7 +124,7 @@ export default function Home() {
                   <span className="text-[11px] text-lightgrey dark:text-gray-400 font-sans">
                     {language === 'en' ? 'Published' : 'የታተመበት'} {art.publishDate}
                   </span>
-                  <span className="text-xs tracking-wider font-bold text-navy dark:text-gold flex items-center gap-1 group-hover:translate-x-1 transition-transform font-sans">
+                  <span className="text-xs tracking-wider font-bold text-navy dark:text-gold flex items-center gap-1 group-hover:translate-x-1 transition-transform duration-150 ease-out font-sans">
                     {t('common.read')} <ArrowRight size={13} />
                   </span>
                 </div>
@@ -161,13 +161,13 @@ export default function Home() {
               key={t.slug}
               id={`topic-tile-${t.slug}`}
               onClick={() => navigateTo(`/topics/${t.slug}`)}
-              className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-navy dark:hover:border-gold rounded-md p-6 text-center flex flex-col items-center justify-between gap-4 cursor-pointer shadow-md hover:shadow-lg transition-all duration-300"
+              className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl p-6 text-center flex flex-col items-center justify-between gap-4 cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-[border-color,box-shadow,transform] duration-200 ease-out btn-press group"
             >
-              <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-dark-bg text-gold flex items-center justify-center border border-black/5 dark:border-white/5">
+              <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-dark-bg text-gold flex items-center justify-center border border-black/5 dark:border-white/5 group-hover:scale-105 transition-transform duration-200 ease-out">
                 <TopicIcon name={t.icon} size={20} />
               </div>
               <div>
-                <h3 className="font-serif text-base font-bold text-navy dark:text-white pb-0.5">
+                <h3 className="font-serif text-base font-bold text-navy dark:text-white pb-0.5 group-hover:text-gold transition-colors duration-150">
                   {getTranslatedText(t.name, t.nameAm)}
                 </h3>
                 <span className="text-[11px] tracking-widest text-lightgrey dark:text-gray-400 font-semibold block font-sans">
@@ -193,9 +193,9 @@ export default function Home() {
             </div>
             <button
               onClick={() => navigateTo('/paths')}
-              className="text-xs font-bold tracking-widest text-gold flex items-center gap-1 group whitespace-nowrap cursor-pointer font-sans"
+              className="text-xs font-bold tracking-widest text-gold flex items-center gap-1 group whitespace-nowrap cursor-pointer font-sans btn-press"
             >
-              {language === 'en' ? 'See all learning paths' : 'ሁሉንም የጥናት መንገዶች እይ'} <ArrowRight size={13} className="group-hover:translate-x-1" />
+              {language === 'en' ? 'See all learning paths' : 'ሁሉንም የጥናት መንገዶች እይ'} <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform duration-150 ease-out" />
             </button>
           </div>
 
@@ -203,7 +203,7 @@ export default function Home() {
             {paths.map((path) => (
               <div
                 key={path.slug}
-                className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 rounded-md p-6 flex flex-col justify-between gap-6 shadow-md hover:shadow-lg transition-shadow"
+                className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-gold/30 rounded-xl p-6 flex flex-col justify-between gap-6 shadow-xs hover:shadow-md transition-[border-color,box-shadow] duration-200 ease-out"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between font-sans">
@@ -229,10 +229,10 @@ export default function Home() {
                 <div className="pt-4 border-t border-black/10 dark:border-white/10 flex justify-end">
                   <button
                     onClick={() => navigateTo(`/paths/${path.slug}`)}
-                    className="px-4 py-2 text-xs font-bold tracking-wider text-white bg-navy dark:bg-gold dark:text-slate-950 rounded-[4px] flex items-center gap-1 group hover:opacity-90 duration-150 transition-opacity font-sans"
+                    className="px-4 py-2 text-xs font-bold tracking-wider text-white bg-navy dark:bg-gold dark:text-slate-950 rounded-[4px] flex items-center gap-1 group hover:opacity-90 active:scale-[0.97] transition-[opacity,transform] duration-150 font-sans btn-press cursor-pointer"
                   >
                     <span>{language === 'en' ? 'Start this path' : 'ይህን የጥናት መንገድ ጀምር'}</span>
-                    <ChevronRight size={13} className="group-hover:translate-x-0.5" />
+                    <ChevronRight size={13} className="group-hover:translate-x-0.5 transition-transform duration-150 ease-out" />
                   </button>
                 </div>
               </div>
@@ -252,9 +252,9 @@ export default function Home() {
           </div>
           <button
             onClick={() => navigateTo('/questions')}
-            className="text-xs font-bold tracking-widest text-gold flex items-center gap-1 group cursor-pointer font-sans"
+            className="text-xs font-bold tracking-widest text-gold flex items-center gap-1 group cursor-pointer font-sans btn-press"
           >
-            {language === 'en' ? 'See all questions' : 'ሁሉንም ጥያቄዎች እይ'} <ArrowRight size={13} className="group-hover:translate-x-1" />
+            {language === 'en' ? 'See all questions' : 'ሁሉንም ጥያቄዎች እይ'} <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform duration-150 ease-out" />
           </button>
         </div>
 
@@ -263,10 +263,10 @@ export default function Home() {
             <div
               key={q.id}
               onClick={() => navigateTo(`/articles/${q.articleSlug}`)}
-              className="py-4 flex gap-4 items-center justify-between group cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 px-3 rounded-[4px] transition-all duration-200"
+              className="py-4 flex gap-4 items-center justify-between group cursor-pointer hover:bg-black/[0.03] dark:hover:bg-white/[0.04] px-3.5 rounded-lg transition-colors duration-150 ease-out active:scale-[0.99] btn-press"
             >
               <div className="max-w-3xl space-y-1.5 flex-1 pr-4">
-                <p className="text-sm font-bold text-navy dark:text-white leading-snug group-hover:text-gold transition-colors font-serif">
+                <p className="text-sm font-bold text-navy dark:text-white leading-snug group-hover:text-gold transition-colors duration-150 font-serif">
                   {getTranslatedText(q.text, q.textAm)}
                 </p>
                 <div className="flex flex-wrap gap-2 items-center text-xs text-mediumgrey font-sans">
@@ -277,7 +277,7 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-              <ChevronRight size={18} className="text-lightgrey group-hover:text-gold transition-colors shrink-0" />
+              <ChevronRight size={18} className="text-lightgrey group-hover:text-gold transition-colors duration-150 shrink-0 group-hover:translate-x-0.5 transition-transform" />
             </div>
           ))}
         </div>

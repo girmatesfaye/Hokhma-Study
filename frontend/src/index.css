@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Noto+Sans+Ethiopic:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Noto+Sans+Ethiopic:wght@300;400;500;600;700&family=Noto+Serif+Ethiopic:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-serif: "Lora", "Noto Sans Ethiopic", Georgia, serif;
+  --font-serif: "Lora", "Noto Serif Ethiopic", Georgia, serif;
   --font-sans: "Inter", "Noto Sans Ethiopic", system-ui, -apple-system, sans-serif;
   
   --color-navy: #111111;
@@ -39,20 +39,134 @@
   --color-gray-700: #3D3D3D;
   --color-gray-800: #292929;
   --color-gray-900: #191919;
+
+  /* Animation tokens from Emil Kowalski's motion philosophy */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 @variant dark (&:where(.dark, .dark *));
 
 @layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+
   body {
     @apply font-sans bg-offwhite text-nearblack dark:bg-dark-bg dark:text-gray-100 antialiased transition-colors duration-200;
+    touch-action: manipulation;
+  }
+
+  /* Headings: balance line-wrap on mobile; Body: pretty text wrap */
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
   }
   
-  /* Auto-style standard inputs, selects, and textareas to look completely elegant */
+  /* Prevent iOS Safari 16px auto-zoom while maintaining elegant desktop sizing */
   input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]), 
   textarea, 
   select {
-        @apply bg-white border border-black/10 text-nearblack focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none placeholder:text-lightgrey transition-colors duration-200
-          dark:bg-dark-input dark:border-dark-border dark:text-gray-100 dark:focus:border-gold dark:focus:ring-gold;
+    font-size: 16px;
+    @apply bg-white border border-black/10 text-nearblack focus:border-gold focus:ring-1 focus:ring-gold focus:outline-none placeholder:text-lightgrey transition-colors duration-200
+      dark:bg-dark-input dark:border-dark-border dark:text-gray-100 dark:focus:border-gold dark:focus:ring-gold;
+  }
+
+  @media (min-width: 640px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+    textarea,
+    select {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+/* Mobile-first touch & scrolling utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Button & Interactive Press Feedback (instant 160ms feedback) */
+.btn-press,
+.press-feedback {
+  transition: transform 160ms var(--ease-out);
+}
+.btn-press:active,
+.press-feedback:active {
+  transform: scale(0.97);
+}
+
+/* Hardware-accelerated entrance animations (GPU transform & opacity) */
+@keyframes fadeInSubtle {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleInModal {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes drawerSlideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeInSubtle 220ms var(--ease-out) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleInModal 200ms var(--ease-out) forwards;
+}
+
+.animate-drawer-in {
+  animation: drawerSlideIn 280ms var(--ease-drawer) forwards;
+}
+
+/* Stagger entrance helpers */
+.stagger-1 { animation-delay: 40ms; }
+.stagger-2 { animation-delay: 80ms; }
+.stagger-3 { animation-delay: 120ms; }
+.stagger-4 { animation-delay: 160ms; }
+
+/* Accessible reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

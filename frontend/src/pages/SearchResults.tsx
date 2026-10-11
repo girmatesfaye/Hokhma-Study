@@ -146,7 +146,7 @@ export default function SearchResults() {
   };
 
   return (
-    <div id="search-results-page" className="animate-fade-in max-w-[1140px] mx-auto px-4 md:px-6 py-10 space-y-8">
+    <div id="search-results-page" className="animate-fade-in max-w-[1140px] mx-auto px-4 md:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8">
       {/* Search Input Bar with Title Case typography */}
       <form onSubmit={handleLocalSubmit} className="max-w-2xl mx-auto relative space-y-3">
         <label className="text-xs font-semibold tracking-wide text-mediumgrey block text-center font-sans">
@@ -159,13 +159,13 @@ export default function SearchResults() {
             value={localQuery}
             onChange={(e) => setLocalQuery(e.target.value)}
             placeholder="Search Papers, Objections, Topics..."
-            className="w-full pl-12 pr-28 py-3 bg-white dark:bg-slate-900 border border-black/10 dark:border-white/10 rounded-lg text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold text-nearblack dark:text-white font-sans"
+            className="w-full pl-11 sm:pl-12 pr-24 sm:pr-28 py-3 bg-white dark:bg-slate-900 border border-black/10 dark:border-white/10 rounded-xl text-base sm:text-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold text-nearblack dark:text-white font-sans touch-manipulation shadow-xs"
           />
-          <Search className="absolute left-4 top-3.5 text-mediumgrey h-5 w-5" />
+          <Search className="absolute left-3.5 sm:left-4 top-3.5 text-mediumgrey h-5 w-5 pointer-events-none" />
           <button
             type="submit"
             disabled={isLoading}
-            className="absolute right-2 top-2 px-4 py-1.5 bg-navy text-white text-xs font-semibold rounded hover:bg-navy/90 dark:bg-gold dark:text-slate-950 transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="absolute right-2 top-2 px-3.5 sm:px-4 py-1.5 min-h-[36px] bg-navy text-white text-xs font-semibold rounded-lg hover:bg-navy/90 dark:bg-gold dark:text-slate-950 transition-[opacity,transform] duration-150 flex items-center gap-1.5 cursor-pointer btn-press touch-manipulation"
           >
             {isLoading && <Loader2 size={13} className="animate-spin" />}
             <span>Search</span>
@@ -179,13 +179,13 @@ export default function SearchResults() {
         )}
       </form>
 
-      {/* Difficulty Filter Chips */}
-      <div className="flex flex-wrap items-center justify-center gap-2 border-b border-black/5 dark:border-white/5 pb-4">
+      {/* Difficulty Filter Chips - touch swipeable on mobile */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 justify-start sm:justify-center border-b border-black/5 dark:border-white/5 pb-3 -mx-4 px-4 sm:mx-0 sm:px-0">
         {difficulties.map((diff) => (
           <button
             key={diff.value}
             onClick={() => setDifficultyFilter(diff.value)}
-            className={`px-3 py-1 text-xs rounded-full tracking-wide transition-all duration-200 cursor-pointer ${
+            className={`px-3.5 py-1.5 min-h-[36px] text-xs shrink-0 rounded-full tracking-wide transition-colors duration-150 cursor-pointer btn-press touch-manipulation ${
               difficultyFilter === diff.value
                 ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold shadow-xs'
                 : 'bg-black/5 dark:bg-white/5 text-nearblack dark:text-gray-300 hover:bg-black/10 dark:hover:bg-white/10'
@@ -196,21 +196,21 @@ export default function SearchResults() {
         ))}
       </div>
 
-      {/* Category Tabs */}
+      {/* Category Tabs - touch swipeable on mobile */}
       {totalFindings > 0 && (
-        <div className="flex items-center justify-center gap-2 border-b border-black/5 dark:border-white/5 pb-3">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 justify-start sm:justify-center border-b border-black/5 dark:border-white/5 pb-3 -mx-4 px-4 sm:mx-0 sm:px-0">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3.5 py-1.5 text-xs rounded-lg font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 min-h-[36px] shrink-0 text-xs rounded-lg font-medium transition-colors duration-150 cursor-pointer flex items-center gap-1.5 btn-press touch-manipulation ${
                 activeTab === tab.id
                   ? 'bg-slate-200 dark:bg-slate-800 text-nearblack dark:text-white font-bold'
                   : 'text-mediumgrey hover:text-nearblack dark:hover:text-white'
               }`}
             >
               <span>{tab.label}</span>
-              <span className="font-mono text-[10px] px-1.5 py-0.2 bg-black/5 dark:bg-white/10 rounded-full">
+              <span className="font-mono text-[10px] px-1.5 py-0.5 bg-black/5 dark:bg-white/10 rounded-full">
                 {tab.count}
               </span>
             </button>
@@ -222,7 +222,7 @@ export default function SearchResults() {
       {isLoading ? (
         <div className="max-w-3xl mx-auto space-y-4 animate-pulse">
           {[1, 2, 3].map((n) => (
-            <div key={n} className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 p-6 rounded-lg space-y-3">
+            <div key={n} className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 p-4 sm:p-6 rounded-xl space-y-3">
               <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/4" />
               <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded w-3/4" />
               <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded w-full" />
@@ -231,7 +231,7 @@ export default function SearchResults() {
         </div>
       ) : totalFindings > 0 ? (
         /* Results Content Container */
-        <div className="max-w-3xl mx-auto space-y-8">
+        <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
           {/* 1. Articles Section */}
           {(activeTab === 'all' || activeTab === 'articles') && displayedArticles.length > 0 && (
             <div className="space-y-4">
@@ -249,7 +249,7 @@ export default function SearchResults() {
                     <div
                       key={art.id}
                       onClick={() => navigateTo(`/articles/${art.slug}`)}
-                      className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-gold/30 p-6 rounded-lg flex flex-col justify-between gap-4 cursor-pointer group shadow-sm hover:shadow transition-all duration-300"
+                      className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 p-4 sm:p-6 rounded-xl flex flex-col justify-between gap-4 cursor-pointer group shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] transition-[border-color,box-shadow,transform] duration-200 ease-out touch-manipulation"
                     >
                       <div className="space-y-2.5">
                         <div className="flex flex-wrap items-center gap-2 text-xs text-mediumgrey">
@@ -264,7 +264,7 @@ export default function SearchResults() {
                           </span>
                         </div>
 
-                        <h3 className="font-serif text-lg md:text-xl font-bold text-nearblack dark:text-white leading-tight group-hover:text-gold transition-colors">
+                        <h3 className="font-serif text-lg md:text-xl font-bold text-nearblack dark:text-white leading-tight group-hover:text-gold transition-colors duration-150">
                           {highlightKeyword(language === 'en' ? art.title : (art.titleAm || art.title), localQuery)}
                         </h3>
 
@@ -275,7 +275,7 @@ export default function SearchResults() {
 
                       <div className="pt-3 border-t border-black/5 dark:border-white/5 flex justify-between items-center text-[11px] text-lightgrey">
                         <span>Published {art.publishDate}</span>
-                        <span className="font-semibold text-navy dark:text-gold group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
+                        <span className="font-semibold text-navy dark:text-gold group-hover:translate-x-1 transition-transform duration-150 ease-out flex items-center gap-0.5">
                           Read Paper <ChevronRight size={11} />
                         </span>
                       </div>
@@ -301,7 +301,7 @@ export default function SearchResults() {
                   <div
                     key={q.id}
                     onClick={() => navigateTo(`/articles/${q.articleSlug}`)}
-                    className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-gold/30 p-4 rounded-lg flex items-center justify-between gap-4 cursor-pointer group shadow-xs transition-all duration-300"
+                    className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 p-4 rounded-xl flex items-center justify-between gap-4 cursor-pointer group shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] transition-[border-color,box-shadow,transform] duration-200 ease-out"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-[11px] text-mediumgrey">
@@ -309,11 +309,11 @@ export default function SearchResults() {
                         <span className="w-1 h-1 rounded-full bg-lightgrey/50" />
                         <span>Score {q.commonScore}%</span>
                       </div>
-                      <p className="text-sm font-medium text-nearblack dark:text-gray-200 group-hover:text-gold transition-colors">
+                      <p className="text-sm font-medium text-nearblack dark:text-gray-200 group-hover:text-gold transition-colors duration-150">
                         {highlightKeyword(language === 'en' ? q.text : (q.textAm || q.text), localQuery)}
                       </p>
                     </div>
-                    <ChevronRight size={16} className="text-lightgrey group-hover:text-gold shrink-0 transition-transform group-hover:translate-x-0.5" />
+                    <ChevronRight size={16} className="text-lightgrey group-hover:text-gold shrink-0 transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
                   </div>
                 ))}
               </div>
@@ -336,7 +336,7 @@ export default function SearchResults() {
                   <div
                     key={top.slug}
                     onClick={() => navigateTo(`/topics/${top.slug}`)}
-                    className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-black/15 dark:hover:border-gold/30 p-4 rounded-lg cursor-pointer group shadow-xs transition-all duration-300 flex flex-col justify-between"
+                    className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 p-4.5 rounded-xl cursor-pointer group shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] transition-[border-color,box-shadow,transform] duration-200 ease-out flex flex-col justify-between"
                   >
                     <div>
                       <h4 className="font-serif text-base font-bold text-nearblack dark:text-white group-hover:text-gold transition-colors">

@@ -1,13 +1,23 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
-// Import lucide icons for navigation and search loading
-import { Search, Menu, X, Sun, Moon, ShieldAlert, BadgeInfo, Globe, Compass, BookOpen, HelpCircle, Loader2 } from 'lucide-react';
+// Import lucide icons for navigation, mobile drawer and search loading
+import { 
+  Search, 
+  Menu, 
+  X, 
+  Sun, 
+  Moon, 
+  ShieldAlert, 
+  BadgeInfo, 
+  Globe, 
+  Compass, 
+  BookOpen, 
+  HelpCircle, 
+  Loader2,
+  Route,
+  ChevronRight
+} from 'lucide-react';
 // Import live search API service and return types
 import { searchAll, SearchResults as ApiSearchResults } from '../services/search';
 
@@ -31,12 +41,30 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Listen for Cmd+K or Ctrl+K to open search overlay
+  // Prevent background scrolling when mobile drawer or search overlay is open
+  useEffect(() => {
+    if (isDrawerOpen || isSearchOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isDrawerOpen, isSearchOpen]);
+
+  // Listen for Cmd+K or Ctrl+K to open search overlay, and Escape to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setIsSearchOpen(true);
+      } else if (e.key === 'Escape') {
+        setIsSearchOpen(false);
+        setIsDrawerOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -134,21 +162,21 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { label: t('nav.topics'), hash: '/topics', page: 'topics' },
-    { label: t('nav.questions'), hash: '/questions', page: 'questions' },
-    { label: t('nav.paths'), hash: '/paths', page: 'paths' },
-    { label: t('nav.resources'), hash: '/resources', page: 'resources' },
-    { label: t('nav.about'), hash: '/about', page: 'about' },
+    { label: t('nav.topics'), hash: '/topics', page: 'topics', icon: <Compass size={19} /> },
+    { label: t('nav.questions'), hash: '/questions', page: 'questions', icon: <HelpCircle size={19} /> },
+    { label: t('nav.paths'), hash: '/paths', page: 'paths', icon: <Route size={19} /> },
+    { label: t('nav.resources'), hash: '/resources', page: 'resources', icon: <BookOpen size={19} /> },
+    { label: t('nav.about'), hash: '/about', page: 'about', icon: <BadgeInfo size={19} /> },
   ];
 
   return (
     <>
       <header
         id="main-nav-bar"
-        className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        className={`sticky top-0 z-50 w-full transition-[background-color,border-color,padding,box-shadow] duration-200 ease-out ${
           isScrolled
-            ? 'bg-white/90 dark:bg-dark-card/90 backdrop-blur-sm shadow-sm border-b border-black/10 dark:border-white/10 py-3'
-            : 'bg-offwhite/85 dark:bg-dark-bg/85 backdrop-blur-sm border-b border-black/5 dark:border-white/5 py-4'
+            ? 'bg-white/95 dark:bg-dark-card/95 backdrop-blur-md shadow-xs border-b border-black/10 dark:border-white/10 py-2.5 sm:py-3'
+            : 'bg-offwhite/90 dark:bg-dark-bg/90 backdrop-blur-md border-b border-black/5 dark:border-white/5 py-3 sm:py-4'
         }`}
       >
         <div className="max-w-[1140px] mx-auto px-4 md:px-6 flex items-center justify-between">
@@ -157,28 +185,28 @@ export default function Navbar() {
           <a
             id="nav-logo"
             href="#/"
-            className="flex items-center gap-2 text-navy dark:text-white transition-opacity hover:opacity-90 animate-fade-in"
+            className="flex items-center gap-2 text-navy dark:text-white transition-opacity hover:opacity-90 btn-press touch-manipulation"
           >
             <img
               src="/assets/logo.jpg"
               alt="Hokhma Study logo"
-              className="h-10 w-10 rounded-full object-cover"
+              className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover shadow-xs"
             />
-            <span className="font-serif text-xl font-bold tracking-tight">{t('brand.name')}</span>
-            <span className="h-4 w-px bg-gold/50" />
+            <span className="font-serif text-lg sm:text-xl font-bold tracking-tight">{t('brand.name')}</span>
+            <span className="h-4 w-px bg-gold/50 hidden xs:inline-block" />
             <span className="font-sans text-[11px] tracking-widest text-gold font-semibold hidden sm:inline-block">
               {language === 'en' ? 'Apologetics' : 'መከላከያ'}
             </span>
           </a>
 
           {/* DESKTOP NAV LINKS */}
-          <nav id="desktop-nav-menu" className="hidden lg:flex items-center gap-8">
+          <nav id="desktop-nav-menu" className="hidden lg:flex items-center gap-7 xl:gap-8">
             {navLinks.map((link) => (
                <a
                 key={link.label}
                  id={`nav-link-${link.page}`}
                  href={`#${link.hash}`}
-                className={`text-[13px] font-medium tracking-wide transition-colors duration-200 ${
+                className={`text-[13px] font-medium tracking-wide transition-colors duration-150 btn-press ${
                   isActive(link.page)
                     ? 'text-navy dark:text-gold border-b-2 border-navy dark:border-gold pb-1 font-semibold'
                      : 'text-mediumgrey dark:text-gray-300 hover:text-navy dark:hover:text-gold'
@@ -190,22 +218,24 @@ export default function Navbar() {
           </nav>
 
           {/* ACTION BUTTONS */}
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3">
             {/* SEARCH OVERLAY TRIGGER */}
             <button
               id="search-btn-trigger"
               onClick={() => setIsSearchOpen(true)}
-              className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors flex items-center gap-1 cursor-pointer"
+              className="p-2 sm:p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors flex items-center gap-1 cursor-pointer btn-press min-h-[40px] min-w-[40px] justify-center rounded-lg"
               title="Search Articles (Ctrl+K)"
+              aria-label="Open Search (Ctrl+K)"
             >
-              <Search size={18} />
+              <Search size={19} />
             </button>
 
             {/* SLEEK COMPACT LANGUAGE SWITCHER */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'am' : 'en')}
-              className="flex items-center justify-center h-8 px-2.5 text-[11px] font-bold tracking-wider rounded-full border border-black/10 dark:border-white/15 text-nearblack dark:text-white hover:text-gold dark:hover:text-gold hover:border-gold/30 dark:hover:border-gold/30 transition-all bg-black/[0.03] dark:bg-white/[0.04] cursor-pointer font-sans"
+              className="flex items-center justify-center h-8 px-2.5 text-[11px] font-bold tracking-wider rounded-full border border-black/10 dark:border-white/15 text-nearblack dark:text-white hover:text-gold dark:hover:text-gold hover:border-gold/30 dark:hover:border-gold/30 transition-colors bg-black/[0.03] dark:bg-white/[0.04] cursor-pointer font-sans btn-press touch-manipulation min-w-[44px]"
               title={language === 'en' ? 'Switch to Amharic / አማርኛ' : 'Switch to English / እንግሊዝኛ'}
+              aria-label={language === 'en' ? 'Switch to Amharic' : 'Switch to English'}
             >
               <Globe size={11} className="text-gold mr-1" />
               <span>{language === 'en' ? 'AM' : 'EN'}</span>
@@ -215,103 +245,178 @@ export default function Navbar() {
             <button
               id="theme-toggle-btn"
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors cursor-pointer"
+              className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors cursor-pointer btn-press min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg"
               title={darkMode ? 'Light Theme' : 'Dark Theme'}
+              aria-label={darkMode ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
             >
-              {darkMode ? <Sun size={18} className="text-gold" /> : <Moon size={18} />}
+              {darkMode ? <Sun size={19} className="text-gold" /> : <Moon size={19} />}
             </button>
 
             {/* MOBILE DRAWER TOGGLE */}
             <button
               id="mobile-drawer-btn"
               onClick={() => setIsDrawerOpen(true)}
-              className="lg:hidden p-2 text-nearblack/85 dark:text-white/85 hover:text-gold dark:hover:text-gold transition-colors cursor-pointer"
+              aria-label="Open Navigation Menu"
+              className="lg:hidden p-2 text-nearblack/85 dark:text-white/85 hover:text-gold dark:hover:text-gold transition-colors cursor-pointer btn-press min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-black/5 dark:hover:bg-white/5"
             >
-              <Menu size={21} />
+              <Menu size={22} />
             </button>
           </div>
         </div>
       </header>
 
-      {/* MOBILE FULL-SCREEN DRAWER */}
+      {/* MOBILE SHEET / DRAWER (Emil Kowalski Drawer Recipe + Safe Area Insets) */}
       {isDrawerOpen && (
-        <div className="fixed inset-0 z-[100] bg-white dark:bg-dark-bg flex flex-col p-6 animate-fade-in overflow-y-auto">
-          <div className="flex items-center justify-between col-span-2">
-            <span className="font-serif text-xl font-bold tracking-tight text-navy dark:text-white flex items-center gap-2">
-              <img
-                src="/assets/logo.jpg"
-                alt="Hokhma Study logo"
-                className="h-9 w-9 rounded-full object-cover"
-              />
-              {t('brand.name')}
-            </span>
-            <div className="flex items-center gap-2">
-              {/* Mobile language switch button */}
-              <button
-                onClick={() => setLanguage(language === 'en' ? 'am' : 'en')}
-                className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold border border-black/10 dark:border-white/10 rounded-full bg-slate-100 dark:bg-slate-800 text-nearblack dark:text-white cursor-pointer"
-              >
-                <Globe size={11} className="text-gold" />
-                <span>{language === 'en' ? 'AM' : 'EN'}</span>
-              </button>
-
-              {/* Mobile theme switch button */}
-              <button
-                id="theme-toggle-btn-mobile"
-                onClick={() => setDarkMode(!darkMode)}
-                className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold dark:hover:text-gold transition-colors cursor-pointer"
-                title={darkMode ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-              >
-                {darkMode ? <Sun size={20} className="text-gold" /> : <Moon size={20} />}
-              </button>
-              <button
-                id="close-drawer-btn"
+        <div className="fixed inset-0 z-[100] flex justify-end">
+          {/* Backdrop with quick fade */}
+          <div
+            className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs transition-opacity duration-200 animate-fade-in"
+            onClick={() => setIsDrawerOpen(false)}
+            aria-hidden="true"
+          />
+          
+          {/* Drawer panel with cubic-bezier(0.32, 0.72, 0, 1) and dvh mobile height */}
+          <div 
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation Menu"
+            className="relative z-10 w-full max-w-[320px] sm:max-w-sm h-dvh max-h-dvh bg-white dark:bg-dark-bg flex flex-col animate-drawer-in overflow-hidden shadow-2xl border-l border-black/10 dark:border-white/10"
+          >
+            {/* Drawer Header with Logo & Quick Controls */}
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-black/5 dark:border-white/5 pt-[max(1rem,env(safe-area-inset-top))]">
+              <a
+                href="#/"
                 onClick={() => setIsDrawerOpen(false)}
-                className="p-2 text-nearblack/80 dark:text-white/80 hover:text-gold transition-colors cursor-pointer"
+                className="flex items-center gap-2.5 text-navy dark:text-white btn-press"
               >
-                <X size={24} />
+                <img
+                  src="/assets/logo.jpg"
+                  alt="Hokhma Study logo"
+                  className="h-9 w-9 rounded-full object-cover shadow-xs"
+                />
+                <div className="flex flex-col">
+                  <span className="font-serif text-lg font-bold tracking-tight leading-tight">{t('brand.name')}</span>
+                  <span className="font-sans text-[10px] tracking-wider text-gold font-semibold">
+                    {language === 'en' ? 'Apologetics' : 'መከላከያ'}
+                  </span>
+                </div>
+              </a>
+
+              <div className="flex items-center gap-1">
+                {/* Mobile theme switch button */}
+                <button
+                  id="theme-toggle-btn-mobile"
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="p-2 rounded-lg text-nearblack/80 dark:text-white/80 hover:text-gold hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer btn-press min-h-[40px] min-w-[40px] flex items-center justify-center"
+                  title={darkMode ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+                  aria-label="Toggle theme"
+                >
+                  {darkMode ? <Sun size={18} className="text-gold" /> : <Moon size={18} />}
+                </button>
+
+                {/* Close drawer button */}
+                <button
+                  id="close-drawer-btn"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="p-2 rounded-lg text-nearblack/80 dark:text-white/80 hover:text-gold hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer btn-press min-h-[40px] min-w-[40px] flex items-center justify-center"
+                  aria-label="Close Navigation Menu"
+                >
+                  <X size={22} />
+                </button>
+              </div>
+            </div>
+
+            {/* Quick In-Drawer Search Bar */}
+            <div className="p-3.5 border-b border-black/5 dark:border-white/5 bg-slate-50/60 dark:bg-slate-900/40">
+              <button
+                onClick={() => {
+                  setIsDrawerOpen(false);
+                  setIsSearchOpen(true);
+                }}
+                className="btn-press w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-slate-900 text-xs text-mediumgrey dark:text-gray-300 hover:border-gold/50 shadow-xs text-left cursor-pointer"
+              >
+                <span className="flex items-center gap-2.5">
+                  <Search size={16} className="text-gold" />
+                  <span className="font-sans">{t('nav.search') || (language === 'en' ? 'Search papers, topics...' : 'ጽሑፎችንና አርዕስቶችን ፈልግ...')}</span>
+                </span>
+                <span className="text-[10px] font-mono bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded text-lightgrey">⌘K</span>
               </button>
             </div>
-          </div>
 
-          <div className="flex-1 flex flex-col justify-start items-center gap-7 py-12">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={`#${link.hash}`}
-                onClick={() => setIsDrawerOpen(false)}
-                className={`text-xl font-serif tracking-wide transition-colors duration-200 ${
-                  isActive(link.page)
-                    ? 'text-gold font-bold scale-105'
-                    : 'text-nearblack/80 dark:text-gray-200 hover:text-gold'
-                }`}
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
+            {/* Navigation Rows (Full touch target min-h-[48px], icon + title + chevron) */}
+            <div className="flex-1 overflow-y-auto p-3.5 sm:p-4 space-y-1.5 no-scrollbar">
+              {navLinks.map((link) => {
+                const active = isActive(link.page);
+                return (
+                  <a
+                    key={link.label}
+                    href={`#${link.hash}`}
+                    onClick={() => setIsDrawerOpen(false)}
+                    className={`btn-press flex items-center justify-between px-3.5 py-3 rounded-xl transition-all duration-150 min-h-[48px] touch-manipulation ${
+                      active
+                        ? 'bg-gold/15 dark:bg-gold/20 text-nearblack dark:text-white font-bold border border-gold/30 shadow-xs'
+                        : 'text-mediumgrey dark:text-gray-200 hover:bg-black/4 dark:hover:bg-white/5 hover:text-nearblack dark:hover:text-white'
+                    }`}
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className={active ? 'text-gold' : 'text-mediumgrey/70 dark:text-gray-400'}>
+                        {link.icon}
+                      </span>
+                      <span className="text-base font-serif font-medium">{link.label}</span>
+                    </span>
+                    <ChevronRight size={16} className={active ? 'text-gold' : 'text-lightgrey/40'} />
+                  </a>
+                );
+              })}
 
-          <div className="border-t border-black/5 dark:border-white/5 pt-6 flex flex-col gap-4 text-center items-center">
-            <p className="text-xs text-mediumgrey dark:text-gray-400 font-sans">
-              {t('brand.name')} {language === 'en' ? 'Apologetics · Pure academic defense.' : 'የክርስትና መከላከያ · አካዳሚያዊ ጥናት።'}
-            </p>
+              {isAdmin && (
+                <a
+                  href="#/admin"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="btn-press flex items-center justify-between px-3.5 py-3 rounded-xl text-gold bg-gold/10 border border-gold/25 mt-3 min-h-[48px] touch-manipulation"
+                >
+                  <span className="flex items-center gap-3">
+                    <ShieldAlert size={19} className="text-gold" />
+                    <span className="text-base font-serif font-bold">Admin Workroom</span>
+                  </span>
+                  <ChevronRight size={16} className="text-gold" />
+                </a>
+              )}
+            </div>
+
+            {/* Mobile Drawer Bottom Information */}
+            <div className="border-t border-black/5 dark:border-white/5 p-4 bg-slate-50/50 dark:bg-slate-900/30 pb-[max(1.2rem,env(safe-area-inset-bottom))] flex flex-col gap-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-lightgrey dark:text-gray-400 font-sans">{language === 'en' ? 'Language:' : 'ቋንቋ፦'}</span>
+                <button
+                  onClick={() => setLanguage(language === 'en' ? 'am' : 'en')}
+                  className="btn-press inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white dark:bg-slate-800 border border-black/10 dark:border-white/10 text-nearblack dark:text-white hover:text-gold cursor-pointer"
+                >
+                  <Globe size={12} className="text-gold" />
+                  <span>{language === 'en' ? 'English (Switch to አማርኛ)' : 'አማርኛ (Switch to EN)'}</span>
+                </button>
+              </div>
+              <p className="text-[11px] text-mediumgrey dark:text-gray-400 font-serif text-center pt-1 leading-relaxed">
+                {language === 'en' ? 'Apologetics · Academic defense of faith.' : 'የክርስትና መከላከያ · አካዳሚያዊ ጥናት።'}
+              </p>
+            </div>
           </div>
         </div>
       )}
 
-      {/* GORGEOUS MODAL SEARCH OVERLAY */}
+      {/* MODAL SEARCH OVERLAY (Emil Kowalski Modal Recipe: scale 0.96 + opacity 0 -> 1) */}
       {isSearchOpen && (
         <div 
-          className="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-md flex items-start justify-center p-4 md:p-10 animate-fade-in"
+          className="fixed inset-0 z-[120] bg-slate-950/75 backdrop-blur-xs flex items-start justify-center p-3 sm:p-6 md:p-10 animate-fade-in"
           onClick={() => setIsSearchOpen(false)}
         >
           <div 
-            className="bg-white dark:bg-slate-900 border border-black/10 dark:border-white/10 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden mt-10 md:mt-16 animate-slide-up"
+            className="bg-white dark:bg-slate-900 border border-black/10 dark:border-white/10 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden mt-6 sm:mt-12 md:mt-16 animate-scale-in max-h-[88dvh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header / Input Area */}
-            <div className="p-4 md:p-6 border-b border-black/5 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/40">
-              <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-800 border border-black/5 dark:border-white/5 rounded-full px-4.5 py-2.5 focus-within:ring-2 focus-within:ring-gold/40 focus-within:border-gold transition-all duration-200">
+            <div className="p-3.5 sm:p-5 border-b border-black/5 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/40">
+              <div className="flex items-center gap-2.5 sm:gap-3 bg-slate-100 dark:bg-slate-800 border border-black/5 dark:border-white/5 rounded-full px-3.5 sm:px-4.5 py-2 sm:py-2.5 focus-within:ring-2 focus-within:ring-gold/40 focus-within:border-gold transition-all duration-200">
                 {/* Search icon or live search spinning loader */}
                 {isSearching ? (
                   <Loader2 className="animate-spin text-gold h-5 w-5 shrink-0" />
@@ -329,8 +434,8 @@ export default function Navbar() {
                       setIsSearchOpen(false);
                     }
                   }}
-                  placeholder={t('nav.search') || "Search Papers, Objections, Topics..."}
-                  className="w-full bg-transparent !border-none !ring-0 !outline-none text-sm md:text-base text-nearblack dark:text-white placeholder-mediumgrey/60 font-sans p-0! h-auto! min-w-0"
+                  placeholder={t('nav.search') || (language === 'en' ? "Search Papers, Objections, Topics..." : "ጽሑፎችንና ጥያቄዎችን ፈልግ...")}
+                  className="w-full bg-transparent !border-none !ring-0 !outline-none text-base sm:text-sm md:text-base text-nearblack dark:text-white placeholder-mediumgrey/60 font-sans p-0! h-auto! min-w-0"
                   autoFocus
                 />
                 {localSearchVal.trim() !== '' && (
@@ -342,9 +447,16 @@ export default function Navbar() {
                     className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-mediumgrey hover:text-nearblack dark:hover:text-white transition-colors cursor-pointer shrink-0"
                     title="Clear text"
                   >
-                    <X size={14} />
+                    <X size={15} />
                   </button>
                 )}
+                <button
+                  onClick={() => setIsSearchOpen(false)}
+                  className="sm:hidden p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-mediumgrey hover:text-nearblack dark:hover:text-white transition-colors cursor-pointer shrink-0 ml-1"
+                  aria-label="Close search"
+                >
+                  <X size={18} />
+                </button>
               </div>
             </div>
 
