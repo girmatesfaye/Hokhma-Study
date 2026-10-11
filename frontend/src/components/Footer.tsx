@@ -172,105 +172,117 @@ export default function Footer() {
 
       {/* MODAL: CONTACT AUTHOR */}
       {showContactModal && (
-        <div className="fixed inset-0 z-[110] bg-slate-950/75 backdrop-blur-xs flex justify-center items-center p-4 animate-fade-in" onClick={() => setShowContactModal(false)}>
-          <div className="bg-white dark:bg-slate-900 rounded-xl max-w-lg w-full shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden animate-scale-in" onClick={(e) => e.stopPropagation()}>
-            <div className="p-5 border-b border-black/5 dark:border-white/5 flex justify-between items-center bg-white dark:bg-slate-900">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Contact Dr. Thomas Sterling"
+          className="fixed inset-0 z-[110] bg-slate-950/75 backdrop-blur-xs flex justify-center items-center p-3 sm:p-4 animate-fade-in"
+          onClick={() => setShowContactModal(false)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full max-h-[88dvh] flex flex-col shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 sm:p-5 border-b border-black/5 dark:border-white/5 flex justify-between items-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs shrink-0">
               <div className="flex items-center gap-2">
-                <Mail className="text-gold h-5 w-5" />
-                <h3 className="font-serif text-lg font-bold text-nearblack dark:text-white">Contact Dr. Thomas Sterling</h3>
+                <Mail className="text-gold h-5 w-5 shrink-0" />
+                <h3 className="font-serif text-base sm:text-lg font-bold text-nearblack dark:text-white text-balance">Contact Dr. Thomas Sterling</h3>
               </div>
               <button
                 onClick={() => setShowContactModal(false)}
-                className="p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/5 text-nearblack/60 dark:text-white/60 hover:text-red-500 btn-press cursor-pointer"
+                aria-label="Close Contact Modal"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/5 text-nearblack/60 dark:text-white/60 hover:text-red-500 btn-press cursor-pointer flex items-center justify-center shrink-0 touch-manipulation"
               >
                 <X size={20} />
               </button>
             </div>
 
-            {contactSuccess ? (
-              <div className="p-8 text-center space-y-4">
-                <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 rounded-full flex items-center justify-center mx-auto border border-emerald-200">
-                  <Check size={24} />
+            <div className="overflow-y-auto no-scrollbar">
+              {contactSuccess ? (
+                <div className="p-6 sm:p-8 text-center space-y-4">
+                  <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 rounded-full flex items-center justify-center mx-auto border border-emerald-200">
+                    <Check size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-serif text-lg font-semibold text-nearblack dark:text-white">Message Dispatched!</h4>
+                    <p className="text-xs sm:text-sm text-mediumgrey dark:text-gray-300 mt-1 max-w-sm mx-auto leading-relaxed text-pretty">
+                      Thank you. Your inquiry has been anchored securely. Dr. Sterling reads all sincere scholarly and existential messages, and will follow up with you.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-serif text-lg font-semibold text-nearblack dark:text-white">Message Dispatched!</h4>
-                  <p className="text-sm text-mediumgrey dark:text-gray-300 mt-1 max-w-sm mx-auto leading-relaxed">
-                    Thank you. Your inquiry has been anchored securely. Dr. Sterling reads all sincere scholarly and existential messages, and will follow up with you.
+              ) : (
+                <form onSubmit={handleContactSubmit} className="p-4 sm:p-6 md:p-8 space-y-4">
+                  <p className="text-xs text-mediumgrey dark:text-gray-300 leading-relaxed mb-1 font-serif text-pretty">
+                    Have an intellectual objection or a personal inquiry about faith? Send a message directly inputting below. Honest inquiries are highly valued.
                   </p>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleContactSubmit} className="p-6 md:p-8 space-y-4">
-                <p className="text-xs text-mediumgrey dark:text-gray-300 leading-relaxed mb-2">
-                  Have an intellectual objection or a personal inquiry about faith? Send a message directly inputting below. Honest inquiries are highly valued.
-                </p>
-                <div>
-                  <label className="block text-[11px] tracking-wider font-semibold text-mediumgrey dark:text-gray-450 mb-1 font-sans">
-                    Your Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={contactForm.name}
-                    onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-offwhite dark:bg-slate-950 border border-black/10 dark:border-white/10 rounded focus:outline-none focus:border-gold text-nearblack dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] tracking-wider font-semibold text-mediumgrey dark:text-gray-450 mb-1 font-sans">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={contactForm.email}
-                    onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-offwhite dark:bg-slate-950 border border-black/10 dark:border-white/10 rounded focus:outline-none focus:border-gold text-nearblack dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] tracking-wider font-semibold text-mediumgrey dark:text-gray-450 mb-1 font-sans">
-                    Subject / Concern
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="E.g., Query about empty tomb manuscripts"
-                    value={contactForm.subject}
-                    onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-offwhite dark:bg-slate-950 border border-black/10 dark:border-white/10 rounded focus:outline-none focus:border-gold text-nearblack dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] tracking-wider font-semibold text-mediumgrey dark:text-gray-450 mb-1 font-sans">
-                    Inquiry Details
-                  </label>
-                  <textarea
-                    required
-                    rows={4}
-                    value={contactForm.message}
-                    onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-offwhite dark:bg-slate-950 border border-black/10 dark:border-white/10 rounded focus:outline-none focus:border-gold text-nearblack dark:text-white"
-                  />
-                </div>
-                <div className="pt-4 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowContactModal(false)}
-                    className="px-4 py-2 border border-black/10 dark:border-white/10 hover:bg-black/5 hover:bg-white/5 text-nearblack dark:text-white text-xs font-bold tracking-wider rounded transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-navy text-white dark:bg-gold dark:text-slate-950 hover:bg-navy/90 text-xs font-bold tracking-wider rounded transition-colors flex items-center gap-1.5"
-                  >
-                    <Send size={12} />
-                    <span>Send Message</span>
-                  </button>
-                </div>
-              </form>
-            )}
+                  <div>
+                    <label className="block text-[11px] tracking-wider font-semibold text-mediumgrey dark:text-gray-400 mb-1 font-sans">
+                      Your Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={contactForm.name}
+                      onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                      className="w-full px-3 py-2.5 text-base sm:text-sm bg-offwhite dark:bg-slate-950 border border-black/10 dark:border-white/10 rounded-lg focus:outline-none focus:border-gold text-nearblack dark:text-white font-sans touch-manipulation"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] tracking-wider font-semibold text-mediumgrey dark:text-gray-400 mb-1 font-sans">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={contactForm.email}
+                      onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                      className="w-full px-3 py-2.5 text-base sm:text-sm bg-offwhite dark:bg-slate-950 border border-black/10 dark:border-white/10 rounded-lg focus:outline-none focus:border-gold text-nearblack dark:text-white font-sans touch-manipulation"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] tracking-wider font-semibold text-mediumgrey dark:text-gray-400 mb-1 font-sans">
+                      Subject / Concern
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="E.g., Query about empty tomb manuscripts"
+                      value={contactForm.subject}
+                      onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
+                      className="w-full px-3 py-2.5 text-base sm:text-sm bg-offwhite dark:bg-slate-950 border border-black/10 dark:border-white/10 rounded-lg focus:outline-none focus:border-gold text-nearblack dark:text-white font-sans touch-manipulation"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] tracking-wider font-semibold text-mediumgrey dark:text-gray-400 mb-1 font-sans">
+                      Inquiry Details
+                    </label>
+                    <textarea
+                      required
+                      rows={4}
+                      value={contactForm.message}
+                      onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                      className="w-full px-3 py-2.5 text-base sm:text-sm bg-offwhite dark:bg-slate-950 border border-black/10 dark:border-white/10 rounded-lg focus:outline-none focus:border-gold text-nearblack dark:text-white font-sans touch-manipulation"
+                    />
+                  </div>
+                  <div className="pt-2 flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowContactModal(false)}
+                      className="w-full sm:w-auto px-4 py-2.5 min-h-[44px] border border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 text-nearblack dark:text-white text-xs font-bold tracking-wider rounded-lg transition-colors touch-manipulation cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="w-full sm:w-auto px-5 py-2.5 min-h-[44px] bg-navy text-white dark:bg-gold dark:text-slate-950 hover:bg-navy/90 text-xs font-bold tracking-wider rounded-lg transition-colors flex items-center justify-center gap-1.5 touch-manipulation cursor-pointer btn-press"
+                    >
+                      <Send size={13} />
+                      <span>Send Message</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       )}
