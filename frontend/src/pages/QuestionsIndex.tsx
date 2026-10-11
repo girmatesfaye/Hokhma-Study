@@ -138,7 +138,7 @@ export default function QuestionsIndex() {
           <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar touch-manipulation">
             <button
               onClick={() => setSelectedTopicSlug('all')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap btn-press min-h-[38px] flex items-center gap-1.5 touch-manipulation ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap min-h-[38px] flex items-center gap-1.5 touch-manipulation transition-colors duration-150 active:opacity-90 ${
                 selectedTopicSlug === 'all'
                   ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold shadow-xs'
                   : 'bg-white dark:bg-slate-900 border border-black/5 dark:border-white/10 text-nearblack dark:text-gray-200'
@@ -153,7 +153,7 @@ export default function QuestionsIndex() {
                 <button
                   key={t.slug}
                   onClick={() => setSelectedTopicSlug(t.slug)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap btn-press min-h-[38px] flex items-center gap-1.5 touch-manipulation ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap min-h-[38px] flex items-center gap-1.5 touch-manipulation transition-colors duration-150 active:opacity-90 ${
                     selectedTopicSlug === t.slug
                       ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold shadow-xs'
                       : 'bg-white dark:bg-slate-900 border border-black/5 dark:border-white/10 text-nearblack dark:text-gray-200'
@@ -177,9 +177,9 @@ export default function QuestionsIndex() {
               <button
                 key={diff.val}
                 onClick={() => setSelectedDifficulty(diff.val as any)}
-                className={`btn-press px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap min-h-[36px] flex items-center touch-manipulation ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap min-h-[36px] flex items-center touch-manipulation transition-colors duration-150 active:opacity-90 ${
                   selectedDifficulty === diff.val
-                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-xs'
+                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold shadow-xs'
                     : 'bg-white dark:bg-slate-900 border border-black/5 dark:border-white/10 text-nearblack dark:text-gray-200'
                 }`}
               >
@@ -200,7 +200,7 @@ export default function QuestionsIndex() {
             <div className="flex flex-col gap-1 text-xs">
               <button
                 onClick={() => setSelectedTopicSlug('all')}
-                className={`btn-press py-2 px-2.5 rounded-lg text-left transition-colors font-medium flex items-center justify-between min-h-[38px] ${
+                className={`py-2 px-2.5 rounded-lg text-left transition-colors font-medium flex items-center justify-between min-h-[38px] active:opacity-90 ${
                   selectedTopicSlug === 'all'
                     ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold'
                     : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-nearblack/80 dark:text-gray-200'
@@ -216,7 +216,7 @@ export default function QuestionsIndex() {
                   <button
                     key={t.slug}
                     onClick={() => setSelectedTopicSlug(t.slug)}
-                    className={`btn-press py-2 px-2.5 rounded-lg text-left transition-colors font-medium flex items-center justify-between min-h-[38px] ${
+                    className={`py-2 px-2.5 rounded-lg text-left transition-colors font-medium flex items-center justify-between min-h-[38px] active:opacity-90 ${
                       selectedTopicSlug === t.slug
                         ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold'
                         : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-nearblack/80 dark:text-gray-200'
@@ -238,7 +238,7 @@ export default function QuestionsIndex() {
             <div className="flex flex-col gap-1 text-xs">
               <button
                 onClick={() => setSelectedDifficulty('all')}
-                className={`btn-press flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] ${
+                className={`flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] transition-colors ${
                   selectedDifficulty === 'all' ? 'text-gold font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
@@ -247,7 +247,7 @@ export default function QuestionsIndex() {
               </button>
               <button
                 onClick={() => setSelectedDifficulty('beginner')}
-                className={`btn-press flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] ${
+                className={`flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] transition-colors ${
                   selectedDifficulty === 'beginner' ? 'text-nearblack dark:text-white font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
@@ -256,7 +256,7 @@ export default function QuestionsIndex() {
               </button>
               <button
                 onClick={() => setSelectedDifficulty('intermediate')}
-                className={`btn-press flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] ${
+                className={`flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] transition-colors ${
                   selectedDifficulty === 'intermediate' ? 'text-gold font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
@@ -265,7 +265,7 @@ export default function QuestionsIndex() {
               </button>
               <button
                 onClick={() => setSelectedDifficulty('deep-dive')}
-                className={`btn-press flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] ${
+                className={`flex items-center gap-2 py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 min-h-[36px] transition-colors ${
                   selectedDifficulty === 'deep-dive' ? 'text-gold font-bold' : 'text-mediumgrey dark:text-gray-300'
                 }`}
               >
@@ -348,7 +348,7 @@ export default function QuestionsIndex() {
                         <div
                           key={q.id}
                           onClick={() => navigateTo(`/articles/${q.articleSlug}`)}
-                          className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 p-5 rounded-xl flex gap-4 justify-between transition-[border-color,box-shadow,transform] duration-200 ease-out cursor-pointer group shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] btn-press"
+                          className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 p-5 rounded-xl flex gap-4 justify-between transition-[border-color,box-shadow,transform] duration-200 ease-out cursor-pointer group shadow-xs sm:hover:shadow-md sm:hover:-translate-y-0.5 active:opacity-95"
                         >
                           <div className="space-y-2 flex-1">
                             <h3 className="text-sm md:text-md font-bold text-nearblack dark:text-white group-hover:text-gold transition-colors duration-150 leading-snug">

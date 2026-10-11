@@ -7,7 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import DifficultyBadge from '../components/DifficultyBadge';
 import { LearningPathStep } from '../types';
-import { ArrowLeft, Check, CheckSquare, Square, Clock, BookOpen, ExternalLink, Flag, Play } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, CheckSquare, Square, Clock, BookOpen, ExternalLink, Flag, Play } from 'lucide-react';
 
 export default function PathDetail() {
   const { currentRoute, paths, articles, resources, progress, toggleStepProgress, navigateTo } = useApp();
@@ -169,9 +169,8 @@ export default function PathDetail() {
                       {getTranslatedText(step.title, step.titleAm)}
                     </h3>
                     
-                    <p className="text-xs text-mediumgrey dark:text-gray-350 leading-relaxed">{getTranslatedText(step.purpose, step.purposeAm)}</p>
-                    {linkedArticle && <button onClick={() => navigateTo(`/articles/${linkedArticle.slug}`)} className="text-xs font-bold text-gold hover:underline">Read {getTranslatedText(linkedArticle.title, linkedArticle.titleAm)} <ArrowLeft size={11} className="inline rotate-180" /></button>}
-                    {(linkedResource || step.externalUrl) && <a href={linkedResource?.link || step.externalUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-gold hover:underline">Open {getTranslatedText(linkedResource?.title || step.externalTitle, step.externalTitle)} <ExternalLink size={11} /></a>}
+                    {linkedArticle && <button onClick={() => navigateTo(`/articles/${linkedArticle.slug}`)} className="text-xs font-bold text-gold hover:underline inline-flex items-center gap-1 cursor-pointer">Read {getTranslatedText(linkedArticle.title, linkedArticle.titleAm)} <ArrowRight size={11} className="inline" /></button>}
+                    {(linkedResource || step.externalUrl) && <a href={linkedResource?.link || step.externalUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-gold hover:underline cursor-pointer">Open {getTranslatedText(linkedResource?.title || step.externalTitle, step.externalTitle)} <ExternalLink size={11} /></a>}
                   </div>
 
                   {/* Complete Checkbox */}

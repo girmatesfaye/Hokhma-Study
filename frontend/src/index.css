@@ -58,6 +58,7 @@
   html {
     -webkit-tap-highlight-color: transparent;
     text-size-adjust: 100%;
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -101,32 +102,31 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Button & Interactive Press Feedback (instant 160ms feedback) */
+/* Tactile button press feedback without layout disruption */
 .btn-press,
 .press-feedback {
-  transition: transform 160ms var(--ease-out);
+  transition: transform 120ms var(--ease-out), opacity 120ms var(--ease-out);
+  will-change: transform;
 }
 .btn-press:active,
 .press-feedback:active {
-  transform: scale(0.97);
+  transform: scale(0.988);
 }
 
-/* Hardware-accelerated entrance animations (GPU transform & opacity) */
+/* Hardware-accelerated entrance animations without vertical layout jumps */
 @keyframes fadeInSubtle {
   from {
     opacity: 0;
-    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 @keyframes scaleInModal {
   from {
     opacity: 0;
-    transform: scale(0.96);
+    transform: scale(0.97);
   }
   to {
     opacity: 1;
@@ -144,7 +144,7 @@
 }
 
 .animate-fade-in {
-  animation: fadeInSubtle 220ms var(--ease-out) forwards;
+  animation: fadeInSubtle 180ms var(--ease-out) forwards;
 }
 
 .animate-scale-in {

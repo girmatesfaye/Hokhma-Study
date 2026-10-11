@@ -91,7 +91,7 @@ export default function Topics() {
           <button
             type="button"
             onClick={() => setSelectedTopicSlug('all')}
-            className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-[background-color,color,box-shadow,transform] duration-150 ease-out whitespace-nowrap cursor-pointer flex items-center gap-2 btn-press min-h-[40px] touch-manipulation ${
+            className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-colors duration-150 whitespace-nowrap cursor-pointer flex items-center gap-2 min-h-[40px] touch-manipulation active:opacity-90 ${
               selectedTopicSlug === 'all'
                 ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-xs'
                 : 'bg-offwhite dark:bg-slate-800 text-nearblack dark:text-gray-200 hover:bg-black/5 dark:hover:bg-slate-700'
@@ -115,7 +115,7 @@ export default function Topics() {
                 key={t.slug}
                 type="button"
                 onClick={() => setSelectedTopicSlug(t.slug)}
-                className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-[background-color,color,box-shadow,transform] duration-150 ease-out whitespace-nowrap cursor-pointer flex items-center gap-2 btn-press min-h-[40px] touch-manipulation ${
+                className={`px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-colors duration-150 whitespace-nowrap cursor-pointer flex items-center gap-2 min-h-[40px] touch-manipulation active:opacity-90 ${
                   isSelected
                     ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-xs'
                     : 'bg-offwhite dark:bg-slate-800 text-nearblack dark:text-gray-200 hover:bg-black/5 dark:hover:bg-slate-700'
@@ -195,9 +195,9 @@ export default function Topics() {
               <button
                 key={opt.value}
                 onClick={() => setDifficultyFilter(opt.value)}
-                className={`btn-press px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap min-h-[38px] flex items-center touch-manipulation ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors duration-150 cursor-pointer whitespace-nowrap min-h-[38px] flex items-center touch-manipulation active:opacity-90 ${
                   difficultyFilter === opt.value
-                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-xs'
+                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-xs font-bold'
                     : 'bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-nearblack dark:text-gray-200'
                 }`}
               >
@@ -219,7 +219,7 @@ export default function Topics() {
                 key={art.id}
                 id={`article-card-${art.id}`}
                 onClick={() => navigateTo(`/articles/${art.slug}`)}
-                className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl overflow-hidden flex flex-col justify-between group cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-1 active:scale-[0.99] transition-[border-color,box-shadow,transform] duration-200 ease-out"
+                className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl overflow-hidden flex flex-col justify-between group cursor-pointer shadow-xs sm:hover:shadow-md sm:hover:-translate-y-0.5 active:opacity-95 transition-[border-color,box-shadow,transform] duration-200 ease-out"
               >
                 {/* Article Cover Image Header */}
                 {art.coverImage ? (

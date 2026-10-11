@@ -473,9 +473,9 @@ export default function ArticleDetail() {
               <div className="flex flex-wrap justify-center gap-2 w-full md:w-auto">
                 <button
                   onClick={() => handleReactionClick('helpful')}
-                  className={`btn-press min-h-[40px] px-3.5 py-1.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer font-semibold touch-manipulation ${
+                  className={`min-h-[40px] px-3.5 py-1.5 rounded-full border transition-colors duration-150 flex items-center gap-1.5 cursor-pointer font-semibold touch-manipulation active:opacity-90 ${
                     userReaction === 'helpful'
-                      ? 'bg-gold/15 border-gold text-gold scale-105'
+                      ? 'bg-gold/15 border-gold text-gold font-bold shadow-xs'
                       : 'bg-transparent border-black/10 dark:border-white/10 text-mediumgrey dark:text-gray-300 hover:border-gold/30'
                   }`}
                 >
@@ -484,9 +484,9 @@ export default function ArticleDetail() {
                 </button>
                 <button
                   onClick={() => handleReactionClick('insightful')}
-                  className={`btn-press min-h-[40px] px-3.5 py-1.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer font-semibold touch-manipulation ${
+                  className={`min-h-[40px] px-3.5 py-1.5 rounded-full border transition-colors duration-150 flex items-center gap-1.5 cursor-pointer font-semibold touch-manipulation active:opacity-90 ${
                     userReaction === 'insightful'
-                      ? 'bg-gold/15 border-gold text-gold scale-105'
+                      ? 'bg-gold/15 border-gold text-gold font-bold shadow-xs'
                       : 'bg-transparent border-black/10 dark:border-white/10 text-mediumgrey dark:text-gray-300 hover:border-gold/30'
                   }`}
                 >
@@ -495,9 +495,9 @@ export default function ArticleDetail() {
                 </button>
                 <button
                   onClick={() => handleReactionClick('rigorous')}
-                  className={`btn-press min-h-[40px] px-3.5 py-1.5 rounded-full border transition-all flex items-center gap-1.5 cursor-pointer font-semibold touch-manipulation ${
+                  className={`min-h-[40px] px-3.5 py-1.5 rounded-full border transition-colors duration-150 flex items-center gap-1.5 cursor-pointer font-semibold touch-manipulation active:opacity-90 ${
                     userReaction === 'rigorous'
-                      ? 'bg-gold/15 border-gold text-gold scale-105'
+                      ? 'bg-gold/15 border-gold text-gold font-bold shadow-xs'
                       : 'bg-transparent border-black/10 dark:border-white/10 text-mediumgrey dark:text-gray-300 hover:border-gold/30'
                   }`}
                 >

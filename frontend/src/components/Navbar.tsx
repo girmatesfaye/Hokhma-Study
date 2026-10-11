@@ -45,14 +45,11 @@ export default function Navbar() {
   useEffect(() => {
     if (isDrawerOpen || isSearchOpen) {
       document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
     } else {
       document.body.style.overflow = '';
-      document.body.style.touchAction = '';
     }
     return () => {
       document.body.style.overflow = '';
-      document.body.style.touchAction = '';
     };
   }, [isDrawerOpen, isSearchOpen]);
 
@@ -185,7 +182,7 @@ export default function Navbar() {
           <a
             id="nav-logo"
             href="#/"
-            className="flex items-center gap-2 text-navy dark:text-white transition-opacity hover:opacity-90 btn-press touch-manipulation"
+            className="flex items-center gap-2 text-navy dark:text-white transition-opacity hover:opacity-90 touch-manipulation"
           >
             <img
               src="/assets/logo.jpg"
@@ -199,22 +196,28 @@ export default function Navbar() {
             </span>
           </a>
 
-          {/* DESKTOP NAV LINKS */}
+          {/* DESKTOP NAV LINKS - Stable indicator without height/width layout jumps */}
           <nav id="desktop-nav-menu" className="hidden lg:flex items-center gap-7 xl:gap-8">
-            {navLinks.map((link) => (
-               <a
-                key={link.label}
-                 id={`nav-link-${link.page}`}
-                 href={`#${link.hash}`}
-                className={`text-[13px] font-medium tracking-wide transition-colors duration-150 btn-press ${
-                  isActive(link.page)
-                    ? 'text-navy dark:text-gold border-b-2 border-navy dark:border-gold pb-1 font-semibold'
-                     : 'text-mediumgrey dark:text-gray-300 hover:text-navy dark:hover:text-gold'
-                 }`}
-               >
-                 {link.label}
-               </a>
-            ))}
+            {navLinks.map((link) => {
+              const active = isActive(link.page);
+              return (
+                <a
+                  key={link.label}
+                  id={`nav-link-${link.page}`}
+                  href={`#${link.hash}`}
+                  className={`relative text-[13px] font-medium tracking-wide py-1.5 transition-colors duration-150 ${
+                    active
+                      ? 'text-navy dark:text-gold font-semibold'
+                      : 'text-mediumgrey dark:text-gray-300 hover:text-navy dark:hover:text-gold'
+                  }`}
+                >
+                  <span>{link.label}</span>
+                  {active && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-navy dark:bg-gold rounded-full" />
+                  )}
+                </a>
+              );
+            })}
           </nav>
 
           {/* ACTION BUTTONS */}
@@ -352,10 +355,10 @@ export default function Navbar() {
                     key={link.label}
                     href={`#${link.hash}`}
                     onClick={() => setIsDrawerOpen(false)}
-                    className={`btn-press flex items-center justify-between px-3.5 py-3 rounded-xl transition-all duration-150 min-h-[48px] touch-manipulation ${
+                    className={`flex items-center justify-between px-3.5 py-3 rounded-xl transition-colors duration-150 min-h-[48px] touch-manipulation active:bg-gold/20 ${
                       active
                         ? 'bg-gold/15 dark:bg-gold/20 text-nearblack dark:text-white font-bold border border-gold/30 shadow-xs'
-                        : 'text-mediumgrey dark:text-gray-200 hover:bg-black/4 dark:hover:bg-white/5 hover:text-nearblack dark:hover:text-white'
+                        : 'text-mediumgrey dark:text-gray-200 hover:bg-black/4 dark:hover:bg-white/5 active:bg-black/8 hover:text-nearblack dark:hover:text-white'
                     }`}
                   >
                     <span className="flex items-center gap-3">
@@ -373,7 +376,7 @@ export default function Navbar() {
                 <a
                   href="#/admin"
                   onClick={() => setIsDrawerOpen(false)}
-                  className="btn-press flex items-center justify-between px-3.5 py-3 rounded-xl text-gold bg-gold/10 border border-gold/25 mt-3 min-h-[48px] touch-manipulation"
+                  className="flex items-center justify-between px-3.5 py-3 rounded-xl text-gold bg-gold/10 border border-gold/25 mt-3 min-h-[48px] touch-manipulation active:bg-gold/20"
                 >
                   <span className="flex items-center gap-3">
                     <ShieldAlert size={19} className="text-gold" />

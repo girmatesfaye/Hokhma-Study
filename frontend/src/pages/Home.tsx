@@ -45,15 +45,15 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
           <button
             onClick={() => navigateTo('/questions')}
-            className="w-full sm:w-auto min-h-[48px] px-6 sm:px-8 py-3 bg-navy text-white dark:bg-gold dark:text-slate-950 font-semibold rounded-xl shadow-xs hover:opacity-95 btn-press transition-[opacity,transform] duration-150 text-sm cursor-pointer font-sans flex items-center justify-center touch-manipulation"
+            className="w-full sm:w-auto min-h-[48px] px-6 sm:px-8 py-3 bg-navy text-white dark:bg-gold dark:text-slate-950 font-semibold rounded-xl shadow-xs hover:opacity-95 active:opacity-90 transition-opacity duration-150 text-sm cursor-pointer font-sans flex items-center justify-center touch-manipulation"
           >
             {t('home.exploreTopics')}
           </button>
           <button
             onClick={() => navigateTo('/paths/faith-and-reason')}
-            className="w-full sm:w-auto min-h-[48px] px-6 sm:px-8 py-3 border border-navy text-navy dark:border-white/40 dark:text-white hover:bg-navy/5 dark:hover:bg-white/5 font-semibold rounded-xl btn-press transition-[background-color,border-color,transform] duration-150 text-sm cursor-pointer font-sans flex items-center justify-center touch-manipulation"
+            className="w-full sm:w-auto min-h-[48px] px-6 sm:px-8 py-3 border border-navy text-navy dark:border-white/40 dark:text-white hover:bg-navy/5 dark:hover:bg-white/5 active:bg-navy/10 font-semibold rounded-xl transition-[background-color,border-color] duration-150 text-sm cursor-pointer font-sans flex items-center justify-center touch-manipulation"
           >
-            {language === 'en' ? "Start here — I'm new" : 'ከዚህ ይጀምሩ — አዲስ ለሆናችሁ'}
+            {language === 'en' ? 'Start Here — First Principles' : 'ከዚህ ይጀምሩ — አዲስ ለሆናችሁ'}
           </button>
         </div>
       </header>
@@ -73,7 +73,7 @@ export default function Home() {
               key={art.id}
               id={`editors-pick-card-${art.id}`}
               onClick={() => navigateTo(`/articles/${art.slug}`)}
-              className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl overflow-hidden flex flex-col justify-between group cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-1 active:scale-[0.99] transition-[border-color,box-shadow,transform] duration-200 ease-out h-full"
+              className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl overflow-hidden flex flex-col justify-between group cursor-pointer shadow-xs sm:hover:shadow-md sm:hover:-translate-y-0.5 active:opacity-95 transition-[border-color,box-shadow,transform] duration-200 ease-out h-full"
             >
               {art.coverImage && (
                 <div className="h-48 md:h-52 overflow-hidden relative border-b border-black/5 dark:border-white/5">
@@ -161,7 +161,7 @@ export default function Home() {
               key={t.slug}
               id={`topic-tile-${t.slug}`}
               onClick={() => navigateTo(`/topics/${t.slug}`)}
-              className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl p-6 text-center flex flex-col items-center justify-between gap-4 cursor-pointer shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-[border-color,box-shadow,transform] duration-200 ease-out btn-press group"
+              className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl p-6 text-center flex flex-col items-center justify-between gap-4 cursor-pointer shadow-xs sm:hover:shadow-md sm:hover:-translate-y-0.5 active:opacity-95 transition-[border-color,box-shadow,transform] duration-200 ease-out group"
             >
               <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-dark-bg text-gold flex items-center justify-center border border-black/5 dark:border-white/5 group-hover:scale-105 transition-transform duration-200 ease-out">
                 <TopicIcon name={t.icon} size={20} />
@@ -193,9 +193,9 @@ export default function Home() {
             </div>
             <button
               onClick={() => navigateTo('/paths')}
-              className="text-xs font-bold tracking-widest text-gold flex items-center gap-1 group whitespace-nowrap cursor-pointer font-sans btn-press"
+              className="text-xs font-bold tracking-widest text-gold flex items-center gap-1 group whitespace-nowrap cursor-pointer font-sans"
             >
-              {language === 'en' ? 'See all learning paths' : 'ሁሉንም የጥናት መንገዶች እይ'} <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform duration-150 ease-out" />
+              {language === 'en' ? 'See All Learning Paths' : 'ሁሉንም የጥናት መንገዶች እይ'} <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform duration-150 ease-out" />
             </button>
           </div>
 
@@ -229,9 +229,9 @@ export default function Home() {
                 <div className="pt-4 border-t border-black/10 dark:border-white/10 flex justify-end">
                   <button
                     onClick={() => navigateTo(`/paths/${path.slug}`)}
-                    className="px-4 py-2 text-xs font-bold tracking-wider text-white bg-navy dark:bg-gold dark:text-slate-950 rounded-[4px] flex items-center gap-1 group hover:opacity-90 active:scale-[0.97] transition-[opacity,transform] duration-150 font-sans btn-press cursor-pointer"
+                    className="px-4 py-2 text-xs font-bold tracking-wider text-white bg-navy dark:bg-gold dark:text-slate-950 rounded-lg flex items-center gap-1 group hover:opacity-90 active:opacity-85 transition-opacity duration-150 font-sans cursor-pointer"
                   >
-                    <span>{language === 'en' ? 'Start this path' : 'ይህን የጥናት መንገድ ጀምር'}</span>
+                    <span>{language === 'en' ? 'Start This Learning Path' : 'ይህን የጥናት መንገድ ጀምር'}</span>
                     <ChevronRight size={13} className="group-hover:translate-x-0.5 transition-transform duration-150 ease-out" />
                   </button>
                 </div>
@@ -252,9 +252,9 @@ export default function Home() {
           </div>
           <button
             onClick={() => navigateTo('/questions')}
-            className="text-xs font-bold tracking-widest text-gold flex items-center gap-1 group cursor-pointer font-sans btn-press"
+            className="text-xs font-bold tracking-widest text-gold flex items-center gap-1 group cursor-pointer font-sans"
           >
-            {language === 'en' ? 'See all questions' : 'ሁሉንም ጥያቄዎች እይ'} <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform duration-150 ease-out" />
+            {language === 'en' ? 'See All Questions' : 'ሁሉንም ጥያቄዎች እይ'} <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform duration-150 ease-out" />
           </button>
         </div>
 
@@ -263,7 +263,7 @@ export default function Home() {
             <div
               key={q.id}
               onClick={() => navigateTo(`/articles/${q.articleSlug}`)}
-              className="py-4 flex gap-4 items-center justify-between group cursor-pointer hover:bg-black/[0.03] dark:hover:bg-white/[0.04] px-3.5 rounded-lg transition-colors duration-150 ease-out active:scale-[0.99] btn-press"
+              className="py-4 flex gap-4 items-center justify-between group cursor-pointer hover:bg-black/[0.03] active:bg-black/[0.06] dark:hover:bg-white/[0.04] dark:active:bg-white/[0.08] px-3.5 rounded-lg transition-colors duration-150 ease-out"
             >
               <div className="max-w-3xl space-y-1.5 flex-1 pr-4">
                 <p className="text-sm font-bold text-navy dark:text-white leading-snug group-hover:text-gold transition-colors duration-150 font-serif">

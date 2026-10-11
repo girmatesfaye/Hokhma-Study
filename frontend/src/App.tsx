@@ -37,7 +37,7 @@ function MainAppRouter() {
   // Scroll to top on route change to prevent showing a blank/white section when transitioning from tall pages
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [currentRoute]);
+  }, [currentRoute.page, currentRoute.slug, currentRoute.id]);
 
   // Determine current page component
   let pageComponent = <Home />;
