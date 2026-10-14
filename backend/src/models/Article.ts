@@ -136,7 +136,14 @@ const ArticleSchema = new Schema<IArticle>(
     }
   },
   {
-    timestamps: true
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: (_doc, ret: Record<string, any>) => {
+        ret.id = ret._id.toString();
+        return ret;
+      }
+    }
   }
 );
 

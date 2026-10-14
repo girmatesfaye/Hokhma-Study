@@ -58,7 +58,7 @@ export default function Topics() {
       
       {/* Page Hero Header */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <span className="text-xs tracking-widest text-gold font-bold font-sans">
+        <span className="text-xs tracking-wide text-gold font-semibold font-sans">
           {getTranslatedText('Intellectual Archives', 'አእምሯዊ ማህደራት')}
         </span>
         <h1 className="font-serif text-3xl md:text-4xl font-bold tracking-tight text-nearblack dark:text-white">

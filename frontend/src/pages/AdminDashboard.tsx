@@ -134,32 +134,7 @@ export default function AdminDashboard() {
 
   // Handle write new article
   const handleWriteNewArticle = () => {
-    // Generate a new skeleton article
-    const newId = `art-user-${Date.now()}`;
-    const newArt: Article = {
-      id: newId,
-      slug: `blank-article-draft-${Date.now()}`,
-      title: 'Untitled Article Draft',
-      titleAm: 'ርዕስ አልባ ረቂቅ ጽሑፍ',
-      topicSlug: 'philosophy',
-      difficulty: 'beginner',
-      readingTime: 5,
-      publishDate: new Date().toISOString().split('T')[0],
-      excerpt: 'This is a preliminary excerpt representing what this new research paper answers.',
-      excerptAm: 'ይህ አዲሱ የምርምር ጽሑፍ የሚመልሰውን ጉዳይ የሚገልጽ የመግቢያ ማጠቃለያ ነው።',
-      content: [
-        { type: 'paragraph', text: 'Begin writing your long-form publication arguments here...', textAm: 'እዚህ ጋር ረዥም ጽሑፍዎን መጻፍ መጀመር ይችላሉ...' }
-      ],
-      footnotes: [],
-      tags: ['draft'],
-      featured: false,
-      isPublished: false,
-      commentsAllowed: true,
-      views: 0
-    };
-    
-    addArticle(newArt);
-    navigateTo(`/admin/articles/${newId}/edit`);
+    navigateTo('/admin/articles/new/edit');
   };
 
   // Handle map question form submission
@@ -352,7 +327,7 @@ export default function AdminDashboard() {
             <span className="font-serif text-2xl font-bold tracking-tight text-navy dark:text-white flex items-center gap-1">
               Hokhma Study
               <span className="h-4 w-px bg-gold/50 my-auto block" />
-              <span className="font-sans text-xs tracking-widest text-gold font-bold">
+              <span className="font-sans text-xs tracking-wide text-gold font-semibold">
                 {getTranslatedText('Workroom Tab', 'የሥራ መስክ')}
               </span>
             </span>
@@ -686,7 +661,7 @@ export default function AdminDashboard() {
                             <td className="py-3 px-3">{art.publishDate}</td>
                             <td className="py-3 px-3 text-right">
                               <button
-                                onClick={() => navigateTo(`/admin/articles/${art.id}/edit`)}
+                                onClick={() => navigateTo(`/admin/articles/${art.id || (art as any)._id || art.slug}/edit`)}
                                 className="px-2.5 py-1 text-[11px] font-bold tracking-wide border border-black/10 dark:border-white/10 text-nearblack dark:text-white hover:text-gold rounded flex items-center gap-1 ml-auto cursor-pointer"
                               >
                                 <Edit size={11} />
@@ -806,7 +781,7 @@ export default function AdminDashboard() {
 
                       <div className="flex gap-2 sm:ml-auto">
                         <button
-                          onClick={() => navigateTo(`/admin/articles/${art.id}/edit`)}
+                          onClick={() => navigateTo(`/admin/articles/${art.id || (art as any)._id || art.slug}/edit`)}
                           className="px-2.5 py-1.5 text-[11px] font-bold border border-black/10 dark:border-white/10 hover:text-gold text-nearblack dark:text-white rounded inline-flex items-center gap-1 tracking-wide cursor-pointer"
                         >
                           <Edit size={11} />
@@ -976,7 +951,7 @@ export default function AdminDashboard() {
                               {topicArticles.length > 0 ? topicArticles.map((article) => (
                                 <div key={article.id} className="flex items-center justify-between gap-3 rounded-lg border border-black/5 bg-white p-3 dark:border-white/5 dark:bg-slate-900">
                                   <div className="min-w-0"><p className="truncate text-sm font-semibold text-nearblack dark:text-white">{getTranslatedText(article.title, article.titleAm)}</p><p className="mt-1 text-[11px] text-mediumgrey dark:text-gray-400">{article.isPublished ? getTranslatedText('Published', 'የታተመ') : getTranslatedText('Draft', 'ረቂቅ')} · {article.readingTime} min</p></div>
-                                  <button onClick={() => navigateTo(`/admin/articles/${article.id}/edit`)} className="btn-press shrink-0 text-xs font-bold text-gold hover:underline">{getTranslatedText('Edit Article', 'ጽሑፉን ያስተካክሉ')}</button>
+                                  <button onClick={() => navigateTo(`/admin/articles/${article.id || (article as any)._id || article.slug}/edit`)} className="btn-press shrink-0 text-xs font-bold text-gold hover:underline">{getTranslatedText('Edit Article', 'ጽሑፉን ያስተካክሉ')}</button>
                                 </div>
                               )) : <p className="rounded-lg border border-dashed border-black/10 p-4 text-xs text-mediumgrey dark:border-white/10">{getTranslatedText('No articles are assigned to this topic yet.', 'እስካሁን ምንም ጽሑፍ ከዚህ ርዕስ ጋር አልተመደበም።')}</p>}
                             </div>

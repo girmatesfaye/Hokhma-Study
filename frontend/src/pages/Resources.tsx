@@ -50,7 +50,7 @@ export default function Resources() {
       
       {/* Page Hero */}
       <div className="text-center max-w-2xl mx-auto space-y-3 sm:space-y-4">
-        <span className="text-xs tracking-widest text-gold font-bold">{getTranslatedText('Recommended Study', 'የሚመከር ጥናት')}</span>
+        <span className="text-xs tracking-wide text-gold font-semibold">{getTranslatedText('Recommended Study', 'የሚመከር ጥናት')}</span>
         <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-nearblack dark:text-white text-balance">
           {getTranslatedText('Curated External Resources', 'የተመረጡ የውጭ መጽሐፍትና ግብዓቶች')}
         </h1>

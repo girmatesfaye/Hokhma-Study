@@ -35,16 +35,49 @@ import {
   Upload,
   Loader2
 } from 'lucide-react';
+import * as articlesService from '../services/articles';
 import { uploadCoverImage } from '../services/upload';
 
 export default function ArticleEditor() {
-  const { currentRoute, articles, topics, paths, updateArticle, navigateTo, isAdmin } = useApp();
+  const { currentRoute, articles, topics, paths, addArticle, updateArticle, navigateTo, isAdmin } = useApp();
 
   const articleId = currentRoute.id || '';
-  const initialArticle = articles.find((a) => a.id === articleId);
+  const isNew = articleId === 'new';
+
+  const initialArticle = !isNew
+    ? articles.find((a) => a.id === articleId || (a as any)._id === articleId || a.slug === articleId)
+    : null;
 
   // States
-  const [editedArticle, setEditedArticle] = useState<Article | null>(null);
+  const [editedArticle, setEditedArticle] = useState<Article | null>(() => {
+    if (isNew) {
+      return {
+        id: '',
+        slug: `draft-${Date.now()}`,
+        title: 'Untitled Article Draft',
+        titleAm: 'ርዕስ አልባ ረቂቅ ጽሑፍ',
+        topicSlug: topics[0]?.slug || 'philosophy',
+        difficulty: 'beginner',
+        readingTime: 5,
+        publishDate: new Date().toISOString().split('T')[0],
+        excerpt: 'Preliminary summary of what this research paper addresses.',
+        excerptAm: 'ይህ አዲሱ የምርምር ጽሑፍ የሚመልሰውን ጉዳይ የሚገልጽ የመግቢያ ማጠቃለያ ነው።',
+        content: [
+          { type: 'paragraph', text: 'Begin writing your long-form publication arguments here...', textAm: 'እዚህ ጋር ረዥም ጽሑፍዎን መጻፍ መጀመር ይችላሉ...' }
+        ],
+        footnotes: [],
+        tags: ['draft'],
+        featured: false,
+        isPublished: false,
+        commentsAllowed: true,
+        views: 0
+      };
+    }
+    return initialArticle ? JSON.parse(JSON.stringify(initialArticle)) : null;
+  });
+
+  const [isLoading, setIsLoading] = useState<boolean>(!isNew && !initialArticle);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
   const [newTagInput, setNewTagInput] = useState('');
   const [autosaveStatus, setAutosaveStatus] = useState('All changes saved locally');
   const [newFootnoteText, setNewFootnoteText] = useState('');
@@ -53,6 +86,73 @@ export default function ArticleEditor() {
   const [activeTab, setActiveTab] = useState<'en' | 'am' | 'footnotes' | 'seo'>('en');
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Synchronize or fetch article data
+  useEffect(() => {
+    if (isNew) {
+      if (!editedArticle) {
+        setEditedArticle({
+          id: '',
+          slug: `draft-${Date.now()}`,
+          title: 'Untitled Article Draft',
+          titleAm: 'ርዕስ አልባ ረቂቅ ጽሑፍ',
+          topicSlug: topics[0]?.slug || 'philosophy',
+          difficulty: 'beginner',
+          readingTime: 5,
+          publishDate: new Date().toISOString().split('T')[0],
+          excerpt: 'Preliminary summary of what this research paper addresses.',
+          excerptAm: 'ይህ አዲሱ የምርምር ጽሑፍ የሚመልሰውን ጉዳይ የሚገልጽ የመግቢያ ማጠቃለያ ነው።',
+          content: [
+            { type: 'paragraph', text: 'Begin writing your long-form publication arguments here...', textAm: 'እዚህ ጋር ረዥም ጽሑፍዎን መጻፍ መጀመር ይችላሉ...' }
+          ],
+          footnotes: [],
+          tags: ['draft'],
+          featured: false,
+          isPublished: false,
+          commentsAllowed: true,
+          views: 0
+        });
+      }
+      setIsLoading(false);
+      return;
+    }
+
+    if (initialArticle) {
+      setEditedArticle(JSON.parse(JSON.stringify(initialArticle)));
+      setIsLoading(false);
+      return;
+    }
+
+    if (!articleId) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    articlesService
+      .getArticleBySlug(articleId)
+      .then((fetched) => {
+        if (fetched) {
+          setEditedArticle(JSON.parse(JSON.stringify(fetched)));
+        }
+      })
+      .catch(() => {
+        articlesService
+          .getArticles({ all: true })
+          .then((all) => {
+            const found = all.find(
+              (a) => a.id === articleId || (a as any)._id === articleId || a.slug === articleId
+            );
+            if (found) {
+              setEditedArticle(JSON.parse(JSON.stringify(found)));
+            }
+          })
+          .catch((err) => console.error('[ArticleEditor] Failed to fetch article:', err));
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [articleId, initialArticle, isNew]);
 
   // Handle file selection and upload cover image to server
   const handleCoverImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,13 +179,6 @@ export default function ArticleEditor() {
     }
   };
 
-  // Synchronize initial article
-  useEffect(() => {
-    if (initialArticle) {
-      setEditedArticle(JSON.parse(JSON.stringify(initialArticle)));
-    }
-  }, [initialArticle]);
-
   if (!isAdmin) {
     return (
       <div className="absolute inset-0 bg-slate-950 flex justify-center items-center z-50 p-6 text-center animate-fade-in text-white">
@@ -97,6 +190,15 @@ export default function ArticleEditor() {
             Authenticate Access
           </button>
         </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="max-w-[1140px] mx-auto px-4 py-20 text-center animate-fade-in flex flex-col items-center justify-center gap-3">
+        <Loader2 className="animate-spin text-gold" size={32} />
+        <p className="text-xs text-mediumgrey font-sans">Loading manuscript editor...</p>
       </div>
     );
   }
@@ -210,13 +312,27 @@ export default function ArticleEditor() {
     updateField('footnotes', filteredFn);
   };
 
-  const handleSaveRevisions = () => {
-    if (editedArticle) {
-      updateArticle(editedArticle);
-      setAutosaveStatus('Revisions published!');
+  const handleSaveRevisions = async () => {
+    if (!editedArticle) return;
+    setIsSaving(true);
+    setAutosaveStatus('Saving manuscript...');
+    try {
+      if (isNew || !editedArticle.id) {
+        await addArticle(editedArticle);
+        setAutosaveStatus('Article published successfully!');
+      } else {
+        await updateArticle(editedArticle);
+        setAutosaveStatus('Revisions saved successfully!');
+      }
       setTimeout(() => {
         navigateTo('/admin');
-      }, 800);
+      }, 700);
+    } catch (err: any) {
+      console.error('[ArticleEditor] Failed to save revisions:', err);
+      const msg = err?.response?.data?.message || 'Failed to save article. Please verify fields.';
+      setAutosaveStatus(`Error: ${msg}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -229,7 +345,7 @@ export default function ArticleEditor() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigateTo('/admin')}
-              className="rounded-xl border border-black/10 p-2.5 text-mediumgrey shadow-sm transition-all hover:border-gold/40 hover:bg-gold/5 hover:text-nearblack dark:border-white/10 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+              className="rounded-xl border border-black/10 p-2.5 text-mediumgrey shadow-sm transition-all hover:border-gold/40 hover:bg-gold/5 hover:text-nearblack dark:border-white/10 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white cursor-pointer"
               title="Return to Workroom"
             >
               <ArrowLeft size={16} />
@@ -255,7 +371,7 @@ export default function ArticleEditor() {
 
             <button
               onClick={() => setPreviewMode(!previewMode)}
-              className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold tracking-wider transition-all ${
+              className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold tracking-wider transition-all cursor-pointer ${
                 previewMode 
                   ? 'bg-slate-100 border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-900 dark:text-white' 
                   : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300'
@@ -266,11 +382,13 @@ export default function ArticleEditor() {
             </button>
 
             <button
+              id="save-revisions-btn"
+              disabled={isSaving}
               onClick={handleSaveRevisions}
-              className="flex items-center gap-2 rounded-xl bg-navy px-5 py-2.5 text-xs font-bold tracking-wider text-white shadow-sm transition-colors hover:bg-navy/90 dark:bg-gold dark:text-slate-950 dark:hover:bg-gold/90"
+              className="flex items-center gap-2 rounded-xl bg-navy px-5 py-2.5 text-xs font-bold tracking-wider text-white shadow-sm transition-colors hover:bg-navy/90 dark:bg-gold dark:text-slate-950 dark:hover:bg-gold/90 cursor-pointer disabled:opacity-50"
             >
-              <Save size={13} />
-              <span>Save Revisions</span>
+              {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+              <span>{isNew || !editedArticle.id ? 'Publish Article' : 'Save Revisions'}</span>
             </button>
           </div>
         </div>

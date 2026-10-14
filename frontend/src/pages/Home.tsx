@@ -33,7 +33,7 @@ export default function Home() {
       
       {/* 1. HERO SECTION */}
       <header id="hero-section" className="pt-8 sm:pt-16 pb-8 sm:pb-12 px-4 md:px-12 text-center max-w-[800px] mx-auto">
-        <span className="text-[11px] sm:text-xs tracking-wider text-gold font-bold bg-gold/5 dark:bg-gold/10 px-3 py-1.5 rounded-full inline-block mb-3 sm:mb-4">
+        <span className="text-[11px] sm:text-xs tracking-wide text-gold font-medium bg-gold/10 dark:bg-gold/15 border border-gold/25 px-3 py-1.5 rounded-full inline-block mb-3 sm:mb-4">
           {language === 'en' ? 'Intellectual Credibility · Pastoral Aesthetics' : 'አእምሯዊ ተዓማኒነት · እረኛዊ ውበት'}
         </span>
         <h1 className="text-2xl sm:text-3xl md:text-[42px] font-serif leading-tight font-bold text-navy dark:text-white mb-3 sm:mb-4 text-balance">
@@ -64,7 +64,7 @@ export default function Home() {
           <h2 className="font-serif text-2xl font-bold tracking-tight text-nearblack dark:text-white">
             {language === 'en' ? 'Editor’s Picks' : 'የአዘጋጅ ምርጫዎች'}
           </h2>
-          <span className="text-xs tracking-widest text-gold font-bold">{t('home.featured')}</span>
+          <span className="text-xs tracking-wide text-gold font-semibold">{t('home.featured')}</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -73,10 +73,10 @@ export default function Home() {
               key={art.id}
               id={`editors-pick-card-${art.id}`}
               onClick={() => navigateTo(`/articles/${art.slug}`)}
-              className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl overflow-hidden flex flex-col justify-between group cursor-pointer shadow-xs sm:hover:shadow-md sm:hover:-translate-y-0.5 active:opacity-95 transition-[border-color,box-shadow,transform] duration-200 ease-out h-full"
+              className="bg-white dark:bg-dark-card border border-slate-200/90 dark:border-dark-border hover:border-gold/50 dark:hover:border-gold/50 rounded-xl overflow-hidden flex flex-col justify-between group cursor-pointer shadow-xs sm:hover:shadow-md sm:hover:-translate-y-0.5 active:opacity-95 transition-[border-color,box-shadow,transform] duration-200 ease-out h-full"
             >
               {art.coverImage && (
-                <div className="h-48 md:h-52 overflow-hidden relative border-b border-black/5 dark:border-white/5">
+                <div className="h-48 md:h-52 overflow-hidden relative border-b border-slate-200/90 dark:border-dark-border">
                   <img
                     src={art.coverImage}
                     alt={getTranslatedText(art.title, art.titleAm)}
@@ -146,7 +146,7 @@ export default function Home() {
       {/* 3. BROWSE BY TOPIC */}
       <section id="browse-by-topic-section" className="max-w-[1140px] mx-auto px-4 md:px-6">
         <div className="text-center space-y-2 mb-12">
-          <span className="text-xs tracking-widest text-gold font-bold">
+          <span className="text-xs tracking-wide text-gold font-semibold">
             {language === 'en' ? 'Intellectual Fields' : 'የአእምሮ መስኮች'}
           </span>
           <h2 className="font-serif text-3xl font-bold tracking-tight text-navy dark:text-white">
@@ -161,16 +161,16 @@ export default function Home() {
               key={t.slug}
               id={`topic-tile-${t.slug}`}
               onClick={() => navigateTo(`/topics/${t.slug}`)}
-              className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-gold/40 dark:hover:border-gold/40 rounded-xl p-6 text-center flex flex-col items-center justify-between gap-4 cursor-pointer shadow-xs sm:hover:shadow-md sm:hover:-translate-y-0.5 active:opacity-95 transition-[border-color,box-shadow,transform] duration-200 ease-out group"
+              className="bg-white dark:bg-dark-card border border-slate-200/90 dark:border-dark-border hover:border-gold/50 dark:hover:border-gold/50 rounded-xl p-6 text-center flex flex-col items-center justify-between gap-4 cursor-pointer shadow-xs sm:hover:shadow-md sm:hover:-translate-y-0.5 active:opacity-95 transition-[border-color,box-shadow,transform] duration-200 ease-out group"
             >
-              <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-dark-bg text-gold flex items-center justify-center border border-black/5 dark:border-white/5 group-hover:scale-105 transition-transform duration-200 ease-out">
+              <div className="w-12 h-12 rounded-full bg-gold/10 dark:bg-gold/15 text-gold flex items-center justify-center border border-gold/20 dark:border-gold/25 group-hover:scale-105 transition-transform duration-200 ease-out">
                 <TopicIcon name={t.icon} size={20} />
               </div>
               <div>
                 <h3 className="font-serif text-base font-bold text-navy dark:text-white pb-0.5 group-hover:text-gold transition-colors duration-150">
                   {getTranslatedText(t.name, t.nameAm)}
                 </h3>
-                <span className="text-[11px] tracking-widest text-lightgrey dark:text-gray-400 font-semibold block font-sans">
+                <span className="text-[11px] tracking-wide text-mediumgrey dark:text-gray-400 font-medium block font-sans tabular-nums">
                   {t.articleCount} {t.articleCount === 1 ? (language === 'en' ? 'article' : 'ጽሑፍ') : (language === 'en' ? 'articles' : 'ጽሑፎች')}
                 </span>
               </div>
@@ -184,7 +184,7 @@ export default function Home() {
         <div className="max-w-[1140px] mx-auto px-4 md:px-6">
           <div className="flex flex-col md:flex-row justify-between items-baseline mb-10 gap-4">
             <div>
-              <span className="text-xs tracking-widest text-gold font-bold">
+              <span className="text-xs tracking-wide text-gold font-semibold">
                 {language === 'en' ? 'Curated Progressions' : 'የተዘጋጁ ጥናቶች'}
               </span>
               <h2 className="font-serif text-2xl md:text-3xl font-bold tracking-tight text-navy dark:text-white mt-1">
@@ -193,7 +193,7 @@ export default function Home() {
             </div>
             <button
               onClick={() => navigateTo('/paths')}
-              className="text-xs font-bold tracking-widest text-gold flex items-center gap-1 group whitespace-nowrap cursor-pointer font-sans"
+              className="text-xs font-semibold tracking-wide text-gold flex items-center gap-1 group whitespace-nowrap cursor-pointer font-sans"
             >
               {language === 'en' ? 'See All Learning Paths' : 'ሁሉንም የጥናት መንገዶች እይ'} <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform duration-150 ease-out" />
             </button>
@@ -203,7 +203,7 @@ export default function Home() {
             {paths.map((path) => (
               <div
                 key={path.slug}
-                className="bg-white dark:bg-dark-card border border-black/5 dark:border-white/5 hover:border-gold/30 rounded-xl p-6 flex flex-col justify-between gap-6 shadow-xs hover:shadow-md transition-[border-color,box-shadow] duration-200 ease-out"
+                className="bg-white dark:bg-dark-card border border-slate-200/90 dark:border-dark-border hover:border-gold/50 rounded-xl p-6 flex flex-col justify-between gap-6 shadow-xs hover:shadow-md transition-[border-color,box-shadow] duration-200 ease-out"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between font-sans">
@@ -245,14 +245,14 @@ export default function Home() {
       <section id="questions-teaser-section" className="max-w-[1140px] mx-auto px-4 md:px-6">
         <div className="flex flex-col sm:flex-row justify-between items-baseline mb-8 gap-4 border-b border-black/10 dark:border-white/10 pb-4">
           <div>
-            <span className="text-xs tracking-widest text-gold font-bold">{t('questions.popularHurdles')}</span>
+            <span className="text-xs tracking-wide text-gold font-semibold">{t('questions.popularHurdles')}</span>
             <h2 className="font-serif text-2xl font-bold tracking-tight text-navy dark:text-white mt-1">
               {language === 'en' ? 'What are people asking?' : 'ሰዎች ምን እያሉ ይጠይቃሉ?'}
             </h2>
           </div>
           <button
             onClick={() => navigateTo('/questions')}
-            className="text-xs font-bold tracking-widest text-gold flex items-center gap-1 group cursor-pointer font-sans"
+            className="text-xs font-semibold tracking-wide text-gold flex items-center gap-1 group cursor-pointer font-sans"
           >
             {language === 'en' ? 'See All Questions' : 'ሁሉንም ጥያቄዎች እይ'} <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform duration-150 ease-out" />
           </button>

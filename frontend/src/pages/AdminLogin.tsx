@@ -65,7 +65,7 @@ export default function AdminLogin() {
           <a href="#/" className="font-serif text-3xl font-bold text-white tracking-tight inline-flex items-center gap-1">
             Hokhma Study<span className="text-gold">.</span>
           </a>
-          <p className="text-xs text-gold tracking-widest font-bold">
+          <p className="text-xs text-gold tracking-wide font-semibold">
             Author Workroom Access
           </p>
           <div className="w-10 h-0.5 bg-gold mx-auto rounded" />

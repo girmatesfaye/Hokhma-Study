@@ -16,15 +16,15 @@ export default function DifficultyBadge({ difficulty, className = '' }: Difficul
 
   switch (difficulty) {
     case 'beginner':
-      styles = 'bg-black text-white dark:bg-white/10 dark:text-white dark:border dark:border-white/20';
+      styles = 'bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800/80 dark:text-slate-200 dark:border-slate-700';
       label = 'Beginner';
       break;
     case 'intermediate':
-      styles = 'bg-gold text-white dark:bg-gold/20 dark:text-gold dark:border dark:border-gold/30';
+      styles = 'bg-gold/15 text-gold border border-gold/35 dark:bg-gold/20 dark:text-gold dark:border-gold/40';
       label = 'Intermediate';
       break;
     case 'deep-dive':
-      styles = 'bg-gold text-black dark:bg-gold/20 dark:text-gold dark:border dark:border-gold/30';
+      styles = 'bg-navy text-white dark:bg-gold dark:text-slate-950 border border-transparent shadow-xs';
       label = 'Deep Dive';
       break;
   }

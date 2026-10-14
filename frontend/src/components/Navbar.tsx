@@ -191,7 +191,7 @@ export default function Navbar() {
             />
             <span className="font-serif text-lg sm:text-xl font-bold tracking-tight">{t('brand.name')}</span>
             <span className="h-4 w-px bg-gold/50 hidden xs:inline-block" />
-            <span className="font-sans text-[11px] tracking-widest text-gold font-semibold hidden sm:inline-block">
+            <span className="font-sans text-[11px] tracking-wide text-gold font-semibold hidden sm:inline-block">
               {language === 'en' ? 'Apologetics' : 'መከላከያ'}
             </span>
           </a>

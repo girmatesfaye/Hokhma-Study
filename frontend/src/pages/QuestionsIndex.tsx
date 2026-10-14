@@ -91,7 +91,7 @@ export default function QuestionsIndex() {
       {/* 1. HERO WITH SEARCH BAR */}
       <section className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-2xl p-8 md:p-12 text-center space-y-6 shadow-sm">
         <div className="max-w-xl mx-auto space-y-3">
-          <span className="text-xs tracking-widest text-gold font-bold bg-gold/10 px-3 py-1.5 rounded-full inline-block">
+          <span className="text-xs tracking-wide text-gold font-medium bg-gold/10 border border-gold/25 px-3 py-1.5 rounded-full inline-block">
             {getTranslatedText('Objection Mapping Index', 'የተቃውሞዎች እና ጥያቄዎች ማውጫ')}
           </span>
           <h1 className="font-serif text-3xl md:text-4xl font-extrabold text-nearblack dark:text-white">

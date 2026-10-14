@@ -66,8 +66,8 @@ interface AppContextType {
   setSearchQuery: (q: string) => void;
   progress: Record<string, string[]>;
   toggleStepProgress: (pathSlug: string, articleSlug: string) => void;
-  addArticle: (article: Article) => void;
-  updateArticle: (article: Article) => void;
+  addArticle: (article: Article) => Promise<Article>;
+  updateArticle: (article: Article) => Promise<Article>;
   deleteArticle: (id: string) => void;
   addTopic: (topic: Topic) => void;
   updateTopic: (topic: Topic) => void;
@@ -270,9 +270,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         settingsService.getPublicSettings().catch(() => null)
       ]);
 
-      if (fetchedArticles && fetchedArticles.length > 0) setArticles(fetchedArticles);
+      if (fetchedArticles && fetchedArticles.length > 0) {
+        setArticles(fetchedArticles.map((a: any) => ({ ...a, id: a.id || a._id || a.slug })));
+      }
       if (fetchedTopics && fetchedTopics.length > 0) setTopics(fetchedTopics);
-      if (fetchedQuestions && fetchedQuestions.length > 0) setQuestions(fetchedQuestions);
+      if (fetchedQuestions && fetchedQuestions.length > 0) {
+        setQuestions(fetchedQuestions.map((q: any) => ({ ...q, id: q.id || q._id })));
+      }
       if (fetchedPaths && fetchedPaths.length > 0) setPaths(fetchedPaths);
       if (fetchedResources && fetchedResources.length > 0) setResources(fetchedResources);
       if (fetchedSettings) {
@@ -335,8 +339,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Add new article with optimistic update and API synchronization
-  const addArticle = async (newArt: Article) => {
-    setArticles((prev) => [newArt, ...prev]);
+  const addArticle = async (newArt: Article): Promise<Article> => {
+    const tempId = newArt.id || `temp-${Date.now()}`;
+    const tempArt: Article = { ...newArt, id: tempId };
+    setArticles((prev) => [tempArt, ...prev]);
     setTopics((topicsPrev) =>
       topicsPrev.map((t) => {
         if (t.slug === newArt.topicSlug) {
@@ -347,16 +353,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
     try {
       const created = await articlesService.createArticle(newArt);
-      setArticles((prev) => prev.map((a) => (a.slug === newArt.slug ? created : a)));
+      const normalizedCreated: Article = {
+        ...created,
+        id: created.id || (created as any)._id || tempId
+      };
+      setArticles((prev) =>
+        prev.map((a) => (a.slug === newArt.slug || a.id === tempId ? normalizedCreated : a))
+      );
+      return normalizedCreated;
     } catch (err) {
       console.error('[API Error] addArticle failed:', err);
+      throw err;
     }
   };
 
   // Update article with optimistic update and API synchronization
-  const updateArticle = async (updatedArt: Article) => {
-    const oldArt = articles.find((a) => a.id === updatedArt.id);
-    setArticles((prev) => prev.map((art) => (art.id === updatedArt.id ? updatedArt : art)));
+  const updateArticle = async (updatedArt: Article): Promise<Article> => {
+    const artId = updatedArt.id || (updatedArt as any)._id;
+    const oldArt = articles.find((a) => a.id === artId || (a as any)._id === artId || a.slug === updatedArt.slug);
+    setArticles((prev) =>
+      prev.map((art) => (art.id === artId || (art as any)._id === artId || art.slug === updatedArt.slug ? updatedArt : art))
+    );
 
     setPaths((prev) => prev.map((path) => {
       const withoutArticle = path.articleSlugs.filter((slug) => slug !== oldArt?.slug && slug !== updatedArt.slug);
@@ -382,9 +399,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      await articlesService.updateArticle(updatedArt.id, updatedArt);
+      const saved = await articlesService.updateArticle(artId, updatedArt);
+      const normalizedSaved: Article = {
+        ...saved,
+        id: saved.id || (saved as any)._id || artId
+      };
+      setArticles((prev) =>
+        prev.map((art) => (art.id === artId || (art as any)._id === artId || art.slug === updatedArt.slug ? normalizedSaved : art))
+      );
+      return normalizedSaved;
     } catch (err) {
       console.error('[API Error] updateArticle failed:', err);
+      throw err;
     }
   };
 

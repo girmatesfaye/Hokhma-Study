@@ -7,7 +7,7 @@ mongoose.plugin((schema: Schema) => {
     transform: (_doc: unknown, ret: Record<string, any>) => {
       if (ret._id) {
         ret.id = ret._id.toString();
-        delete ret._id;
+        ret._id = ret._id.toString();
       }
       delete ret.__v;
       return ret;

@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { Application, Request, Response } from 'express';
+import './config/db.js';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';

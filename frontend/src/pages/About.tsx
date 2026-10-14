@@ -73,7 +73,7 @@ export default function About() {
 
         <div className="space-y-4 flex-1">
           <div className="space-y-1">
-            <span className="text-xs tracking-widest text-gold font-bold">{getTranslatedText('Author Bio & Curator', 'ስለ ጸሐፊው እና አዘጋጁ')}</span>
+            <span className="text-xs tracking-wide text-gold font-semibold">{getTranslatedText('Author Bio & Curator', 'ስለ ጸሐፊው እና አዘጋጁ')}</span>
             <h1 className="font-serif text-2xl md:text-3.5xl font-extrabold text-nearblack dark:text-white">
               {localizedBio.name}
             </h1>
@@ -111,7 +111,7 @@ export default function About() {
         {/* What this site is & who it's for */}
         <div className="space-y-6">
           <div className="space-y-2">
-            <span className="text-xs tracking-widest text-gold font-bold">{getTranslatedText('Scope & Foundations', 'ምንነት እና መሠረት')}</span>
+            <span className="text-xs tracking-wide text-gold font-semibold">{getTranslatedText('Scope & Foundations', 'ምንነት እና መሠረት')}</span>
             <h2 className="font-serif text-2xl font-bold text-nearblack dark:text-white">
               {getTranslatedText('What This Platform Represents', 'ይህ ድረ-ገጽ ምንን ይወክላል?')}
             </h2>
@@ -133,7 +133,7 @@ export default function About() {
         {/* Who it is for */}
         <div className="space-y-6">
           <div className="space-y-2">
-            <span className="text-xs tracking-widest text-gold font-bold font-sans">{getTranslatedText('Our Mission', 'ተልእኳችን')}</span>
+            <span className="text-xs tracking-wide text-gold font-semibold font-sans">{getTranslatedText('Our Mission', 'ተልእኳችን')}</span>
             <h2 className="font-serif text-2xl font-bold text-nearblack dark:text-white">
               {getTranslatedText('Who We Aim To Serve', 'ዋናው ዓላማችን ማንን ማገልገል ነው?')}
             </h2>
@@ -163,7 +163,7 @@ export default function About() {
       {/* 3. Statement of Faith */}
       <section className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">
         <div className="text-center space-y-2 max-w-lg mx-auto mb-4">
-          <span className="text-xs tracking-widest text-gold font-bold">{getTranslatedText('Orthodox Credo', 'እምነታችን')}</span>
+          <span className="text-xs tracking-wide text-gold font-semibold">{getTranslatedText('Orthodox Credo', 'እምነታችን')}</span>
           <h2 className="font-serif text-2xl font-bold text-nearblack dark:text-white">
             {getTranslatedText('Statement of Faith (Doctrines)', 'የእምነት መግለጫ (ቀኖናዎች)')}
           </h2>
