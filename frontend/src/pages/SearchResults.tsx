@@ -306,8 +306,6 @@ export default function SearchResults() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-[11px] text-mediumgrey">
                         <DifficultyBadge difficulty={q.difficulty} />
-                        <span className="w-1 h-1 rounded-full bg-lightgrey/50" />
-                        <span>Score {q.commonScore}%</span>
                       </div>
                       <p className="text-sm font-medium text-nearblack dark:text-gray-200 group-hover:text-gold transition-colors duration-150">
                         {highlightKeyword(language === 'en' ? q.text : (q.textAm || q.text), localQuery)}

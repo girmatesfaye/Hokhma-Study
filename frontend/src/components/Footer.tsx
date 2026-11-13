@@ -39,14 +39,15 @@ export default function Footer() {
     }
   }, [showContactModal, showFaithModal]);
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (contactForm.name && contactForm.email && contactForm.message) {
-      addContactMessage({
-        id: `contact-${Date.now()}`,
-        ...contactForm,
-        submittedAt: new Date().toISOString(),
-      });
+      // Success is only shown once the server accepts the message; failures surface in the global error banner
+      try {
+        await addContactMessage(contactForm);
+      } catch {
+        return;
+      }
       setContactSuccess(true);
       setTimeout(() => {
         setContactSuccess(false);

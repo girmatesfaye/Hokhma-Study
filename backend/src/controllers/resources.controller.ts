@@ -20,25 +20,6 @@ export const getAllResources = async (req: Request, res: Response): Promise<void
   }
 };
 
-// Retrieve a single reference resource by its database ID
-export const getResourceById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const resource = await Resource.findById(id);
-
-    // Return 404 if resource not found
-    if (!resource) {
-      res.status(404).json({ message: 'Resource not found.' });
-      return;
-    }
-
-    res.status(200).json(resource);
-  } catch (error) {
-    const err = error as Error;
-    res.status(500).json({ message: 'Failed to retrieve resource.', error: err.message });
-  }
-};
-
 // Create a new reference resource (admin authenticated)
 export const createResource = async (req: Request, res: Response): Promise<void> => {
   try {

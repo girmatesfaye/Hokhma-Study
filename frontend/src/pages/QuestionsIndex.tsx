@@ -11,7 +11,7 @@ import TopicIcon from '../components/TopicIcon';
 import { Question, Difficulty } from '../types';
 import { Search, ChevronRight, HelpCircle, CornerDownRight, ArrowUpRight, Plus, Send, Check } from 'lucide-react';
 
-type SortOption = 'common' | 'az' | 'recent';
+type SortOption = 'az' | 'recent';
 
 export default function QuestionsIndex() {
   const { questions, topics, navigateTo, addQuestionSubmission } = useApp();
@@ -21,7 +21,7 @@ export default function QuestionsIndex() {
   const [searchVal, setSearchVal] = useState('');
   const [selectedTopicSlug, setSelectedTopicSlug] = useState<string>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | 'all'>('all');
-  const [sortBy, setSortBy] = useState<SortOption>('common');
+  const [sortBy, setSortBy] = useState<SortOption>('recent');
   
   // Submit new proposed question state
   const [customQuestionForm, setCustomQuestionForm] = useState('');
@@ -48,9 +48,6 @@ export default function QuestionsIndex() {
 
   // Sort questions
   const sortedQuestions = [...filteredQuestions].sort((a, b) => {
-    if (sortBy === 'common') {
-      return b.commonScore - a.commonScore; // highest score first
-    }
     if (sortBy === 'az') {
       const aText = getTranslatedText(a.text, a.textAm);
       const bText = getTranslatedText(b.text, b.textAm);
@@ -68,15 +65,15 @@ export default function QuestionsIndex() {
     return t.slug === selectedTopicSlug;
   });
 
-  const handleCustomQuestionSubmit = (e: React.FormEvent) => {
+  const handleCustomQuestionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (customQuestionForm.trim()) {
-      addQuestionSubmission({
-        id: `submission-${Date.now()}`,
-        text: customQuestionForm.trim(),
-        submittedAt: new Date().toISOString(),
-        status: 'pending',
-      });
+      // Success is only shown once the server accepts the submission; failures surface in the global error banner
+      try {
+        await addQuestionSubmission(customQuestionForm.trim());
+      } catch {
+        return;
+      }
       setShowSubmitSuccess(true);
       setTimeout(() => {
         setCustomQuestionForm('');
@@ -290,16 +287,6 @@ export default function QuestionsIndex() {
             <div className="flex items-center gap-2">
               <span className="text-mediumgrey">{getTranslatedText('Sort By:', 'ደርድር፦')}</span>
               <div className="inline-flex rounded-md border border-black/10 dark:border-white/10 overflow-hidden">
-                <button
-                  onClick={() => setSortBy('common')}
-                  className={`px-2.5 py-1.5 font-bold tracking-wider text-[10px] ${
-                    sortBy === 'common'
-                      ? 'bg-navy text-white dark:bg-gold dark:text-slate-950'
-                      : 'bg-offwhite hover:bg-black/5 text-nearblack dark:bg-slate-800 dark:text-gray-200'
-                  }`}
-                >
-                  {getTranslatedText('Most Common', 'በብዛት የሚጠየቁ')}
-                </button>
                 <button
                   onClick={() => setSortBy('az')}
                   className={`px-2.5 py-1.5 font-bold tracking-wider text-[10px] ${

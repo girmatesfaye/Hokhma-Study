@@ -45,8 +45,7 @@ export const validateContactMessage = [
     .notEmpty()
     .withMessage('Name is required.')
     .isLength({ max: 100 })
-    .withMessage('Name cannot exceed 100 characters.')
-    .escape(),
+    .withMessage('Name cannot exceed 100 characters.'),
   body('email')
     .trim()
     .notEmpty()
@@ -59,8 +58,7 @@ export const validateContactMessage = [
     .notEmpty()
     .withMessage('Subject is required.')
     .isLength({ max: 150 })
-    .withMessage('Subject cannot exceed 150 characters.')
-    .escape(),
+    .withMessage('Subject cannot exceed 150 characters.'),
   body('message')
     .trim()
     .notEmpty()
@@ -72,13 +70,12 @@ export const validateContactMessage = [
 
 // Reader comment submission validation rules
 export const validateComment = [
-  body('author')
+  body('authorName')
     .trim()
     .notEmpty()
     .withMessage('Author name is required.')
     .isLength({ max: 80 })
-    .withMessage('Author name cannot exceed 80 characters.')
-    .escape(),
+    .withMessage('Author name cannot exceed 80 characters.'),
   body('text')
     .trim()
     .notEmpty()
@@ -94,31 +91,14 @@ export const validateComment = [
   handleValidationErrors
 ];
 
-// Theological objection question submission validation rules
+// Reader question submission validation rules (the frontend sends only `text`)
 export const validateQuestionSubmission = [
-  body('question')
+  body('text')
     .trim()
     .notEmpty()
     .withMessage('Question text is required.')
     .isLength({ max: 500 })
-    .withMessage('Question cannot exceed 500 characters.')
-    .escape(),
-  body('topicSlug')
-    .trim()
-    .notEmpty()
-    .withMessage('Topic selection is required.'),
-  body('name')
-    .optional({ values: 'falsy' })
-    .trim()
-    .isLength({ max: 100 })
-    .withMessage('Name cannot exceed 100 characters.')
-    .escape(),
-  body('email')
-    .optional({ values: 'falsy' })
-    .trim()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('If provided, email must be valid.'),
+    .withMessage('Question cannot exceed 500 characters.'),
   handleValidationErrors
 ];
 

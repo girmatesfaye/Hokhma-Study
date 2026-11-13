@@ -18,12 +18,6 @@ export const getAllContactMessages = async (): Promise<ContactMessage[]> => {
   return response.data;
 };
 
-// Toggle or update the read status of a contact inquiry (admin only)
-export const toggleContactReadStatus = async (id: string): Promise<{ message: string; data: ContactMessage }> => {
-  const response = await api.patch<{ message: string; data: ContactMessage }>(`/contact/${id}/read`);
-  return response.data;
-};
-
 // Delete a contact inquiry (admin only)
 export const deleteContactMessage = async (id: string): Promise<{ message: string }> => {
   const response = await api.delete<{ message: string }>(`/contact/${id}`);

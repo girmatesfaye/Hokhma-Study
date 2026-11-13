@@ -7,12 +7,6 @@ export const getTopics = async (): Promise<Topic[]> => {
   return response.data;
 };
 
-// Retrieve a single topic category along with its associated articles
-export const getTopicBySlug = async (slug: string): Promise<{ topic: Topic; articles: Article[] }> => {
-  const response = await api.get<{ topic: Topic; articles: Article[] }>(`/topics/${slug}`);
-  return response.data;
-};
-
 // Create a new topic category (admin only)
 export const createTopic = async (topic: Partial<Topic>): Promise<Topic> => {
   const response = await api.post<Topic>('/topics', topic);

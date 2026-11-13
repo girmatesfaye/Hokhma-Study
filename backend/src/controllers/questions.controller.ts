@@ -18,30 +18,11 @@ export const getAllQuestions = async (req: Request, res: Response): Promise<void
       filter.difficulty = String(difficulty);
     }
 
-    const questions = await Question.find(filter).sort({ commonScore: -1, createdAt: -1 });
+    const questions = await Question.find(filter).sort({ createdAt: -1 });
     res.status(200).json(questions);
   } catch (error) {
     const err = error as Error;
     res.status(500).json({ message: 'Failed to retrieve questions.', error: err.message });
-  }
-};
-
-// Retrieve a single theological question by its database ID
-export const getQuestionById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const question = await Question.findById(id);
-
-    // Return 404 if question not found
-    if (!question) {
-      res.status(404).json({ message: 'Question not found.' });
-      return;
-    }
-
-    res.status(200).json(question);
-  } catch (error) {
-    const err = error as Error;
-    res.status(500).json({ message: 'Failed to retrieve question.', error: err.message });
   }
 };
 

@@ -36,6 +36,8 @@ import {
   Loader2
 } from 'lucide-react';
 import * as articlesService from '../services/articles';
+import { cn } from '../lib/cn';
+import { Badge, Button, Panel, Switch } from '../components/admin/ui';
 import { uploadCoverImage } from '../services/upload';
 
 export default function ArticleEditor() {
@@ -45,7 +47,7 @@ export default function ArticleEditor() {
   const isNew = articleId === 'new';
 
   const initialArticle = !isNew
-    ? articles.find((a) => a.id === articleId || (a as any)._id === articleId || a.slug === articleId)
+    ? articles.find((a) => a.id === articleId || a.slug === articleId)
     : null;
 
   // States
@@ -79,13 +81,24 @@ export default function ArticleEditor() {
   const [isLoading, setIsLoading] = useState<boolean>(!isNew && !initialArticle);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [newTagInput, setNewTagInput] = useState('');
-  const [autosaveStatus, setAutosaveStatus] = useState('All changes saved locally');
+  const [autosaveStatus, setAutosaveStatus] = useState('No Unsaved Changes');
   const [newFootnoteText, setNewFootnoteText] = useState('');
   const [previewMode, setPreviewMode] = useState(false);
   const [previewLang, setPreviewLang] = useState<'en' | 'am'>('en');
   const [activeTab, setActiveTab] = useState<'en' | 'am' | 'footnotes' | 'seo'>('en');
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Browsers show their own confirmation when the tab is closed while edits are unsaved
+  useEffect(() => {
+    if (autosaveStatus !== 'Unsaved Changes') return;
+    const warnBeforeLeaving = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warnBeforeLeaving);
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+  }, [autosaveStatus]);
 
   // Synchronize or fetch article data
   useEffect(() => {
@@ -141,7 +154,7 @@ export default function ArticleEditor() {
           .getArticles({ all: true })
           .then((all) => {
             const found = all.find(
-              (a) => a.id === articleId || (a as any)._id === articleId || a.slug === articleId
+              (a) => a.id === articleId || a.slug === articleId
             );
             if (found) {
               setEditedArticle(JSON.parse(JSON.stringify(found)));
@@ -169,7 +182,7 @@ export default function ArticleEditor() {
     try {
       const result = await uploadCoverImage(file);
       updateField('coverImage', result.url);
-      setAutosaveStatus('Cover image uploaded...');
+      setAutosaveStatus('Unsaved Changes');
     } catch (err: any) {
       const msg = err?.response?.data?.message || 'Failed to upload cover image. Please try again.';
       setUploadError(msg);
@@ -181,39 +194,43 @@ export default function ArticleEditor() {
 
   if (!isAdmin) {
     return (
-      <div className="absolute inset-0 bg-slate-950 flex justify-center items-center z-50 p-6 text-center animate-fade-in text-white">
-        <div className="max-w-md bg-slate-900 border border-white/10 rounded-2xl p-8 space-y-6 shadow-2xl">
-          <Trash2 className="text-gold h-12 w-12 mx-auto" />
-          <h2 className="font-serif text-xl font-bold">Workspace Blocked</h2>
-          <p className="text-xs text-gray-400">Secure validation is required to access primary manuscript editors.</p>
-          <button onClick={() => navigateTo('/admin/login')} className="btn-press px-6 py-2 bg-gold hover:bg-gold/90 text-slate-950 text-xs font-bold font-sans rounded-lg transition-colors cursor-pointer">
-            Authenticate Access
-          </button>
-        </div>
+      <div className="flex min-h-dvh items-center justify-center bg-slate-50 p-6 dark:bg-dark-bg">
+        <Panel className="max-w-md space-y-4 p-8 text-center">
+          <h1 className="font-serif text-2xl font-semibold text-nearblack dark:text-white">Sign In Required</h1>
+          <p className="text-sm text-mediumgrey dark:text-gray-400">Only the site author can write or edit articles.</p>
+          <Button variant="primary" onClick={() => navigateTo('/admin/login')}>Go To Sign In</Button>
+        </Panel>
       </div>
     );
   }
 
+  // Structural skeleton that mirrors the header, tabs and editor body while the article loads
   if (isLoading) {
     return (
-      <div className="max-w-[1140px] mx-auto px-4 py-20 text-center animate-fade-in flex flex-col items-center justify-center gap-3">
-        <Loader2 className="animate-spin text-gold" size={32} />
-        <p className="text-xs text-mediumgrey font-sans">Loading manuscript editor...</p>
+      <div className="mx-auto max-w-[1480px] space-y-5 px-3 py-6 md:px-6" aria-busy="true" aria-label="Loading Article">
+        <div className="h-16 rounded-lg bg-slate-200 dark:bg-white/10" />
+        <div className="grid gap-5 lg:grid-cols-12">
+          <div className="h-96 rounded-xl bg-slate-200 dark:bg-white/10 lg:col-span-8" />
+          <div className="h-96 rounded-xl bg-slate-200 dark:bg-white/10 lg:col-span-4" />
+        </div>
       </div>
     );
   }
 
   if (!editedArticle) {
     return (
-      <div className="max-w-[1140px] mx-auto px-4 py-20 text-center animate-fade-in">
-        <h2 className="font-serif text-2xl font-bold">Unmapped Article Entry</h2>
-        <p className="text-mediumgrey text-xs mt-2">The article draft does not correspond to an existing record.</p>
-        <button onClick={() => navigateTo('/admin')} className="btn-press mt-6 px-4 py-2 bg-navy text-white text-xs font-bold rounded-lg cursor-pointer transition-colors">
-          Workroom Dashboard
-        </button>
+      <div className="flex min-h-dvh items-center justify-center bg-slate-50 p-6 dark:bg-dark-bg">
+        <Panel className="max-w-md space-y-4 p-8 text-center">
+          <h1 className="font-serif text-2xl font-semibold text-nearblack dark:text-white">Article Not Found</h1>
+          <p className="text-sm text-mediumgrey dark:text-gray-400">This article may have been deleted. Go back to the workroom to pick another.</p>
+          <Button variant="primary" onClick={() => navigateTo('/admin')}>Back To Workroom</Button>
+        </Panel>
       </div>
     );
   }
+
+  // Once an article has been published its URL is fixed, so paths, questions and shared links keep working
+  const isSlugLocked = Boolean(editedArticle.id) && Boolean(articles.find((a) => a.id === editedArticle.id)?.isPublished);
 
   // Update a single core field of Article
   const updateField = (field: keyof Article, value: any) => {
@@ -221,12 +238,17 @@ export default function ArticleEditor() {
       if (!prev) return null;
       const next = { ...prev, [field]: value };
       if (field === 'title') {
-        next.seoTitle = `${value} | Hokhma Study`;
-        next.slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        // Follow the title only while the SEO title is still the auto-generated one, so custom SEO titles survive
+        if (!prev.seoTitle || prev.seoTitle === `${prev.title} | Hokhma Study`) {
+          next.seoTitle = `${value} | Hokhma Study`;
+        }
+        // A title with no Latin letters would give an empty slug, so keep the existing slug in that case
+        const generatedSlug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        if (!isSlugLocked && generatedSlug) next.slug = generatedSlug;
       }
       return next;
     });
-    setAutosaveStatus('Draft modified...');
+    setAutosaveStatus('Unsaved Changes');
   };
 
   // Content block manipulation
@@ -243,7 +265,7 @@ export default function ArticleEditor() {
       referenceAm: type === 'scripture' ? 'መጽሐፍ 0:0' : undefined
     };
     updateField('content', [...editedArticle.content, newBlock]);
-    setAutosaveStatus('Block added...');
+    setAutosaveStatus('Unsaved Changes');
   };
 
   const updateBlock = (idx: number, updates: Partial<ContentSection>) => {
@@ -257,7 +279,7 @@ export default function ArticleEditor() {
   const handleDeleteContentBlock = (idx: number) => {
     if (!editedArticle) return;
     updateField('content', editedArticle.content.filter((_, i) => i !== idx));
-    setAutosaveStatus('Block removed...');
+    setAutosaveStatus('Unsaved Changes');
   };
 
   const handleMoveBlock = (idx: number, direction: 'up' | 'down') => {
@@ -300,7 +322,7 @@ export default function ArticleEditor() {
       };
       updateField('footnotes', [...editedArticle.footnotes, newFn]);
       setNewFootnoteText('');
-      setAutosaveStatus('Citation added...');
+      setAutosaveStatus('Unsaved Changes');
     }
   };
 
@@ -315,21 +337,21 @@ export default function ArticleEditor() {
   const handleSaveRevisions = async () => {
     if (!editedArticle) return;
     setIsSaving(true);
-    setAutosaveStatus('Saving manuscript...');
+    setAutosaveStatus('Saving…');
     try {
       if (isNew || !editedArticle.id) {
         await addArticle(editedArticle);
-        setAutosaveStatus('Article published successfully!');
+        setAutosaveStatus('Article Created');
       } else {
         await updateArticle(editedArticle);
-        setAutosaveStatus('Revisions saved successfully!');
+        setAutosaveStatus('Changes Saved');
       }
       setTimeout(() => {
         navigateTo('/admin');
       }, 700);
     } catch (err: any) {
       console.error('[ArticleEditor] Failed to save revisions:', err);
-      const msg = err?.response?.data?.message || 'Failed to save article. Please verify fields.';
+      const msg = err?.response?.data?.message || 'The article could not be saved. Check the highlighted fields and try again.';
       setAutosaveStatus(`Error: ${msg}`);
     } finally {
       setIsSaving(false);
@@ -337,77 +359,58 @@ export default function ArticleEditor() {
   };
 
   return (
-    <div id="article-editor-page" className="animate-fade-in min-h-screen bg-[#f4f5f2] px-3 py-4 font-sans dark:bg-dark-bg md:px-6 md:py-6">
+    <div id="article-editor-page" className="min-h-dvh bg-slate-50 px-3 py-4 font-sans dark:bg-dark-bg md:px-6 md:py-6">
       <div className="mx-auto max-w-[1480px] space-y-5">
         
-        {/* TOP ACTION HEADER */}
-        <div className="sticky top-3 z-40 flex flex-col items-start justify-between gap-4 rounded-2xl border border-black/5 bg-white/95 p-4 shadow-lg shadow-black/5 backdrop-blur-md dark:border-white/10 dark:bg-dark-card/95 md:flex-row md:items-center md:p-5">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigateTo('/admin')}
-              className="rounded-xl border border-black/10 p-2.5 text-mediumgrey shadow-sm transition-all hover:border-gold/40 hover:bg-gold/5 hover:text-nearblack dark:border-white/10 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white cursor-pointer"
-              title="Return to Workroom"
-            >
-              <ArrowLeft size={16} />
-            </button>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-sans text-[10px] font-bold tracking-[0.18em] text-gold">Editorial Workspace</span>
-                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold tracking-wider ${editedArticle.isPublished ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25' : 'bg-amber-500/10 text-amber-600 dark:text-gold border border-amber-500/25'}`}>
-                  {editedArticle.isPublished ? 'Published' : 'Draft'}
-                </span>
-              </div>
-              <h1 className="mt-1 line-clamp-1 font-serif text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {editedArticle.title || 'Untitled Manuscript'}
+        {/* Sticky header: back, title and status on the left; preview and save on the right */}
+        <div className="sticky top-0 z-40 -mx-3 flex flex-col gap-3 border-b border-slate-200 bg-white px-3 py-3 dark:border-white/10 dark:bg-dark-card md:-mx-6 md:flex-row md:items-center md:justify-between md:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <Button variant="ghost" aria-label="Back To Workroom" onClick={() => navigateTo('/admin')}>
+              <ArrowLeft className="size-4" aria-hidden="true" />
+            </Button>
+            <div className="min-w-0">
+              <h1 className="truncate font-serif text-xl font-semibold text-nearblack dark:text-white">
+                {editedArticle.title || 'Untitled Article'}
               </h1>
+              <p className="mt-0.5 flex items-center gap-2 text-sm">
+                <Badge tone={editedArticle.isPublished ? 'success' : 'neutral'}>{editedArticle.isPublished ? 'Published' : 'Draft'}</Badge>
+                <span
+                  role="status"
+                  className={autosaveStatus.startsWith('Error') ? 'text-rose-700 dark:text-rose-300' : autosaveStatus === 'Unsaved Changes' ? 'text-amber-700 dark:text-gold' : 'text-mediumgrey dark:text-gray-400'}
+                >
+                  {autosaveStatus}
+                </span>
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto self-stretch md:self-auto justify-end">
-            <p className="hidden items-center gap-1.5 text-[11px] text-slate-400 dark:text-gray-500 lg:flex lg:font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
-              <span>{autosaveStatus}</span>
-            </p>
-
-            <button
-              onClick={() => setPreviewMode(!previewMode)}
-              className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-bold tracking-wider transition-all cursor-pointer ${
-                previewMode 
-                  ? 'bg-slate-100 border-slate-200 dark:bg-slate-800 dark:border-slate-700 text-slate-900 dark:text-white' 
-                  : 'bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800 border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300'
-              }`}
-            >
-              <Eye size={13} />
-              <span>{previewMode ? 'Return To Editing' : 'Reader Preview'}</span>
-            </button>
-
-            <button
-              id="save-revisions-btn"
-              disabled={isSaving}
-              onClick={handleSaveRevisions}
-              className="flex items-center gap-2 rounded-xl bg-navy px-5 py-2.5 text-xs font-bold tracking-wider text-white shadow-sm transition-colors hover:bg-navy/90 dark:bg-gold dark:text-slate-950 dark:hover:bg-gold/90 cursor-pointer disabled:opacity-50"
-            >
-              {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-              <span>{isNew || !editedArticle.id ? 'Publish Article' : 'Save Revisions'}</span>
-            </button>
+          <div className="flex items-center justify-end gap-2">
+            <Button onClick={() => setPreviewMode(!previewMode)}>
+              <Eye className="size-4" aria-hidden="true" />
+              {previewMode ? 'Back To Editing' : 'Reader Preview'}
+            </Button>
+            <Button id="save-revisions-btn" variant="primary" disabled={isSaving} onClick={handleSaveRevisions}>
+              {isSaving ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Save className="size-4" aria-hidden="true" />}
+              {isNew || !editedArticle.id ? 'Create Article' : 'Save Changes'}
+            </Button>
           </div>
         </div>
 
         {previewMode ? (
           /* PREMIUM PREVIEW MANUSCRIPT INTERFACE */
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-2xl p-6 md:p-12 max-w-3xl mx-auto space-y-8 shadow-md">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/10 rounded-xl p-6 md:p-12 max-w-3xl mx-auto space-y-8 shadow-md">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/5 pb-4">
-              <span className="text-xs font-semibold text-gold font-mono">Reader Preview</span>
+              <span className="text-sm font-semibold text-gold tabular-nums">Reader Preview</span>
               <div className="flex rounded-lg bg-slate-50 dark:bg-slate-950 p-1 border dark:border-white/15">
                 <button
                   onClick={() => setPreviewLang('en')}
-                  className={`px-3 py-1 text-[10px] font-bold rounded-md transition-colors ${previewLang === 'en' ? 'bg-white dark:bg-slate-850 text-gold shadow-sm' : 'text-slate-400'}`}
+                  className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${previewLang === 'en' ? 'bg-white dark:bg-slate-850 text-gold shadow-sm' : 'text-slate-500'}`}
                 >
                   English View
                 </button>
                 <button
                   onClick={() => setPreviewLang('am')}
-                  className={`px-3 py-1 text-[10px] font-bold rounded-md transition-colors ${previewLang === 'am' ? 'bg-white dark:bg-slate-850 text-gold shadow-sm' : 'text-slate-400'}`}
+                  className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${previewLang === 'am' ? 'bg-white dark:bg-slate-850 text-gold shadow-sm' : 'text-slate-500'}`}
                 >
                   አማርኛ እይታ
                 </button>
@@ -418,13 +421,13 @@ export default function ArticleEditor() {
               <h1 className="font-serif text-3xl font-bold leading-tight text-slate-900 dark:text-white">
                 {previewLang === 'en' ? editedArticle.title : (editedArticle.titleAm || editedArticle.title)}
               </h1>
-              <p className="text-xs text-slate-400 dark:text-gray-500 font-mono">
-                {editedArticle.publishDate} · Reads: {editedArticle.views} · Reads: {editedArticle.readingTime} min
+              <p className="text-sm text-slate-500 dark:text-gray-500 tabular-nums">
+                {editedArticle.publishDate} · {editedArticle.views} Reads · {editedArticle.readingTime} Min Read
               </p>
             </div>
 
             {editedArticle.coverImage && (
-              <div className="aspect-[21/9] rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm">
+              <div className="aspect-[21/9] rounded-md overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm">
                 <img src={editedArticle.coverImage} alt="Cover" className="w-full h-full object-cover" />
               </div>
             )}
@@ -438,7 +441,7 @@ export default function ArticleEditor() {
                 const text = previewLang === 'en' ? sec.text : (sec.textAm || sec.text);
                 if (sec.type === 'header') {
                   return (
-                    <h2 key={i} className="font-serif font-bold text-xl pt-4 text-slate-900 dark:text-white tracking-tight">
+                    <h2 key={i} className="font-serif font-bold text-xl pt-4 text-slate-900 dark:text-white">
                       {text}
                     </h2>
                   );
@@ -448,7 +451,7 @@ export default function ArticleEditor() {
                   return (
                     <div key={i} className="pl-5 border-l-3 border-gold my-6 text-sm bg-slate-50/50 dark:bg-white/[0.02] p-4 rounded-r-xl italic leading-relaxed text-slate-800 dark:text-gray-200">
                       “{text}”
-                      {ref && <div className="text-right text-gold font-sans text-xs font-semibold mt-2">— {ref}</div>}
+                      {ref && <div className="text-right text-gold font-sans text-sm font-semibold mt-2">— {ref}</div>}
                     </div>
                   );
                 }
@@ -458,11 +461,11 @@ export default function ArticleEditor() {
 
             {editedArticle.footnotes.length > 0 && (
               <div className="pt-8 border-t border-slate-100 dark:border-white/5 space-y-2">
-                <h4 className="font-serif text-xs font-bold text-slate-500">Bibliography Footnotes</h4>
+                <h4 className="font-serif text-sm font-bold text-slate-500">Bibliography Footnotes</h4>
                 <div className="space-y-1">
                   {editedArticle.footnotes.map((fn) => (
-                    <p key={fn.id} className="text-[11px] text-slate-400 dark:text-gray-500 font-serif leading-relaxed">
-                      <span className="font-mono text-gold font-bold mr-1.5">[{fn.id}]</span>
+                    <p key={fn.id} className="text-xs text-slate-500 dark:text-gray-500 font-serif leading-relaxed">
+                      <span className="tabular-nums text-gold font-bold mr-1.5">[{fn.id}]</span>
                       {fn.text}
                     </p>
                   ))}
@@ -477,68 +480,46 @@ export default function ArticleEditor() {
             {/* LEFT COMPILER PANEL (8 Columns) */}
             <main className="lg:col-span-8 space-y-6">
               
-              {/* COMPACT CHOPPED TAB COMPONENT */}
-              <div className="sticky top-[94px] z-30 flex gap-1 overflow-x-auto rounded-xl border border-black/5 bg-white/95 p-1.5 shadow-md shadow-black/5 backdrop-blur-md dark:border-white/10 dark:bg-dark-card/95">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('en')}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    activeTab === 'en' 
-                      ? 'bg-slate-100 dark:bg-slate-850 text-slate-900 dark:text-white shadow-inner' 
-                      : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
-                  }`}
-                >
-                  <FileText size={14} className={activeTab === 'en' ? 'text-gold' : ''} />
-                  <span>English Content</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('am')}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    activeTab === 'am' 
-                      ? 'bg-slate-100 dark:bg-slate-850 text-slate-900 dark:text-white shadow-inner' 
-                      : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
-                  }`}
-                >
-                  <Globe size={14} className={activeTab === 'am' ? 'text-gold' : ''} />
-                  <span>አማርኛ ይዘት (Amharic)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('footnotes')}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    activeTab === 'footnotes' 
-                      ? 'bg-slate-100 dark:bg-slate-850 text-slate-900 dark:text-white shadow-inner' 
-                      : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
-                  }`}
-                >
-                  <BookMarked size={14} className={activeTab === 'footnotes' ? 'text-gold' : ''} />
-                  <span>Bibliography Citation</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('seo')}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    activeTab === 'seo' 
-                      ? 'bg-slate-100 dark:bg-slate-850 text-slate-900 dark:text-white shadow-inner' 
-                      : 'text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
-                  }`}
-                >
-                  <Search size={14} className={activeTab === 'seo' ? 'text-gold' : ''} />
-                  <span>SEO Metadata</span>
-                </button>
+              {/* Content tabs: the two languages, citations and search settings */}
+              <div role="tablist" aria-label="Article Sections" className="flex gap-1 overflow-x-auto rounded-lg border border-slate-200 bg-white p-1 dark:border-white/10 dark:bg-dark-card">
+                {([
+                  { id: 'en', icon: FileText, label: 'English Content' },
+                  { id: 'am', icon: Globe, label: 'አማርኛ ይዘት' },
+                  { id: 'footnotes', icon: BookMarked, label: 'Citations' },
+                  { id: 'seo', icon: Search, label: 'SEO Metadata' },
+                ] as const).map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={activeTab === tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={cn(
+                        'flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-md px-4 py-2 text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold',
+                        activeTab === tab.id
+                          ? 'bg-navy text-white dark:bg-gold dark:text-slate-950'
+                          : 'text-mediumgrey hover:text-nearblack dark:text-gray-400 dark:hover:text-white'
+                      )}
+                    >
+                      <Icon className="size-4" aria-hidden="true" />
+                      {tab.label}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* CORE EDITOR WRAPPERS */}
-              <div className="space-y-6 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card md:p-7">
+              <div className="space-y-6 rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card md:p-7">
                 
                 {activeTab === 'en' && (
-                  <div className="space-y-6 animate-fade-in">
+                  <div className="space-y-6">
                     {/* English Title */}
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <label className="text-xs font-semibold text-slate-400 font-sans">Manuscript Title (English)</label>
-                        <span className="text-[9px] font-mono text-slate-400">{(editedArticle.title || '').length} characters</span>
+                        <label className="text-sm font-semibold text-slate-500 font-sans">Manuscript Title (English)</label>
+                        <span className="text-xs tabular-nums text-slate-500">{(editedArticle.title || '').length} characters</span>
                       </div>
                       <input
                         type="text"
@@ -552,14 +533,14 @@ export default function ArticleEditor() {
                     {/* English Excerpt */}
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <label className="text-xs font-semibold text-slate-400 font-sans">Summary Abstract (English Excerpt)</label>
-                        <span className="text-[9px] font-mono text-slate-400">{(editedArticle.excerpt || '').length} characters</span>
+                        <label className="text-sm font-semibold text-slate-500 font-sans">Summary Abstract (English Excerpt)</label>
+                        <span className="text-xs tabular-nums text-slate-500">{(editedArticle.excerpt || '').length} characters</span>
                       </div>
                       <textarea
                         rows={2}
                         value={editedArticle.excerpt}
                         onChange={(e) => updateField('excerpt', e.target.value)}
-                        className="w-full px-4 py-3 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/5 rounded-xl focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 font-serif leading-relaxed text-slate-800 dark:text-gray-300 transition-all placeholder:text-slate-400"
+                        className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/5 rounded-md focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 font-serif leading-relaxed text-slate-800 dark:text-gray-300 transition-all placeholder:text-slate-500"
                         placeholder="Write a concise abstract summarizing the core defense arguments or answers in this paper..."
                       />
                     </div>
@@ -567,14 +548,14 @@ export default function ArticleEditor() {
                 )}
 
                 {activeTab === 'am' && (
-                  <div className="space-y-6 animate-fade-in">
+                  <div className="space-y-6">
                     {/* Amharic Title */}
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <label className="text-xs font-semibold text-amber-600 dark:text-gold font-sans">የዕጅ ጽሑፍ አርዕስት (Amharic Title)</label>
+                        <label className="text-sm font-semibold text-amber-600 dark:text-gold font-sans">የዕጅ ጽሑፍ አርዕስት (Amharic Title)</label>
                         <button 
                           onClick={() => updateField('titleAm', editedArticle.title)}
-                          className="text-[9px] font-sans font-bold text-gold hover:underline cursor-pointer"
+                          className="text-xs font-sans font-bold text-gold hover:underline cursor-pointer"
                         >
                           Copy English Title
                         </button>
@@ -591,10 +572,10 @@ export default function ArticleEditor() {
                     {/* Amharic Excerpt */}
                     <div className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <label className="text-xs font-semibold text-amber-600 dark:text-gold font-sans">አጭር ማጠቃለያ (Amharic Excerpt)</label>
+                        <label className="text-sm font-semibold text-amber-600 dark:text-gold font-sans">አጭር ማጠቃለያ (Amharic Excerpt)</label>
                         <button 
                           onClick={() => updateField('excerptAm', editedArticle.excerpt)}
-                          className="text-[9px] font-sans font-bold text-gold hover:underline cursor-pointer"
+                          className="text-xs font-sans font-bold text-gold hover:underline cursor-pointer"
                         >
                           Copy English Abstract
                         </button>
@@ -603,7 +584,7 @@ export default function ArticleEditor() {
                         rows={2}
                         value={editedArticle.excerptAm || ''}
                         onChange={(e) => updateField('excerptAm', e.target.value)}
-                        className="w-full px-4 py-3 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/5 rounded-xl focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 font-serif leading-relaxed text-slate-800 dark:text-gray-300 transition-all placeholder:text-slate-400"
+                        className="w-full px-4 py-3 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/5 rounded-md focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/20 font-serif leading-relaxed text-slate-800 dark:text-gray-300 transition-all placeholder:text-slate-500"
                         placeholder="ለጽሑፉ አጭርና ግልጽ ማጠቃለያ መግለጫ እዚህ ይጻፉ..."
                       />
                     </div>
@@ -614,29 +595,29 @@ export default function ArticleEditor() {
                 {(activeTab === 'en' || activeTab === 'am') && (
                   <div className="space-y-5 border-t border-slate-100 dark:border-white/5 pt-6">
                     <div className="mb-1 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-400 font-sans">Manuscript Content Blocks</span>
-                      <span className="text-[9px] font-mono text-slate-400">{editedArticle.content.length} Blocks Total</span>
+                      <span className="text-sm font-semibold text-slate-500 font-sans">Manuscript Content Blocks</span>
+                      <span className="text-xs tabular-nums text-slate-500">{editedArticle.content.length} Blocks Total</span>
                     </div>
 
                     {/* STICKY-LIKE FLOATING WYSIWYG BAR */}
-                    <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-black/5 bg-[#f4f5f2] p-2 dark:border-white/5 dark:bg-slate-950">
-                      <span className="text-xs font-semibold text-slate-400 px-2 font-sans">Insert Block:</span>
+                    <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-black/5 bg-slate-50 p-2 dark:border-white/5 dark:bg-slate-950">
+                      <span className="text-sm font-semibold text-slate-500 px-2 font-sans">Insert Block:</span>
                       <div className="h-4 w-px bg-slate-200 dark:bg-white/10" />
                       
                       <button
                         type="button"
                         onClick={() => handleAddContentBlock('paragraph')}
-                        className="btn-press py-1.5 px-3 text-xs bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-white/5 hover:border-gold/30 rounded-lg inline-flex items-center gap-1.5 font-semibold transition-all cursor-pointer shadow-sm"
+                        className="btn-press py-1.5 px-3 text-sm bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-white/5 hover:border-gold/30 rounded-lg inline-flex items-center gap-1.5 font-semibold transition-all cursor-pointer shadow-sm"
                         title="Add normal paragraph block"
                       >
-                        <AlignLeft size={11} className="text-slate-400" />
+                        <AlignLeft size={11} className="text-slate-500" />
                         <span>Paragraph</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => handleAddContentBlock('header', 2)}
-                        className="btn-press py-1.5 px-3 text-xs bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-white/5 hover:border-gold/30 rounded-lg inline-flex items-center gap-1.5 font-semibold transition-all cursor-pointer shadow-sm"
+                        className="btn-press py-1.5 px-3 text-sm bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-white/5 hover:border-gold/30 rounded-lg inline-flex items-center gap-1.5 font-semibold transition-all cursor-pointer shadow-sm"
                         title="Add heading section block"
                       >
                         <Heading2 size={11} className="text-blue-500" />
@@ -646,7 +627,7 @@ export default function ArticleEditor() {
                       <button
                         type="button"
                         onClick={() => handleAddContentBlock('scripture')}
-                        className="btn-press py-1.5 px-3 text-xs bg-amber-500/5 hover:bg-amber-500/10 dark:bg-amber-500/10 dark:hover:bg-amber-500/15 text-amber-600 dark:text-gold border border-amber-500/20 rounded-lg inline-flex items-center gap-1.5 font-semibold transition-all cursor-pointer shadow-sm"
+                        className="btn-press py-1.5 px-3 text-sm bg-amber-500/5 hover:bg-amber-500/10 dark:bg-amber-500/10 dark:hover:bg-amber-500/15 text-amber-600 dark:text-gold border border-amber-500/20 rounded-lg inline-flex items-center gap-1.5 font-semibold transition-all cursor-pointer shadow-sm"
                         title="Insert Scripture Quote block with citation"
                       >
                         <Quote size={11} className="text-gold" />
@@ -656,7 +637,7 @@ export default function ArticleEditor() {
                       <button
                         type="button"
                         onClick={() => handleAddContentBlock('list')}
-                        className="btn-press py-1.5 px-3 text-xs bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-white/5 hover:border-gold/30 rounded-lg inline-flex items-center gap-1.5 font-semibold transition-all cursor-pointer shadow-sm"
+                        className="btn-press py-1.5 px-3 text-sm bg-white hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-850 text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-white/5 hover:border-gold/30 rounded-lg inline-flex items-center gap-1.5 font-semibold transition-all cursor-pointer shadow-sm"
                         title="Add a list block"
                       >
                         <List size={11} className="text-emerald-500" />
@@ -674,7 +655,7 @@ export default function ArticleEditor() {
                         return (
                           <div
                             key={idx}
-                            className={`relative space-y-3 rounded-xl border p-4 shadow-sm transition-all group ${
+                            className={`relative space-y-3 rounded-md border p-4 shadow-sm transition-all group ${
                               isScripture
                                 ? 'bg-amber-50/10 dark:bg-[#1A1813] border-gold/25'
                                 : isHeader
@@ -683,10 +664,10 @@ export default function ArticleEditor() {
                             }`}
                           >
                             {/* Block Header with metadata & handles */}
-                            <div className="flex justify-between items-center text-[10px] font-sans text-slate-400 border-b border-slate-100 dark:border-white/5 pb-2">
+                            <div className="flex justify-between items-center text-xs font-sans text-slate-500 border-b border-slate-100 dark:border-white/5 pb-2">
                               <div className="flex items-center gap-1.5">
-                                <span className="font-mono text-slate-300">#{idx + 1}</span>
-                                <span className={`font-semibold text-xs ${isScripture ? 'text-gold' : isHeader ? 'text-blue-500' : 'text-slate-400'}`}>
+                                <span className="tabular-nums text-slate-300">#{idx + 1}</span>
+                                <span className={`font-semibold text-sm ${isScripture ? 'text-gold' : isHeader ? 'text-blue-500' : 'text-slate-500'}`}>
                                   {isScripture ? 'Scripture Quote' : isHeader ? 'Section Header' : isList ? 'List Block' : 'Paragraph Block'}
                                 </span>
                               </div>
@@ -695,7 +676,7 @@ export default function ArticleEditor() {
                                 <button
                                   type="button"
                                   onClick={() => handleMoveBlock(idx, 'up')}
-                                  className="btn-press p-1 hover:bg-slate-100 dark:hover:bg-white/5 rounded text-slate-400 hover:text-gold transition-colors cursor-pointer"
+                                  className="btn-press p-1 hover:bg-slate-100 dark:hover:bg-white/5 rounded text-slate-500 hover:text-gold transition-colors cursor-pointer"
                                   title="Move Up"
                                 >
                                   <MoveUp size={11} />
@@ -703,7 +684,7 @@ export default function ArticleEditor() {
                                 <button
                                   type="button"
                                   onClick={() => handleMoveBlock(idx, 'down')}
-                                  className="btn-press p-1 hover:bg-slate-100 dark:hover:bg-white/5 rounded text-slate-400 hover:text-gold transition-colors cursor-pointer"
+                                  className="btn-press p-1 hover:bg-slate-100 dark:hover:bg-white/5 rounded text-slate-500 hover:text-gold transition-colors cursor-pointer"
                                   title="Move Down"
                                 >
                                   <MoveDown size={11} />
@@ -712,7 +693,7 @@ export default function ArticleEditor() {
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteContentBlock(idx)}
-                                  className="btn-press py-0.5 px-2 text-rose-500 hover:bg-rose-500/10 rounded font-sans font-semibold text-xs transition-all cursor-pointer"
+                                  className="btn-press py-0.5 px-2 text-rose-500 hover:bg-rose-500/10 rounded font-sans font-semibold text-sm transition-all cursor-pointer"
                                   title="Delete Block"
                                 >
                                   Delete
@@ -721,8 +702,8 @@ export default function ArticleEditor() {
                             </div>
 
                             {isHeader && (
-                              <div className="flex items-center gap-2 text-xs">
-                                <label htmlFor={`heading-level-${idx}`} className="font-semibold text-slate-400">Heading Level</label>
+                              <div className="flex items-center gap-2 text-sm">
+                                <label htmlFor={`heading-level-${idx}`} className="font-semibold text-slate-500">Heading Level</label>
                                 <select
                                   id={`heading-level-${idx}`}
                                   value={sec.level || 2}
@@ -740,26 +721,26 @@ export default function ArticleEditor() {
                               {activeTab === 'en' ? (
                                 <div className="space-y-1">
                                   <div className="flex justify-between items-center">
-                                    <span className="text-xs font-semibold text-slate-400 font-sans">English Paragraph Text</span>
+                                    <span className="text-sm font-semibold text-slate-500 font-sans">English Paragraph Text</span>
                                     {isScripture && (
-                                      <span className="text-[10px] text-slate-300 font-mono">Quotes map reference automatically</span>
+                                      <span className="text-xs text-slate-300 tabular-nums">Quotes map reference automatically</span>
                                     )}
                                   </div>
                                   <textarea
                                     rows={isHeader ? 1 : 3}
                                     value={sec.text}
                                     onChange={(e) => updateBlock(idx, { text: e.target.value })}
-                                    className={`w-full bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-xs focus:outline-none border border-slate-150 dark:border-white/5 rounded-lg focus:border-gold/50 focus:ring-1 focus:ring-gold/20 text-slate-800 dark:text-gray-200 font-serif leading-relaxed`}
+                                    className={`w-full bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-sm focus:outline-none border border-slate-150 dark:border-white/5 rounded-lg focus:border-gold/50 focus:ring-1 focus:ring-gold/20 text-slate-800 dark:text-gray-200 font-serif leading-relaxed`}
                                   />
                                 </div>
                               ) : (
                                 <div className="space-y-1">
                                   <div className="flex justify-between items-center">
-                                    <span className="text-xs font-semibold text-amber-600 dark:text-gold font-sans">የአማርኛ ይዘት (Amharic Translation)</span>
+                                    <span className="text-sm font-semibold text-amber-600 dark:text-gold font-sans">የአማርኛ ይዘት (Amharic Translation)</span>
                                     <button 
                                       type="button"
                                       onClick={() => updateBlock(idx, { textAm: sec.text })}
-                                      className="text-[8px] font-sans text-gold hover:underline"
+                                      className="text-xs font-sans text-gold hover:underline"
                                     >
                                       Copy English Text
                                     </button>
@@ -768,7 +749,7 @@ export default function ArticleEditor() {
                                     rows={isHeader ? 1 : 3}
                                     value={sec.textAm || ''}
                                     onChange={(e) => updateBlock(idx, { textAm: e.target.value })}
-                                    className={`w-full bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-xs focus:outline-none border border-gold/15 hover:border-gold/25 dark:border-white/5 rounded-lg focus:border-gold/50 focus:ring-1 focus:ring-gold/20 text-slate-800 dark:text-gray-200 font-serif leading-relaxed`}
+                                    className={`w-full bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-sm focus:outline-none border border-gold/15 hover:border-gold/25 dark:border-white/5 rounded-lg focus:border-gold/50 focus:ring-1 focus:ring-gold/20 text-slate-800 dark:text-gray-200 font-serif leading-relaxed`}
                                     placeholder="አማርኛ ትርጉም እዚህ ይጻፉ..."
                                   />
                                 </div>
@@ -780,24 +761,24 @@ export default function ArticleEditor() {
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-white/5">
                                 {activeTab === 'en' ? (
                                   <div className="flex items-center gap-2">
-                                    <span className="text-xs font-semibold text-slate-400 font-sans whitespace-nowrap">Scripture Reference:</span>
+                                    <span className="text-sm font-semibold text-slate-500 font-sans whitespace-nowrap">Scripture Reference:</span>
                                     <input
                                       type="text"
                                       value={sec.reference || ''}
                                       onChange={(e) => updateBlock(idx, { reference: e.target.value })}
                                       placeholder="E.g., Genesis 1:1"
-                                      className="px-2.5 py-1 w-full text-xs bg-slate-50 dark:bg-slate-950 text-gold border border-slate-200 dark:border-white/10 rounded-lg focus:border-gold focus:outline-none font-bold font-sans"
+                                      className="px-2.5 py-1 w-full text-sm bg-slate-50 dark:bg-slate-950 text-gold border border-slate-200 dark:border-white/10 rounded-lg focus:border-gold focus:outline-none font-bold font-sans"
                                     />
                                   </div>
                                 ) : (
                                   <div className="flex items-center gap-2">
-                                    <span className="text-xs font-semibold text-amber-600 dark:text-gold font-sans whitespace-nowrap">የጥቅስ ማውጫ:</span>
+                                    <span className="text-sm font-semibold text-amber-600 dark:text-gold font-sans whitespace-nowrap">የጥቅስ ማውጫ:</span>
                                     <input
                                       type="text"
                                       value={sec.referenceAm || ''}
                                       onChange={(e) => updateBlock(idx, { referenceAm: e.target.value })}
                                       placeholder="ለምሳሌ፥ ዘፍጥረት 1:1"
-                                      className="px-2.5 py-1 w-full text-xs bg-slate-50 dark:bg-slate-950 text-gold border border-gold/15 dark:border-white/10 rounded-lg focus:border-gold focus:outline-none font-bold font-sans"
+                                      className="px-2.5 py-1 w-full text-sm bg-slate-50 dark:bg-slate-950 text-gold border border-gold/15 dark:border-white/10 rounded-lg focus:border-gold focus:outline-none font-bold font-sans"
                                     />
                                   </div>
                                 )}
@@ -806,7 +787,7 @@ export default function ArticleEditor() {
 
                             {isList && (
                               <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                                <label className="text-xs font-semibold text-slate-400 font-sans">{activeTab === 'en' ? 'List Items' : 'የዝርዝር ነጥቦች'}</label>
+                                <label className="text-sm font-semibold text-slate-500 font-sans">{activeTab === 'en' ? 'List Items' : 'የዝርዝር ነጥቦች'}</label>
                                 {(activeTab === 'en' ? (sec.items || []) : (sec.itemsAm || [])).map((item, itemIdx) => (
                                   <div key={itemIdx} className="flex gap-2">
                                     <input
@@ -818,7 +799,7 @@ export default function ArticleEditor() {
                                         items[itemIdx] = e.target.value;
                                         updateBlock(idx, { [key]: items });
                                       }}
-                                      className="flex-1 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/5 rounded-lg text-slate-800 dark:text-gray-200 focus:outline-none focus:border-gold"
+                                      className="flex-1 px-3 py-2 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/5 rounded-lg text-slate-800 dark:text-gray-200 focus:outline-none focus:border-gold"
                                     />
                                     <button
                                       type="button"
@@ -841,7 +822,7 @@ export default function ArticleEditor() {
                                     const items = [...(activeTab === 'en' ? (sec.items || []) : (sec.itemsAm || [])), ''];
                                     updateBlock(idx, { [key]: items });
                                   }}
-                                  className="text-[10px] font-bold text-gold hover:underline"
+                                  className="text-xs font-bold text-gold hover:underline"
                                 >
                                   Add List Item
                                 </button>
@@ -856,21 +837,21 @@ export default function ArticleEditor() {
 
                 {/* TAB: FOOTNOTES BIBLIOGRAPHY */}
                 {activeTab === 'footnotes' && (
-                  <div className="space-y-6 animate-fade-in">
+                  <div className="space-y-6">
                     <div>
                       <h3 className="font-serif text-base font-bold text-slate-900 dark:text-white">Manuscript Bibliography Citations</h3>
-                      <p className="text-xs text-slate-400">Map precise citations as clickable superscript annotations throughout the manuscript paper flow.</p>
+                      <p className="text-sm text-slate-500">Map precise citations as clickable superscript annotations throughout the manuscript paper flow.</p>
                     </div>
 
                     <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                       {editedArticle.footnotes.length === 0 ? (
-                        <div className="p-8 border border-dashed border-slate-200 dark:border-white/5 rounded-xl text-center text-xs text-slate-400">
+                        <div className="p-8 border border-dashed border-slate-200 dark:border-white/5 rounded-md text-center text-sm text-slate-500">
                           No footnotes mapped to this paper. Add one below to structure an academic defense.
                         </div>
                       ) : (
                         editedArticle.footnotes.map((fn) => (
-                          <div key={fn.id} className="p-3 border border-slate-100 dark:border-white/5 rounded-xl bg-slate-50/50 dark:bg-white/[0.01] text-xs flex justify-between items-center gap-4">
-                            <span className="text-gold font-bold font-mono px-2 bg-slate-100 dark:bg-slate-800 rounded py-0.5">[{fn.id}]</span>
+                          <div key={fn.id} className="p-3 border border-slate-100 dark:border-white/5 rounded-md bg-slate-50/50 dark:bg-white/[0.01] text-sm flex justify-between items-center gap-4">
+                            <span className="text-gold font-bold tabular-nums px-2 bg-slate-100 dark:bg-slate-800 rounded py-0.5">[{fn.id}]</span>
                             <span className="flex-1 font-serif text-slate-700 dark:text-gray-300 line-clamp-2 leading-relaxed">{fn.text}</span>
                             <button
                               type="button"
@@ -886,7 +867,7 @@ export default function ArticleEditor() {
                     </div>
 
                     <form onSubmit={handleAddFootnote} className="space-y-2 border-t border-slate-150 dark:border-white/5 pt-4">
-                      <label className="text-xs font-semibold text-slate-400 font-sans">Add Citation Entry</label>
+                      <label className="text-sm font-semibold text-slate-500 font-sans">Add Citation Entry</label>
                       <div className="flex gap-2">
                         <input
                           type="text"
@@ -894,11 +875,11 @@ export default function ArticleEditor() {
                           placeholder="E.g., Lewis, C.S., 'Mere Christianity', Macmillan Pub, 1943, p. 54..."
                           value={newFootnoteText}
                           onChange={(e) => setNewFootnoteText(e.target.value)}
-                          className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-white/10 rounded-xl focus:border-gold focus:outline-none bg-slate-50 dark:bg-slate-950 text-xs font-serif text-slate-900 dark:text-white"
+                          className="flex-1 px-4 py-2.5 border border-slate-200 dark:border-white/10 rounded-md focus:border-gold focus:outline-none bg-slate-50 dark:bg-slate-950 text-sm font-serif text-slate-900 dark:text-white"
                         />
                         <button
                           type="submit"
-                          className="btn-press px-5 py-2.5 bg-navy text-white dark:bg-gold dark:text-slate-950 font-sans text-xs font-bold rounded-xl hover:bg-opacity-90 whitespace-nowrap cursor-pointer shadow-sm transition-colors"
+                          className="btn-press px-5 py-2.5 bg-navy text-white dark:bg-gold dark:text-slate-950 font-sans text-sm font-bold rounded-md hover:bg-opacity-90 whitespace-nowrap cursor-pointer shadow-sm transition-colors"
                         >
                           Add Citation
                         </button>
@@ -909,17 +890,17 @@ export default function ArticleEditor() {
 
                 {/* TAB: SEO METADATA METERS */}
                 {activeTab === 'seo' && (
-                  <div className="space-y-6 animate-fade-in">
+                  <div className="space-y-6">
                     <div>
                       <h3 className="font-serif text-base font-bold text-slate-900 dark:text-white">Search Engine Optimization</h3>
-                      <p className="text-xs text-slate-400">Optimize search metadata headers to index this defensive paper efficiently on Google and Bing.</p>
+                      <p className="text-sm text-slate-500">Optimize search metadata headers to index this defensive paper efficiently on Google and Bing.</p>
                     </div>
 
                     <div className="space-y-4">
                       {/* Meta Title */}
                       <div className="space-y-1.5">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="text-slate-400 font-semibold">Meta Title Header</span>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-semibold">Meta Title Header</span>
                           <span className={`font-mono font-bold ${((editedArticle.seoTitle || '').length > 60 || (editedArticle.seoTitle || '').length === 0) ? 'text-rose-500' : 'text-emerald-500'}`}>
                             {(editedArticle.seoTitle || '').length}/60 characters
                           </span>
@@ -928,15 +909,15 @@ export default function ArticleEditor() {
                           type="text"
                           value={editedArticle.seoTitle || ''}
                           onChange={(e) => updateField('seoTitle', e.target.value)}
-                          className="w-full px-4 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 text-slate-800 dark:text-gray-200 focus:outline-none focus:border-gold"
+                          className="w-full px-4 py-2.5 text-sm rounded-md bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 text-slate-800 dark:text-gray-200 focus:outline-none focus:border-gold"
                           placeholder="E.g., The Credibility of the New Testament | Hokhma Study"
                         />
                       </div>
 
                       {/* Meta Description */}
                       <div className="space-y-1.5">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="text-slate-400 font-semibold">Meta Description Abstract</span>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 font-semibold">Meta Description Abstract</span>
                           <span className={`font-mono font-bold ${((editedArticle.seoDescription || '').length > 160 || (editedArticle.seoDescription || '').length === 0) ? 'text-rose-500' : 'text-emerald-500'}`}>
                             {(editedArticle.seoDescription || '').length}/160 characters
                           </span>
@@ -945,23 +926,27 @@ export default function ArticleEditor() {
                           rows={3}
                           value={editedArticle.seoDescription || ''}
                           onChange={(e) => updateField('seoDescription', e.target.value)}
-                          className="w-full px-4 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 text-slate-800 dark:text-gray-200 focus:outline-none focus:border-gold leading-relaxed font-sans"
+                          className="w-full px-4 py-2.5 text-sm rounded-md bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 text-slate-800 dark:text-gray-200 focus:outline-none focus:border-gold leading-relaxed font-sans"
                           placeholder="Provide a high-quality summary explaining what the visitor will read. Safe length is under 160 characters..."
                         />
                       </div>
 
                       {/* slug / permalink */}
                       <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-white/5">
-                        <label className="text-xs font-semibold text-slate-400 block font-sans">URL Slug / Permalink Identifier</label>
-                        <div className="flex items-center gap-1 text-xs text-slate-400 bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-150 dark:border-white/10">
-                          <span className="font-mono text-[10px]">/articles/</span>
+                        <label className="text-sm font-semibold text-slate-500 block font-sans">URL Slug / Permalink Identifier</label>
+                        <div className="flex items-center gap-1 text-sm text-slate-500 bg-slate-50 dark:bg-slate-950 px-3 py-2 rounded-md border border-slate-150 dark:border-white/10">
+                          <span className="font-mono text-xs">/articles/</span>
                           <input
                             type="text"
                             value={editedArticle.slug}
+                            disabled={isSlugLocked}
                             onChange={(e) => updateField('slug', e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'))}
-                            className="bg-transparent border-none text-slate-900 dark:text-white font-mono font-bold text-xs focus:outline-none flex-1 p-0"
+                            className="bg-transparent border-none text-slate-900 dark:text-white font-mono font-bold text-sm focus:outline-none flex-1 p-0 disabled:opacity-60"
                           />
                         </div>
+                        {isSlugLocked && (
+                          <p className="text-xs text-slate-500">Locked Because This Article Is Published. Changing It Would Break Existing Links.</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -971,79 +956,41 @@ export default function ArticleEditor() {
             </main>
 
             {/* RIGHT SIDEBAR CONTROLLER PANEL (4 Columns) */}
-            <aside className="space-y-5 lg:col-span-4 lg:sticky lg:top-[94px] lg:self-start">
+            <aside className="space-y-5 lg:col-span-4 lg:sticky lg:top-24 lg:self-start">
               
               {/* PUBLISHING PARAMETERS CARD */}
-              <div className="space-y-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
+              <div className="space-y-4 rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
                 <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
                   <Sliders size={14} className="text-gold" />
-                  <h3 className="font-serif text-xs font-bold text-slate-900 dark:text-white">Publish Parameters</h3>
+                  <h3 className="font-serif text-sm font-bold text-slate-900 dark:text-white">Publishing</h3>
                 </div>
 
-                {/* Published Toggle */}
-                <div className="flex justify-between items-center text-xs">
-                  <div>
-                    <span className="font-bold text-slate-800 dark:text-gray-200 block">Publish Status</span>
-                    <span className="text-[10px] text-slate-400">Toggle site visibility.</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => updateField('isPublished', !editedArticle.isPublished)}
-                    className={`btn-press px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                      editedArticle.isPublished
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                        : 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-950 dark:text-gray-400 dark:border-white/5'
-                    }`}
-                  >
-                    {editedArticle.isPublished ? 'Published' : 'Draft'}
-                  </button>
-                </div>
-
-                {/* Editor's Pick Toggle */}
-                <div className="flex justify-between items-center text-xs pt-1.5">
-                  <div>
-                    <span className="font-bold text-slate-800 dark:text-gray-200 block">Editor’s Pick</span>
-                    <span className="text-[10px] text-slate-400">Promote to hero header slot.</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => updateField('featured', !editedArticle.featured)}
-                    className={`btn-press px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                      editedArticle.featured
-                        ? 'bg-amber-500/10 text-amber-600 dark:text-gold border-amber-500/20'
-                        : 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-950 dark:text-gray-400 dark:border-white/5'
-                    }`}
-                  >
-                    {editedArticle.featured ? 'Featured' : 'Regular'}
-                  </button>
-                </div>
-
-                {/* Allow Discussion Toggle */}
-                <div className="flex justify-between items-center text-xs pt-1.5">
-                  <div>
-                    <span className="font-bold text-slate-800 dark:text-gray-200 block">Allow Comments</span>
-                    <span className="text-[10px] text-slate-400">Enable moderated reader dialog.</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => updateField('commentsAllowed', !editedArticle.commentsAllowed)}
-                    className={`btn-press px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                      editedArticle.commentsAllowed
-                        ? 'bg-slate-900 text-white border-slate-950 dark:bg-gold dark:text-slate-950'
-                        : 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20'
-                    }`}
-                  >
-                    {editedArticle.commentsAllowed ? 'Enabled' : 'Muted'}
-                  </button>
-                </div>
+                <Switch
+                  label="Published"
+                  description={editedArticle.isPublished ? 'Visible to every reader.' : 'Private until you turn this on.'}
+                  checked={editedArticle.isPublished}
+                  onChange={(value) => updateField('isPublished', value)}
+                />
+                <Switch
+                  label="Feature On Home Page"
+                  description="Show this article first on the home page."
+                  checked={editedArticle.featured}
+                  onChange={(value) => updateField('featured', value)}
+                />
+                <Switch
+                  label="Allow Comments"
+                  description="Readers can comment; you approve each one."
+                  checked={editedArticle.commentsAllowed}
+                  onChange={(value) => updateField('commentsAllowed', value)}
+                />
 
                 {/* Article Language index mapping */}
-                <div className="flex flex-col gap-1 pt-3 border-t border-slate-100 dark:border-white/5 text-xs">
-                  <span className="font-bold text-slate-800 dark:text-gray-200">Index Language Mode</span>
+                <div className="flex flex-col gap-1 pt-3 border-t border-slate-100 dark:border-white/5 text-sm">
+                  <span className="font-bold text-slate-800 dark:text-gray-200">Article Language</span>
                   <select
                     value={editedArticle.lang || 'en'}
                     onChange={(e) => updateField('lang', e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 rounded-xl font-semibold text-slate-800 dark:text-white focus:outline-none"
+                    className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 rounded-md font-semibold text-slate-800 dark:text-white focus:outline-none"
                   >
                     <option value="en">English Content Only</option>
                     <option value="am">Amharic Content Only</option>
@@ -1053,19 +1000,19 @@ export default function ArticleEditor() {
               </div>
 
               {/* TAXONOMY & DIFFICULTY DEPTH */}
-              <div className="space-y-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
+              <div className="space-y-4 rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
                 <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
                   <BookMarked size={14} className="text-gold" />
-                  <h3 className="font-serif text-xs font-bold text-slate-900 dark:text-white">Taxonomy Arena</h3>
+                  <h3 className="font-serif text-sm font-bold text-slate-900 dark:text-white">Classification</h3>
                 </div>
 
                 {/* Category Selection */}
-                <div className="space-y-1 text-xs">
-                  <label className="font-bold text-slate-800 dark:text-gray-200 block">Core Topic Area</label>
+                <div className="space-y-1 text-sm">
+                  <label className="font-bold text-slate-800 dark:text-gray-200 block">Topic</label>
                   <select
                     value={editedArticle.topicSlug}
                     onChange={(e) => updateField('topicSlug', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-800 dark:text-white"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 rounded-md text-sm font-semibold text-slate-800 dark:text-white"
                   >
                     {topics.map((t) => (
                       <option key={t.slug} value={t.slug}>{t.name}</option>
@@ -1074,15 +1021,15 @@ export default function ArticleEditor() {
                 </div>
 
                 {/* Difficulty Depth segment control */}
-                <div className="space-y-1.5 text-xs pt-1">
-                  <label className="font-bold text-slate-800 dark:text-gray-200 block">Difficulty Depth Level</label>
-                  <div className="grid grid-cols-3 gap-1 rounded-xl bg-slate-50 dark:bg-slate-950 p-1 border border-slate-150 dark:border-white/5">
+                <div className="space-y-1.5 text-sm pt-1">
+                  <label className="font-bold text-slate-800 dark:text-gray-200 block">Difficulty</label>
+                  <div className="grid grid-cols-3 gap-1 rounded-md bg-slate-50 dark:bg-slate-950 p-1 border border-slate-150 dark:border-white/5">
                     {(['beginner', 'intermediate', 'deep-dive'] as Difficulty[]).map((diff) => (
                       <button
                         key={diff}
                         type="button"
                         onClick={() => updateField('difficulty', diff)}
-                        className={`btn-press py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        className={`btn-press py-1.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                           editedArticle.difficulty === diff
                             ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 font-bold shadow-sm'
                             : 'text-slate-500 hover:text-slate-950 dark:text-gray-400 dark:hover:text-white'
@@ -1095,22 +1042,22 @@ export default function ArticleEditor() {
                 </div>
 
                 {/* Reading Time Slider/Input */}
-                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-white/5 text-xs">
+                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-white/5 text-sm">
                   <div className="space-y-1">
                     <label className="font-bold text-slate-800 dark:text-gray-200 flex items-center gap-1">
                       <Clock size={11} className="text-gold" />
                       <span>Reading Time</span>
                     </label>
-                    <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-150 dark:border-white/10">
+                    <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-950 px-2.5 py-1.5 rounded-md border border-slate-150 dark:border-white/10">
                       <input
                         type="number"
                         min={1}
                         max={120}
                         value={editedArticle.readingTime}
                         onChange={(e) => updateField('readingTime', parseInt(e.target.value) || 5)}
-                        className="bg-transparent border-none text-xs font-bold text-slate-800 dark:text-white w-full focus:outline-none p-0 text-center"
+                        className="bg-transparent border-none text-sm font-bold text-slate-800 dark:text-white w-full focus:outline-none p-0 text-center"
                       />
-                      <span className="text-[10px] text-slate-400">min</span>
+                      <span className="text-xs text-slate-500">min</span>
                     </div>
                   </div>
 
@@ -1123,26 +1070,26 @@ export default function ArticleEditor() {
                       type="date"
                       value={editedArticle.publishDate}
                       onChange={(e) => updateField('publishDate', e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-950 px-2 py-1 text-xs font-bold text-slate-800 dark:text-white border border-slate-150 dark:border-white/10 rounded-xl focus:outline-none"
+                      className="w-full bg-slate-50 dark:bg-slate-950 px-2 py-1 text-sm font-bold text-slate-800 dark:text-white border border-slate-150 dark:border-white/10 rounded-md focus:outline-none"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Cover image container */}
-              <div className="space-y-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
+              <div className="space-y-4 rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
                 <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
                   <Image size={14} className="text-gold" />
-                  <h3 className="font-serif text-xs font-bold tracking-wider text-slate-900 dark:text-white">Cover Graphic</h3>
+                  <h3 className="font-serif text-sm font-bold text-slate-900 dark:text-white">Cover Graphic</h3>
                 </div>
 
                 {editedArticle.coverImage && (
-                  <div className="aspect-[16/10] rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm relative group bg-slate-950">
+                  <div className="aspect-[16/10] rounded-md overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm relative group bg-slate-950">
                     <img src={editedArticle.coverImage} alt="Cover Preview" className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500 opacity-90" />
                     <button 
                       type="button"
                       onClick={() => updateField('coverImage', '')}
-                      className="absolute top-2 right-2 p-1 bg-slate-950/80 hover:bg-slate-950 text-white rounded-full text-xs transition-colors"
+                      className="absolute top-2 right-2 p-1 bg-slate-950/80 hover:bg-slate-950 text-white rounded-full text-sm transition-colors"
                       title="Clear image"
                     >
                       <X size={12} />
@@ -1151,29 +1098,29 @@ export default function ArticleEditor() {
                 )}
                 
                 {uploadError && (
-                  <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-[11px]">
+                  <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
                     {uploadError}
                   </div>
                 )}
 
                 {/* File upload input */}
                 <div className="space-y-2">
-                  <label className="font-bold text-slate-800 dark:text-gray-200 block text-xs">Upload Cover Image</label>
-                  <label className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+                  <label className="font-bold text-slate-800 dark:text-gray-200 block text-sm">Upload Cover Image</label>
+                  <label className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-md cursor-pointer transition-colors ${
                     isUploadingCover
                       ? 'border-gold/50 bg-gold/5'
                       : 'border-slate-200 dark:border-white/10 hover:border-gold/60 bg-slate-50 dark:bg-slate-950/50'
                   }`}>
                     {isUploadingCover ? (
-                      <div className="flex items-center gap-2 text-gold text-xs">
+                      <div className="flex items-center gap-2 text-gold text-sm">
                         <Loader2 size={16} className="animate-spin" />
                         <span>Uploading Image...</span>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center gap-1.5 text-center">
                         <Upload size={18} className="text-gold" />
-                        <span className="text-xs font-semibold text-slate-700 dark:text-gray-200">Choose Image File</span>
-                        <span className="text-[10px] text-gray-400">PNG, JPG, WEBP, or GIF up to 5 MB</span>
+                        <span className="text-sm font-semibold text-slate-700 dark:text-gray-200">Choose Image File</span>
+                        <span className="text-xs text-gray-400">PNG, JPG, WEBP, or GIF up to 5 MB</span>
                       </div>
                     )}
                     <input
@@ -1186,93 +1133,59 @@ export default function ArticleEditor() {
                   </label>
                 </div>
 
-                <div className="space-y-1 text-xs pt-1">
+                <div className="space-y-1 text-sm pt-1">
                   <label className="font-bold text-slate-800 dark:text-gray-200 block">Or Enter Direct Image URL</label>
                   <input
                     type="text"
                     placeholder="https://images.unsplash.com/..."
                     value={editedArticle.coverImage || ''}
                     onChange={(e) => updateField('coverImage', e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 rounded-xl focus:outline-none focus:border-gold"
+                    className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 rounded-md focus:outline-none focus:border-gold"
                   />
                 </div>
               </div>
 
-              {/* MAPPED LEARNING ROADMAPS */}
-              <div className="space-y-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
+              {/* Path membership is defined by a path's steps, so the editor only reports it */}
+              <div className="space-y-3 rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
                 <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
                   <Sparkles size={14} className="text-gold" />
-                  <h3 className="font-serif text-xs font-bold text-slate-900 dark:text-white">Roadmap Integration</h3>
+                  <h3 className="font-serif text-sm font-bold text-slate-900 dark:text-white">Learning Path</h3>
                 </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="space-y-1">
-                    <label className="font-bold text-slate-800 dark:text-gray-200 block">Target Path</label>
-                    <select
-                      value={editedArticle.partInPath?.pathSlug || ''}
-                      onChange={(e) => {
-                        const nextSlug = e.target.value;
-                        if (nextSlug) {
-                          updateField('partInPath', {
-                            pathSlug: nextSlug,
-                            position: editedArticle.partInPath?.position || 1
-                          });
-                        } else {
-                          updateField('partInPath', undefined);
-                        }
-                      }}
-                      className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 text-xs rounded-xl text-slate-800 dark:text-white focus:outline-none"
-                    >
-                      <option value="">-- Unmapped --</option>
-                      {paths.map((p) => (
-                        <option key={p.slug} value={p.slug}>{p.title}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-bold text-slate-800 dark:text-gray-200 block font-sans">Index Position</label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={20}
-                      value={editedArticle.partInPath?.position || 1}
-                      disabled={!editedArticle.partInPath}
-                      onChange={(e) => {
-                        if (editedArticle.partInPath) {
-                          updateField('partInPath', {
-                            ...editedArticle.partInPath,
-                            position: parseInt(e.target.value) || 1
-                          });
-                        }
-                      }}
-                      className="w-full px-2.5 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-white/10 text-xs rounded-xl text-slate-800 dark:text-white disabled:opacity-50 text-center"
-                    />
-                  </div>
-                </div>
+                {(() => {
+                  const savedArticle = articles.find((a) => a.id === editedArticle.id);
+                  const path = paths.find((p) => p.slug === savedArticle?.partInPath?.pathSlug);
+                  return (
+                    <p className="text-sm leading-relaxed text-slate-500 dark:text-gray-400">
+                      {path && savedArticle?.partInPath
+                        ? `Appears In "${path.title}" As Step ${savedArticle.partInPath.position}. `
+                        : 'This Article Is Not Part Of A Learning Path. '}
+                      Add Or Reorder It From Learning Paths In The Dashboard.
+                    </p>
+                  );
+                })()}
               </div>
 
               {/* KEYWORD TAG CHIPS */}
-              <div className="space-y-4 rounded-2xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
+              <div className="space-y-4 rounded-xl border border-black/5 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-dark-card">
                 <div className="flex items-center gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
                   <Tag size={14} className="text-gold" />
-                  <h3 className="font-serif text-xs font-bold text-slate-900 dark:text-white">Manuscript Tags</h3>
+                  <h3 className="font-serif text-sm font-bold text-slate-900 dark:text-white">Manuscript Tags</h3>
                 </div>
 
                 <div className="flex flex-wrap gap-1.5">
                   {editedArticle.tags.length === 0 ? (
-                    <span className="text-[10px] text-slate-400">No tag keywords linked to this paper.</span>
+                    <span className="text-xs text-slate-500">No tag keywords linked to this paper.</span>
                   ) : (
                     editedArticle.tags.map((tag, i) => (
                       <span
                         key={i}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-150 dark:border-white/5 text-[10px] text-slate-800 dark:text-slate-200 whitespace-nowrap"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-150 dark:border-white/5 text-xs text-slate-800 dark:text-slate-200 whitespace-nowrap"
                       >
                         <span>#{tag}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveTag(i)}
-                          className="text-rose-500 font-bold hover:text-rose-700 text-[10px] ml-0.5"
+                          className="text-rose-500 font-bold hover:text-rose-700 text-xs ml-0.5"
                         >
                           ×
                         </button>
@@ -1287,11 +1200,11 @@ export default function ArticleEditor() {
                     placeholder="Enter tag label..."
                     value={newTagInput}
                     onChange={(e) => setNewTagInput(e.target.value)}
-                    className="flex-1 px-3 py-1.5 border border-slate-200 dark:border-white/10 text-xs bg-slate-50 dark:bg-slate-950 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:border-gold"
+                    className="flex-1 px-3 py-1.5 border border-slate-200 dark:border-white/10 text-sm bg-slate-50 dark:bg-slate-950 rounded-md text-slate-800 dark:text-white focus:outline-none focus:border-gold"
                   />
                   <button
                     type="submit"
-                    className="btn-press px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-gray-300 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                    className="btn-press px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-gray-300 text-sm font-bold rounded-md transition-colors cursor-pointer"
                   >
                     Add
                   </button>

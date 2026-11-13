@@ -6,7 +6,6 @@ export interface ITopic extends Document {
   nameAm?: string;
   description: string;
   descriptionAm?: string;
-  articleCount: number;
   icon: string;
   createdAt: Date;
   updatedAt: Date;
@@ -19,7 +18,7 @@ const TopicSchema = new Schema<ITopic>(
     nameAm: { type: String, trim: true },
     description: { type: String, required: true },
     descriptionAm: { type: String },
-    articleCount: { type: Number, default: 0 },
+
     icon: { type: String, required: true, default: 'BookOpen' }
   },
   {

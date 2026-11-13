@@ -6,34 +6,21 @@ import { Article } from '../models/Article.js';
 export const getAllTopics = async (_req: Request, res: Response): Promise<void> => {
   try {
     const topics = await Topic.find().sort({ name: 1 });
-    res.status(200).json(topics);
+
+    // articleCount is derived from published articles so it can never drift out of sync
+    const counts = await Article.aggregate<{ _id: string; count: number }>([
+      { $match: { isPublished: true } },
+      { $group: { _id: '$topicSlug', count: { $sum: 1 } } }
+    ]);
+    const countBySlug = new Map(counts.map((c) => [c._id, c.count]));
+
+    res.status(200).json(topics.map((t) => ({ ...t.toJSON(), articleCount: countBySlug.get(t.slug) || 0 })));
   } catch (error) {
     const err = error as Error;
     res.status(500).json({ message: 'Failed to retrieve topics.', error: err.message });
   }
 };
 
-// Retrieve a single topic by slug along with its associated published articles
-export const getTopicBySlug = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { slug } = req.params;
-    const topic = await Topic.findOne({ slug });
-
-    // Return 404 if topic not found
-    if (!topic) {
-      res.status(404).json({ message: 'Topic not found.' });
-      return;
-    }
-
-    // Find all published articles belonging to this topic
-    const articles = await Article.find({ topicSlug: slug, isPublished: true }).sort({ createdAt: -1 });
-
-    res.status(200).json({ topic, articles });
-  } catch (error) {
-    const err = error as Error;
-    res.status(500).json({ message: 'Failed to retrieve topic.', error: err.message });
-  }
-};
 
 // Create a new topic category (admin authenticated)
 export const createTopic = async (req: Request, res: Response): Promise<void> => {
@@ -78,6 +65,13 @@ export const updateTopic = async (req: Request, res: Response): Promise<void> =>
 export const deleteTopic = async (req: Request, res: Response): Promise<void> => {
   try {
     const { slug } = req.params;
+
+    // Refuse to orphan articles that still belong to this topic
+    if (await Article.exists({ topicSlug: slug })) {
+      res.status(409).json({ message: 'Move or delete this topic\'s articles before deleting the topic.' });
+      return;
+    }
+
     const deleted = await Topic.findOneAndDelete({ slug });
 
     // Return 404 if topic not found

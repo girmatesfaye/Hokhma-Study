@@ -10,7 +10,6 @@ export interface IQuestion extends Document {
   articleSlug: string;
   articleTitle: string;
   articleTitleAm?: string;
-  commonScore: number;
   addedDate: string;
   createdAt: Date;
   updatedAt: Date;
@@ -31,7 +30,6 @@ const QuestionSchema = new Schema<IQuestion>(
     articleSlug: { type: String, required: true, index: true },
     articleTitle: { type: String, required: true },
     articleTitleAm: { type: String },
-    commonScore: { type: Number, default: 50, min: 0, max: 100 },
     addedDate: { type: String, required: true }
   },
   {

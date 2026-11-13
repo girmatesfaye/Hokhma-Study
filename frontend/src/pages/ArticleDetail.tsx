@@ -9,6 +9,7 @@ import { useLanguage } from '../context/LanguageContext';
 import DifficultyBadge from '../components/DifficultyBadge';
 import ScriptureBlock from '../components/ScriptureBlock';
 import { Comment } from '../types';
+import { getArticleComments } from '../services/articles';
 import {
   ArrowLeft,
   BookOpen,
@@ -27,6 +28,8 @@ import {
   MessageSquare,
   Check
 } from 'lucide-react';
+import logoImg from '../../assets/logo.jpg';
+import logoWatermarkImg from '../../assets/logo-watermark.png';
 
 export default function ArticleDetail() {
   const {
@@ -34,11 +37,8 @@ export default function ArticleDetail() {
     articles,
     topics,
     paths,
-    comments,
     addComment,
-    reactions: savedReactions,
     toggleReaction,
-    incrementArticleView,
     progress,
     toggleStepProgress,
     navigateTo
@@ -50,23 +50,57 @@ export default function ArticleDetail() {
 
   // States
   const [copiedLink, setCopiedLink] = useState(false);
+  // Reaction counts come from the server; local state only reflects the reader's own clicks instantly
   const [reactions, setReactions] = useState<Record<string, number>>(() => ({
-    helpful: 24 + (savedReactions[slug]?.helpful || 0),
-    insightful: 15 + (savedReactions[slug]?.insightful || 0),
-    rigorous: 18 + (savedReactions[slug]?.rigorous || 0)
+    helpful: article?.reactions?.helpful || 0,
+    insightful: article?.reactions?.insightful || 0,
+    rigorous: article?.reactions?.rigorous || 0
   }));
   const [userReaction, setUserReaction] = useState<string | null>(null);
+
+  // Approved comments are public data, so they are fetched per article rather than kept in global state
+  const [articleComments, setArticleComments] = useState<Comment[]>([]);
+  useEffect(() => {
+    if (!slug) return;
+    getArticleComments(slug).then(setArticleComments).catch(() => setArticleComments([]));
+  }, [slug]);
 
   // Comment Form State
   const [commentForm, setCommentForm] = useState({ name: '', text: '' });
   const [commentPendingMsg, setCommentPendingMsg] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
 
   // Active heading tracking for Table of Contents
   const [activeHeadingId, setActiveHeadingId] = useState<string>('');
 
+  // Print & Watermark Date/Time Tracker
+  const formatCurrentDateTime = () => {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString(language === 'am' ? 'am-ET' : 'en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    const timeStr = now.toLocaleTimeString(language === 'am' ? 'am-ET' : 'en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    return `${dateStr} • ${timeStr}`;
+  };
+
+  const [printTimestamp, setPrintTimestamp] = useState<string>(formatCurrentDateTime);
+  const [isPreparingPrint, setIsPreparingPrint] = useState(false);
+
+  // Sync print timestamp whenever print is invoked (via button or Ctrl+P)
   useEffect(() => {
-    if (article) incrementArticleView(article.id);
-  }, [article?.id]);
+    const onBeforePrint = () => {
+      setPrintTimestamp(formatCurrentDateTime());
+    };
+    window.addEventListener('beforeprint', onBeforePrint);
+    return () => window.removeEventListener('beforeprint', onBeforePrint);
+  }, [language]);
+
 
   // Handle article missing
   if (!article) {
@@ -88,10 +122,6 @@ export default function ArticleDetail() {
   // Topic details
   const topic = topics.find((t) => t.slug === article.topicSlug);
 
-  // Filter approved comments for this article + plus any new one the user submitted locally in this session
-  const articleComments = comments.filter(
-    (c) => c.articleSlug === article.slug && (c.isApproved || c.authorName === 'You')
-  );
 
   // Auto-generate headings for Table of Contents
   const headings = article.content
@@ -113,6 +143,8 @@ export default function ArticleDetail() {
       toggleReaction(slug, type, -1);
       setUserReaction(null);
     } else {
+      // Switching reactions must also release the previous one on the server
+      if (userReaction) toggleReaction(slug, userReaction, -1);
       // Change or add
       setReactions((prev) => {
         const next = { ...prev };
@@ -134,31 +166,43 @@ export default function ArticleDetail() {
     setTimeout(() => setCopiedLink(false), 2550);
   };
 
-  // Simulated PDF download (opening print utility is standard and robust)
+  // Simulated PDF download & print paper utility with timestamp and watermark
   const handlePrint = () => {
-    window.print();
+    const currentStamp = formatCurrentDateTime();
+    setPrintTimestamp(currentStamp);
+    setIsPreparingPrint(true);
+
+    const originalTitle = document.title;
+    const articleTitle = article ? getTranslatedText(article.title, article.titleAm) : 'Article';
+    document.title = `Hokhma Study - ${articleTitle}`;
+
+    setTimeout(() => {
+      window.print();
+      setIsPreparingPrint(false);
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 1000);
+    }, 150);
   };
 
   // Post Comment Handler
-  const handleCommentSubmit = (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (commentForm.name.trim() && commentForm.text.trim()) {
-      const newC: Comment = {
-        id: `c-user-${Date.now()}`,
-        articleSlug: article.slug,
-        authorName: commentForm.name.trim(),
-        text: commentForm.text.trim(),
-        timestamp: new Date().toISOString(),
-        isApproved: false // Starts pending moderation
-      };
-      
-      addComment(newC);
-      setCommentPendingMsg(true);
-      setCommentForm({ name: '', text: '' });
-      
-      setTimeout(() => {
-        setCommentPendingMsg(false);
-      }, 5000);
+      setCommentError(null);
+      try {
+        // The server stamps id, timestamp and isApproved=false; the pending notice only shows once it accepts the comment
+        await addComment({
+          articleSlug: article.slug,
+          authorName: commentForm.name.trim(),
+          text: commentForm.text.trim()
+        });
+        setCommentPendingMsg(true);
+        setCommentForm({ name: '', text: '' });
+        setTimeout(() => setCommentPendingMsg(false), 5000);
+      } catch {
+        setCommentError('Your comment could not be submitted. Please try again.');
+      }
     }
   };
 
@@ -266,11 +310,91 @@ export default function ArticleDetail() {
     .slice(0, 3);
 
   return (
-    <article id="article-page" className="animate-fade-in py-10">
-      <div className="max-w-[1140px] mx-auto px-4 md:px-6">
+    <article id="article-page" className="animate-fade-in py-10 print:py-0 print:m-0">
+      {/* PRINT WATERMARK: Logo Image from Asset Folder in Paper Body Background */}
+      <div className="paper-print-watermark hidden print:flex pointer-events-none select-none" aria-hidden="true">
+        <img
+          src={logoWatermarkImg || '/assets/logo-watermark.png'}
+          alt="Hokhma Study Watermark"
+          className="paper-print-watermark-img"
+        />
+      </div>
+
+      <div className="max-w-[1140px] mx-auto px-4 md:px-6 print:max-w-none print:px-0 print:mx-0">
         
+        {/* PRINT HEADER: Website Name, Logo & Timestamp */}
+        <div className="paper-print-header hidden print:block border-b-2 border-gold/50 pb-6 mb-8">
+          <div className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <img
+                src={logoImg || '/assets/logo.jpg'}
+                alt="Hokhma Study Logo"
+                className="w-16 h-16 rounded-full object-cover border-2 border-gold shadow-sm"
+              />
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="font-serif text-2xl font-bold tracking-tight text-navy">
+                    {t('brand.name')}
+                  </h2>
+                  <span className="text-gold font-bold text-sm">✦</span>
+                  <span className="text-xs font-sans font-semibold tracking-wider text-gold uppercase">
+                    {language === 'en' ? 'Theological Research Paper' : 'ሥነ-መለኮታዊ ጥናታዊ ጽሑፍ'}
+                  </span>
+                </div>
+                <p className="font-sans text-xs text-mediumgrey tracking-wide mt-0.5">
+                  {language === 'en'
+                    ? 'Christian Apologetics & Intellectual Rigor • Curated Ministry Corpus'
+                    : 'የክርስትና እምነት መከላከያ እና የአእምሮ ጥልቀት'}
+                </p>
+              </div>
+            </div>
+            <div className="text-right text-[11px] font-sans text-mediumgrey space-y-1">
+              <div className="font-bold text-nearblack text-xs">
+                <span className="inline-block w-2 h-2 rounded-full bg-gold mr-1.5 align-middle"></span>
+                {language === 'en' ? 'Downloaded / Printed' : 'የወረደበት / የታተመበት'}:
+              </div>
+              <div className="font-mono text-[11px] text-nearblack font-bold bg-slate-50 px-2 py-0.5 rounded border border-black/10">
+                {printTimestamp}
+              </div>
+              <div className="text-[10px] text-lightgrey font-sans">
+                {window.location.host || 'hokhmastudy.com'}
+              </div>
+            </div>
+          </div>
+
+          {/* Paper Metadata Strip */}
+          <div className="mt-4 pt-3 border-t border-black/10 flex flex-wrap justify-between items-center text-[11px] font-sans text-mediumgrey">
+            <div className="flex flex-wrap items-center gap-3">
+              {topic && (
+                <span>
+                  <strong className="text-nearblack">{language === 'en' ? 'Topic' : 'ምድብ'}:</strong>{' '}
+                  {getTranslatedText(topic.name, topic.nameAm)}
+                </span>
+              )}
+              <span className="text-lightgrey">•</span>
+              <span>
+                <strong className="text-nearblack">{language === 'en' ? 'Published' : 'የታተመበት'}:</strong>{' '}
+                {article.publishDate}
+              </span>
+              <span className="text-lightgrey">•</span>
+              <span>
+                <strong className="text-nearblack">{language === 'en' ? 'Estimated Reading' : 'የንባብ ጊዜ'}:</strong>{' '}
+                {article.readingTime} {t('common.minuteRead')}
+              </span>
+              <span className="text-lightgrey">•</span>
+              <span>
+                <strong className="text-nearblack">{language === 'en' ? 'Difficulty' : 'ደረጃ'}:</strong>{' '}
+                {article.difficulty.charAt(0).toUpperCase() + article.difficulty.slice(1)}
+              </span>
+            </div>
+            <div className="text-[10px] text-lightgrey italic font-mono truncate max-w-sm">
+              {window.location.href}
+            </div>
+          </div>
+        </div>
+
         {/* Breadcrumb & Navigation Header */}
-        <div className="flex flex-col gap-4 mb-10 pb-6 border-b border-black/5 dark:border-white/5">
+        <div className="mx-auto mb-10 flex max-w-[720px] flex-col gap-4 border-b border-black/5 pb-6 dark:border-white/5 print:mb-4 print:max-w-full print:border-none print:pb-0">
           <button
             onClick={() => {
               if (topic) {
@@ -279,14 +403,14 @@ export default function ArticleDetail() {
                 navigateTo('/topics');
               }
             }}
-            className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-mediumgrey hover:text-navy dark:hover:text-white transition-colors cursor-pointer no-print"
           >
             <ArrowLeft size={14} /> {language === 'en' ? `Back to ${topic ? getTranslatedText(topic.name, topic.nameAm) : 'topics'}` : `ወደ ${topic ? getTranslatedText(topic.name, topic.nameAm) : 'አርእስቶች'} ተመለስ`}
           </button>
 
           {/* Core Info Row */}
           <div className="space-y-3">
-            <div className="flex flex-wrap gap-2.5 items-center text-xs text-mediumgrey">
+            <div className="flex flex-wrap gap-2.5 items-center text-xs text-mediumgrey no-print">
               {topic && (
                 <button
                   onClick={() => navigateTo(`/topics/${topic.slug}`)}
@@ -307,52 +431,87 @@ export default function ArticleDetail() {
               </span>
             </div>
 
-            <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight text-nearblack dark:text-white max-w-4xl">
+            <h1 className="font-serif text-3xl md:text-4xl font-extrabold leading-tight text-nearblack dark:text-white print:text-3xl print:mb-3">
               {getTranslatedText(article.title, article.titleAm)}
             </h1>
+
+            {/* One slim toolbar replaces the old sidebar cards: print, copy link, share */}
+            <div className="no-print flex flex-wrap items-center gap-2 pt-1 font-sans">
+              <button
+                onClick={handlePrint}
+                disabled={isPreparingPrint}
+                title={language === 'en' ? 'Printed copies include the Hokhma Study watermark, website name and timestamp' : 'የታተሙ ቅጂዎች የሆክማ ጥናት ምልክት፣ የድረ-ገጹን ስም እና የጊዜ ማህተም ይይዛሉ'}
+                className="btn-press inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-black/10 px-3 py-1.5 text-sm font-semibold text-nearblack transition-colors hover:border-gold/50 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold disabled:opacity-50 dark:border-white/15 dark:text-gray-100"
+              >
+                <Printer size={15} aria-hidden="true" />
+                {isPreparingPrint ? (language === 'en' ? 'Preparing…' : 'በማዘጋጀት ላይ…') : (language === 'en' ? 'Print Or Save As PDF' : 'ያትሙ ወይም PDF ያስቀምጡ')}
+              </button>
+              <button
+                onClick={handleCopyLink}
+                className="btn-press inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-black/10 px-3 py-1.5 text-sm font-semibold text-nearblack transition-colors hover:border-gold/50 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold dark:border-white/15 dark:text-gray-100"
+              >
+                <Copy size={15} aria-hidden="true" />
+                {copiedLink ? (language === 'en' ? 'Link Copied' : 'ተቀድቷል') : (language === 'en' ? 'Copy Link' : 'አገናኙን ቅዳ')}
+              </button>
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(article.title + ' ' + window.location.href)}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={language === 'en' ? 'Share On WhatsApp' : 'በዋትስአፕ አጋራ'}
+                className="inline-flex size-9 items-center justify-center rounded-md border border-black/10 text-mediumgrey transition-colors hover:border-gold/50 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold dark:border-white/15 dark:text-gray-300"
+              >
+                <MessageSquare size={15} aria-hidden="true" />
+              </a>
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(article.title)}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={language === 'en' ? 'Share On X' : 'በX አጋራ'}
+                className="inline-flex size-9 items-center justify-center rounded-md border border-black/10 text-mediumgrey transition-colors hover:border-gold/50 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold dark:border-white/15 dark:text-gray-300"
+              >
+                <Share2 size={15} aria-hidden="true" />
+              </a>
+            </div>
           </div>
         </div>
 
         {/* Cover Image (full-width) specified max 480px tall */}
         {article.coverImage && (
-          <div className="w-full max-h-[440px] rounded-xl overflow-hidden mb-12 border border-black/5 shadow-inner">
+          <div className="w-full max-h-[440px] print:max-h-[240px] rounded-xl overflow-hidden mb-12 print:mb-6 border border-black/5 shadow-inner print:shadow-none">
             <img
               src={article.coverImage}
               alt={getTranslatedText(article.title, article.titleAm)}
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover max-h-[440px]"
+              className="w-full h-full object-cover max-h-[440px] print:max-h-[240px]"
             />
           </div>
         )}
 
-        {/* TWO-COLUMN LAYOUT DESKTOP: body (720px max) + sticky sidebar (240px) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          
-          {/* Main Article Body (8 cols, max-w-3xl) */}
-          <div className="lg:col-span-8 max-w-[720px] space-y-8">
+        {/* Single reading column: the text gets the whole page */}
+        <div className="print:block print:w-full">
+
+          <div className="mx-auto max-w-[720px] space-y-8 paper-print-content print:w-full print:max-w-full">
             
-            {/* MOBILE ONLY COLLAPSIBLE TABLE OF CONTENTS */}
-            {headings.length > 0 && (
-              <div className="lg:hidden bg-slate-50 dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5">
-                <details className="group">
-                  <summary className="font-serif font-bold text-sm text-nearblack dark:text-white cursor-pointer select-none list-none flex justify-between items-center whitespace-nowrap">
-                    <span>{language === 'en' ? 'Table of Contents' : 'የይዘት ማውጫ'}</span>
-                    <ChevronRight size={16} className="group-open:rotate-90 transition-transform text-gold" />
-                  </summary>
-                  <ul className="mt-3.5 space-y-2.5 text-xs pl-2.5 border-l border-gold/30">
-                    {headings.map((h) => (
-                      <li
-                        key={h.id}
+            {/* Contents list: collapsed by default and only shown when there are enough headings to navigate */}
+            {headings.length >= 3 && (
+              <details className="no-print group rounded-lg border border-black/10 px-4 py-3 dark:border-white/10">
+                <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-nearblack focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold dark:text-white">
+                  <span>{language === 'en' ? `Contents (${headings.length})` : `የይዘት ማውጫ (${headings.length})`}</span>
+                  <ChevronRight size={16} aria-hidden="true" className="text-gold group-open:rotate-90" />
+                </summary>
+                <ol className="mt-3 space-y-2 border-l border-gold/40 pl-4 text-sm">
+                  {headings.map((h) => (
+                    <li key={h.id} style={{ marginLeft: h.level === 3 ? '12px' : '0px' }}>
+                      <button
                         onClick={() => handleHeadingClick(h.id)}
-                        className="cursor-pointer text-nearblack/80 hover:text-gold dark:text-gray-300"
-                        style={{ paddingLeft: h.level === 3 ? '12px' : '0px' }}
+                        className={`cursor-pointer text-left hover:text-gold ${activeHeadingId === h.id ? 'font-semibold text-gold' : 'text-mediumgrey dark:text-gray-300'}`}
                       >
                         {h.text}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </div>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              </details>
             )}
 
             {/* Render article contents paragraph, header, scripture blocks */}
@@ -467,8 +626,45 @@ export default function ArticleDetail() {
               </div>
             )}
 
+            {/* PRINT-ONLY SCHOLARLY FOOTER */}
+            <div className="paper-print-footer hidden print:block mt-12 pt-5 border-t-2 border-gold/40 text-[10.5px] font-sans text-mediumgrey">
+              <div className="flex justify-between items-center pb-2">
+                <div className="font-serif text-sm font-bold text-navy">
+                  {t('brand.name')} <span className="text-gold font-sans text-xs font-normal">| {t('brand.tagline')}</span>
+                </div>
+                <div className="font-mono text-[10px] text-nearblack font-semibold">
+                  {printTimestamp}
+                </div>
+              </div>
+              <div className="flex flex-wrap justify-between items-center text-[9.5px] text-lightgrey border-t border-black/5 pt-2">
+                <span>
+                  {language === 'en'
+                    ? 'Official theological paper repository. Printed for personal study and ministry research.'
+                    : 'ይህ ጥናታዊ ጽሑፍ ለግል እና ለአካዳሚክ ምርምር የታተመ ነው።'}
+                </span>
+                <span className="font-mono">
+                  {window.location.href}
+                </span>
+              </div>
+            </div>
+
+            {/* Subject tags sit quietly after the text instead of taking sidebar space */}
+            {article.tags.length > 0 && (
+              <div className="no-print flex flex-wrap gap-2 font-sans">
+                {article.tags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => navigateTo(`/tags/${tag}`)}
+                    className="cursor-pointer rounded-md border border-black/10 px-2.5 py-1 text-sm text-mediumgrey transition-colors hover:border-gold/50 hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold dark:border-white/15 dark:text-gray-300"
+                  >
+                    #{tag}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Reactions Block row */}
-            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-8 sm:mt-10 shadow-xs leading-relaxed">
+            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-8 sm:mt-10 shadow-xs leading-relaxed no-print">
               <span className="font-serif font-semibold text-nearblack dark:text-white text-center md:text-left text-sm text-balance">Did this article support your research or address your doubts?</span>
               <div className="flex flex-wrap justify-center gap-2 w-full md:w-auto">
                 <button
@@ -508,11 +704,11 @@ export default function ArticleDetail() {
             </div>
 
             {/* Next in Path Banner if applicable */}
-            {nextArticleBanner && <div className="mt-8">{nextArticleBanner}</div>}
+            {nextArticleBanner && <div className="mt-8 no-print">{nextArticleBanner}</div>}
 
             {/* Related Articles Row */}
             {relatedArticles.length > 0 && (
-              <div className="pt-10 space-y-5">
+              <div className="pt-10 space-y-5 no-print">
                 <h3 className="font-serif text-lg font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
                   Related Readings
                 </h3>
@@ -539,7 +735,7 @@ export default function ArticleDetail() {
             )}
 
             {/* 7c. Threaded Comments Section */}
-            <div className="pt-12 border-t border-black/10 dark:border-white/10 space-y-8">
+            <div className="pt-12 border-t border-black/10 dark:border-white/10 space-y-8 no-print">
               <div className="flex items-center gap-2">
                 <MessageSquare className="text-gold" />
                 <h3 className="font-serif text-xl font-bold text-nearblack dark:text-white">
@@ -596,6 +792,12 @@ export default function ArticleDetail() {
                 </div>
               )}
 
+              {commentError && (
+                <div role="alert" className="p-4 bg-rose-950/40 border border-rose-800/40 text-rose-300 rounded-md text-xs text-center">
+                  {commentError}
+                </div>
+              )}
+
               {/* Comment success pending moderation notification */}
               {commentPendingMsg && (
                 <div className="p-4 bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 rounded-md text-xs flex items-center gap-2 animate-fade-in text-center justify-center">
@@ -639,105 +841,6 @@ export default function ArticleDetail() {
             </div>
 
           </div>
-
-          {/* STICKY SIDEBAR (Desk: 4 cols, 240px approximate as specified) */}
-          <aside className="lg:col-span-4 space-y-6">
-            
-            {/* 1. TEXT TABLE OF CONTENTS DESKTOP */}
-            {headings.length > 0 && (
-              <div className="hidden lg:block bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-3 shadow-sm sticky top-24">
-                <h4 className="font-serif text-[12px] tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
-                  Table of Contents
-                </h4>
-                <ul className="space-y-2.5 text-xs text-mediumgrey pr-2 max-h-[220px] overflow-y-auto">
-                  {headings.map((h, idx) => (
-                    <li
-                      key={h.id}
-                      onClick={() => handleHeadingClick(h.id)}
-                      className={`cursor-pointer transition-colors hover:text-gold flex gap-1 ${
-                        activeHeadingId === h.id
-                          ? 'text-gold font-semibold underline decoration-solid offset-2'
-                          : ''
-                      }`}
-                      style={{ paddingLeft: h.level === 3 ? '12px' : '0px' }}
-                    >
-                      <span className="text-gold font-semibold font-mono">{idx + 1}.</span>
-                      <span className="truncate">{h.text}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Part of Path helper */}
-            {/* {pathCardElement} */}
-
-            {/* Share and Print Panel */}
-            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-4 shadow-sm text-xs">
-              <div className="space-y-2.5">
-                {/* Print button mapped as PDF simulation */}
-                <button
-                  onClick={handlePrint}
-                  className="w-full py-2 bg-offwhite dark:bg-slate-800 hover:bg-gold/10 text-nearblack dark:text-white font-semibold rounded flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-black/5"
-                >
-                  <Printer size={13} className="text-gold" />
-                  <span>Download / Print Paper</span>
-                </button>
-
-                {/* Copy Link */}
-                <button
-                  onClick={handleCopyLink}
-                  className="w-full py-2 bg-offwhite dark:bg-slate-800 hover:bg-gold/10 text-nearblack dark:text-white font-semibold rounded flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-black/5"
-                >
-                  <Copy size={13} className="text-gold" />
-                  <span>{copiedLink ? 'Link Copied!' : 'Copy Paper Link'}</span>
-                </button>
-              </div>
-
-              {/* Dedicated social icons */}
-              <div className="pt-2 flex justify-center gap-4 text-mediumgrey">
-                <a
-                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(article.title)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-gold p-1"
-                  title="Share on Twitter/X"
-                >
-                  <Share2 size={15} />
-                </a>
-                <a
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(article.title + ' ' + window.location.href)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-gold p-1"
-                  title="Share on WhatsApp"
-                >
-                  <MessageSquare size={15} />
-                </a>
-              </div>
-            </div>
-
-            {/* TAGS PILLS */}
-            {article.tags.length > 0 && (
-              <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-5 space-y-3 shadow-sm text-xs">
-                <h4 className="font-serif text-[11px] tracking-wider font-bold text-nearblack dark:text-white border-b border-black/5 pb-2">
-                  Paper Subject Tags
-                </h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {article.tags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() => navigateTo(`/tags/${tag}`)}
-                      className="text-[10px] bg-offwhite dark:bg-slate-800 text-mediumgrey dark:text-gray-300 px-2.5 py-1 rounded border border-black/5 hover:border-gold/30"
-                    >
-                      #{tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-          </aside>
 
         </div>
 

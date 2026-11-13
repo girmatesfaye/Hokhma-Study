@@ -7,12 +7,6 @@ export const getPaths = async (): Promise<LearningPath[]> => {
   return response.data;
 };
 
-// Retrieve a single learning path by its URL slug
-export const getPathBySlug = async (slug: string): Promise<LearningPath> => {
-  const response = await api.get<LearningPath>(`/paths/${slug}`);
-  return response.data;
-};
-
 // Create a new learning path (admin only)
 export const createPath = async (path: Partial<LearningPath>): Promise<LearningPath> => {
   const response = await api.post<LearningPath>('/paths', path);

@@ -184,3 +184,133 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   Scholarly Article Print & Watermark Stylesheet
+   ========================================================================== */
+.paper-print-watermark,
+.paper-print-header,
+.paper-print-footer {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: auto;
+    margin: 16mm 15mm 16mm 15mm;
+  }
+
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide interactive site chrome and non-printable elements */
+  nav,
+  footer,
+  #main-navbar,
+  #app-footer,
+  #mobile-drawer,
+  .no-print,
+  .print-hidden,
+  button,
+  form,
+  aside {
+    display: none !important;
+  }
+
+  /* Pure paper canvas */
+  html,
+  body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    font-size: 11pt !important;
+    line-height: 1.65 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  #root,
+  main,
+  #article-page {
+    background: #ffffff !important;
+    color: #111827 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Multi-page repeated body watermark using fixed position */
+  .paper-print-watermark {
+    display: flex !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+    opacity: 0.075 !important;
+  }
+
+  .paper-print-watermark img,
+  .paper-print-watermark-img {
+    width: 480px !important;
+    max-width: 65% !important;
+    max-height: 65% !important;
+    object-fit: contain !important;
+  }
+
+  .paper-print-header {
+    display: block !important;
+  }
+
+  .paper-print-footer {
+    display: block !important;
+  }
+
+  .paper-print-content {
+    position: relative !important;
+    z-index: 1 !important;
+    background: transparent !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Academic paper typography */
+  h1, h2, h3, h4, h5, h6 {
+    color: #0f172a !important;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  blockquote,
+  .scripture-block,
+  p {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  ul, ol {
+    break-inside: auto;
+  }
+
+  li {
+    break-inside: avoid;
+  }
+}
+

@@ -6,7 +6,6 @@ export const INITIAL_TOPICS = [
     nameAm: 'ፍልስፍና እና አመክንዮ',
     description: 'Classical arguments for God’s existence, objective morality, epistemology, and the nature of transcendent truth.',
     descriptionAm: 'ስለ እግዚአብሔር መኖር የሚቀርቡ ጥንታዊ ክርክሮች፣ ፍጹም ስነ-ምግባር፣ የእውቀት ፍልስፍና እና የላቀ እውነት ባህሪ።',
-    articleCount: 2,
     icon: 'Compass',
   },
   {
@@ -15,7 +14,6 @@ export const INITIAL_TOPICS = [
     nameAm: 'መከራ እና ክፋት',
     description: 'Intellectual and pastoral responses to the problem of pain, tragedy, natural disasters, and the goodness of God.',
     descriptionAm: 'ለስቃይ፣ ለጭንቀት፣ ለተፈጥሮ አደጋዎች እና ለእግዚአብሔር ቸርነት የሚቀርቡ አእምሯዊና እረኛዊ ምላሾች።',
-    articleCount: 1,
     icon: 'ShieldAlert',
   },
   {
@@ -24,7 +22,6 @@ export const INITIAL_TOPICS = [
     nameAm: 'ታሪካዊው ኢየሱስ',
     description: 'Investigating the reliability of the Gospels, historical evidence for the resurrection, and ancient testimonies.',
     descriptionAm: 'የወንጌላትን ተዓማኒነት፣ ለትንሣኤው የሚሆኑ ታሪካዊ ማስረጃዎችን እና ጥንታዊ ምስክርነቶችን መመርመር።',
-    articleCount: 2,
     icon: 'BookOpen',
   },
   {
@@ -33,7 +30,6 @@ export const INITIAL_TOPICS = [
     nameAm: 'ሳይንስ እና ፍጥረት',
     description: 'Cosmic fine-tuning, biological complexity, origins of life, and the profound harmony between modern science and theism.',
     descriptionAm: 'የኮስሚክ ስልታዊ ቅንጅት፣ ባዮሎጂካዊ ውስብስብነት፣ የህይወት አመጣጥ እና በዘመናዊ ሳይንስና በእምነት መካከል ያለው አስደናቂ ስምምነት።',
-    articleCount: 1,
     icon: 'Atom',
   },
 ];
@@ -53,10 +49,6 @@ export const INITIAL_ARTICLES = [
     featured: true,
     isPublished: true,
     commentsAllowed: true,
-    partInPath: {
-      pathSlug: 'faith-and-reason',
-      position: 4,
-    },
     views: 1240,
     seoTitle: 'Is the Resurrection of Jesus Historical? | Hokhma Study',
     seoDescription: 'Explore the minimal facts argument defending the resurrection of Jesus Christ with historical and academic rigor.',
@@ -130,10 +122,6 @@ export const INITIAL_ARTICLES = [
     featured: false,
     isPublished: true,
     commentsAllowed: true,
-    partInPath: {
-      pathSlug: 'navigating-doubt',
-      position: 2,
-    },
     views: 890,
     seoTitle: 'Answering the Problem of Evil and Pain | Hokhma Study',
     seoDescription: 'A philosophical and theological approach to why a loving God allows suffering, pain, and free agency in a broken world.',
@@ -188,10 +176,6 @@ export const INITIAL_ARTICLES = [
     featured: false,
     isPublished: true,
     commentsAllowed: true,
-    partInPath: {
-      pathSlug: 'faith-and-reason',
-      position: 1,
-    },
     views: 1530,
     seoTitle: 'Cosmic Fine-Tuning & the existence of God | Hokhma Study',
     seoDescription: 'Learn about physical constants, gravity, and the cosmological constant that point towards intelligent design in our universe.',
@@ -242,10 +226,6 @@ export const INITIAL_ARTICLES = [
     featured: false,
     isPublished: true,
     commentsAllowed: true,
-    partInPath: {
-      pathSlug: 'faith-and-reason',
-      position: 2,
-    },
     views: 740,
     seoTitle: 'The Moral Argument for God | Hokhma Study',
     seoDescription: 'Why objective moral values require a transcendent source. A survey of the moral argument for Christian apologetics.',
@@ -291,10 +271,6 @@ export const INITIAL_ARTICLES = [
     featured: false,
     isPublished: true,
     commentsAllowed: true,
-    partInPath: {
-      pathSlug: 'faith-and-reason',
-      position: 3,
-    },
     views: 1100,
     seoTitle: 'Are the Gospels Reliable Historical Accounts? | Hokhma Study',
     seoDescription: 'A thorough analysis of manuscript evidence, archaeological matches, and early eyewitness dating of the biblical Gospels.',
@@ -345,10 +321,6 @@ export const INITIAL_ARTICLES = [
     featured: false,
     isPublished: true,
     commentsAllowed: true,
-    partInPath: {
-      pathSlug: 'navigating-doubt',
-      position: 3,
-    },
     views: 620,
     seoTitle: 'Grace as a Rational and Beautiful Necessity | Hokhma Study',
     seoDescription: 'Why the concept of unconditional divine grace satisfies the human longing for significance, logic, and spiritual rest.',
@@ -391,7 +363,6 @@ export const INITIAL_QUESTIONS = [
     tags: ['pain', 'theodicy', 'sovereignty'],
     articleSlug: 'problem-of-pain',
     articleTitle: 'A Theological Defense in the Shadow of Suffering',
-    commonScore: 98,
     addedDate: '2026-06-18',
   },
   {
@@ -401,7 +372,6 @@ export const INITIAL_QUESTIONS = [
     tags: ['evidence', 'history', 'resurrection'],
     articleSlug: 'defending-the-resurrection',
     articleTitle: 'The Resurrection as Historical Fact',
-    commonScore: 95,
     addedDate: '2026-06-14',
   },
   {
@@ -411,7 +381,6 @@ export const INITIAL_QUESTIONS = [
     tags: ['universe', 'creation', 'astrophysics'],
     articleSlug: 'cosmological-fine-tuning',
     articleTitle: 'Cosmic Fine-Tuning: The Witness of the Stars',
-    commonScore: 88,
     addedDate: '2026-06-05',
   },
   {
@@ -421,7 +390,6 @@ export const INITIAL_QUESTIONS = [
     tags: ['ethics', 'morality', 'secularism'],
     articleSlug: 'the-moral-argument',
     articleTitle: 'Moral Realism and the Divine Anchor',
-    commonScore: 85,
     addedDate: '2026-06-01',
   },
   {
@@ -431,7 +399,6 @@ export const INITIAL_QUESTIONS = [
     tags: ['manuscripts', 'integrity', 'gospels'],
     articleSlug: 'reliability-of-gospels',
     articleTitle: 'The Textual Integrity of the New Testament',
-    commonScore: 90,
     addedDate: '2026-05-25',
   },
   {
@@ -441,7 +408,6 @@ export const INITIAL_QUESTIONS = [
     tags: ['grace', 'salvation', 'identity'],
     articleSlug: 'meaning-of-grace',
     articleTitle: 'Grace as an Aesthetic and Rational Necessity',
-    commonScore: 72,
     addedDate: '2026-05-12',
   }
 ];

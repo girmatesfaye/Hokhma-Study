@@ -8,7 +8,7 @@ import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import DifficultyBadge from '../components/DifficultyBadge';
 import { Difficulty } from '../types';
-import { ArrowLeft, BookOpen, Clock, ChevronRight, Hash } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, ChevronRight } from 'lucide-react';
 
 export default function TopicDetail() {
   const { currentRoute, topics, articles, navigateTo } = useApp();
@@ -40,14 +40,6 @@ export default function TopicDetail() {
     if (difficultyFilter === 'all') return true;
     return art.difficulty === difficultyFilter;
   });
-
-  // Calculate all distinct tags for this topic
-  const tagSet = new Set<string>();
-  topicArticles.forEach((art) => art.tags.forEach((t) => tagSet.add(t)));
-  const tagCloud = Array.from(tagSet);
-
-  // Get related topics (other topics)
-  const relatedTopics = topics.filter((t) => t.slug !== topic.slug);
 
   const filters: { label: string; value: Difficulty | 'all' }[] = [
     { label: getTranslatedText('All Articles', 'ሁሉም ጽሑፎች'), value: 'all' },
@@ -84,11 +76,8 @@ export default function TopicDetail() {
         </p>
       </div>
 
-      {/* Two-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        
-        {/* Main Area (8 cols) */}
-        <div className="lg:col-span-8 space-y-8">
+      {/* Article list uses the full page width */}
+      <div className="space-y-8">
           
           {/* Difficulty Filter Bar */}
           <div className="flex flex-wrap items-center gap-2 border-b border-black/5 dark:border-white/5 pb-4">
@@ -110,7 +99,7 @@ export default function TopicDetail() {
 
           {/* Article List Grid (2-col desktop, 1-col mobile as specified) */}
           {filteredArticles.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredArticles.map((art) => (
                 <div
                   key={art.id}
@@ -164,57 +153,6 @@ export default function TopicDetail() {
               <p className="text-xs text-mediumgrey max-w-xs leading-relaxed">{getTranslatedText("Try adjusting your filters or browsing other topics in Dr. Sterling's archive.", 'የተባዛ ማጣሪያዎችዎን በመቀየር ወይም ሌሎች የአፖሎጂቲክስ ጽሑፎችን በመመልከት ይሞክሩ።')}</p>
             </div>
           )}
-
-        </div>
-
-        {/* Sidebar (4 cols - Desktop only, screen hidden on mobile as specified) */}
-        <aside className="hidden lg:col-span-4 lg:block space-y-8 font-serif">
-          
-          {/* Related topics */}
-          <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-6 space-y-4 shadow-sm">
-            <h4 className="font-serif text-sm font-bold text-nearblack dark:text-white border-b border-black/5 dark:border-white/5 pb-2">
-              {getTranslatedText('Related Fields', 'ተዛማጅ አውዶች')}
-            </h4>
-            <div className="space-y-3">
-              {relatedTopics.map((rel) => (
-                <div
-                  key={rel.slug}
-                  onClick={() => navigateTo(`/topics/${rel.slug}`)}
-                  className="flex justify-between items-center text-sm p-1 cursor-pointer group hover:text-gold transition-colors"
-                >
-                  <span className="text-nearblack/85 dark:text-gray-300 font-medium group-hover:text-gold">
-                    {getTranslatedText(rel.name, rel.nameAm)}
-                  </span>
-                  <span className="text-xs bg-black/5 dark:bg-white/5 hover:bg-gold/20 px-2.5 py-0.5 rounded text-mediumgrey font-sans">
-                    {rel.articleCount}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Tag cloud */}
-          {tagCloud.length > 0 && (
-            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-lg p-6 space-y-4 shadow-sm">
-              <h4 className="font-serif text-sm font-bold text-nearblack dark:text-white border-b border-black/5 dark:border-white/5 pb-2">
-                {getTranslatedText('Topic Tags', 'የርዕሰ ጉዳይ መለዮዎች')}
-              </h4>
-              <div className="flex flex-wrap gap-2 font-sans">
-                {tagCloud.map((tag) => (
-                  <button
-                    key={tag}
-                    onClick={() => navigateTo(`/tags/${tag}`)}
-                    className="btn-press inline-flex items-center gap-1 text-xs bg-offwhite hover:bg-gold/10 dark:bg-slate-800 dark:hover:bg-slate-700 text-mediumgrey dark:text-gray-200 px-3 py-1 rounded-md border border-black/5 dark:border-white/5 group transition-colors cursor-pointer"
-                  >
-                    <Hash size={10} className="text-gold" />
-                    <span>{tag}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-        </aside>
 
       </div>
 

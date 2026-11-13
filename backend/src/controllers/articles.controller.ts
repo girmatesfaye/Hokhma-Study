@@ -1,16 +1,18 @@
 import { Request, Response } from 'express';
 import { Article } from '../models/Article.js';
 import { Comment } from '../models/Comment.js';
-import { Topic } from '../models/Topic.js';
+import { LearningPath } from '../models/LearningPath.js';
+import { derivePathFields } from '../utils/pathSteps.js';
+import { AuthRequest } from '../middleware/auth.middleware.js';
 
 // Retrieve all articles with optional topic, difficulty, language, and featured filters
-export const getAllArticles = async (req: Request, res: Response): Promise<void> => {
+export const getAllArticles = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { topic, difficulty, lang, featured, all } = req.query;
     const filter: Record<string, any> = {};
 
-    // Only filter by published status if not explicitly requesting all articles (admin view)
-    if (all !== 'true') {
+    // Drafts are only returned when an authenticated admin explicitly asks for them
+    if (!(all === 'true' && req.admin)) {
       filter.isPublished = true;
     }
 
@@ -43,13 +45,13 @@ export const getAllArticles = async (req: Request, res: Response): Promise<void>
 };
 
 // Retrieve a single article by its unique URL slug
-export const getArticleBySlug = async (req: Request, res: Response): Promise<void> => {
+export const getArticleBySlug = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { slug } = req.params;
     const article = await Article.findOne({ slug });
 
-    // Return 404 if article not found
-    if (!article) {
+    // Return 404 if article not found, or if it is an unpublished draft and the caller is not an admin
+    if (!article || (!article.isPublished && !req.admin)) {
       res.status(404).json({ message: 'Article not found.' });
       return;
     }
@@ -127,12 +129,6 @@ export const createArticle = async (req: Request, res: Response): Promise<void> 
     }
 
     const newArticle = await Article.create(articleData);
-
-    // Increment topic article count
-    if (newArticle.topicSlug) {
-      await Topic.updateOne({ slug: newArticle.topicSlug }, { $inc: { articleCount: 1 } });
-    }
-
     res.status(201).json(newArticle);
   } catch (error) {
     const err = error as Error;
@@ -171,9 +167,13 @@ export const deleteArticle = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // Decrement topic article count
-    if (deleted.topicSlug) {
-      await Topic.updateOne({ slug: deleted.topicSlug }, { $inc: { articleCount: -1 } });
+
+    // Remove the deleted article from any learning path that used it as a step
+    const affectedPaths = await LearningPath.find({ articleSlugs: deleted.slug });
+    for (const path of affectedPaths) {
+      const remainingSteps = path.steps.filter((step) => step.articleSlug !== deleted.slug);
+      Object.assign(path, await derivePathFields(remainingSteps));
+      await path.save();
     }
 
     res.status(200).json({ message: 'Article deleted successfully.' });

@@ -41,10 +41,6 @@ export interface IArticle extends Document {
   featured: boolean;
   isPublished: boolean;
   commentsAllowed: boolean;
-  partInPath?: {
-    pathSlug: string;
-    position: number;
-  };
   views: number;
   reactions: IReactions;
   coverImage?: string;
@@ -115,10 +111,6 @@ const ArticleSchema = new Schema<IArticle>(
     featured: { type: Boolean, default: false, index: true },
     isPublished: { type: Boolean, default: true, index: true },
     commentsAllowed: { type: Boolean, default: true },
-    partInPath: {
-      pathSlug: { type: String },
-      position: { type: Number }
-    },
     views: { type: Number, default: 0 },
     reactions: {
       type: ReactionsSchema,

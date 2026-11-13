@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useApp } from '../../context/AppContext';
 import {
   TrendingUp,
   Users,
@@ -19,6 +20,12 @@ type RangePreset = 'today' | '7days' | '30days' | 'custom';
 
 export default function AdminStatistics() {
   const { getTranslatedText } = useLanguage();
+  const { articles } = useApp();
+  // Article titles are shown instead of raw slugs in the popular articles list
+  const titleForSlug = (slug: string) => {
+    const article = articles.find((a) => a.slug === slug);
+    return article ? getTranslatedText(article.title, article.titleAm) : slug;
+  };
   // State tracking active date preset
   const [rangePreset, setRangePreset] = useState<RangePreset>('30days');
   // Custom date bounds states
@@ -83,10 +90,10 @@ export default function AdminStatistics() {
 
   // Preset button options with Title Case labels
   const presets: { id: RangePreset; label: string }[] = [
-    { id: 'today', label: 'Today' },
-    { id: '7days', label: 'Last 7 Days' },
-    { id: '30days', label: 'Last 30 Days' },
-    { id: 'custom', label: 'Custom Range' },
+    { id: 'today', label: getTranslatedText('Today', 'ዛሬ') },
+    { id: '7days', label: getTranslatedText('Last 7 Days', 'ያለፉት 7 ቀናት') },
+    { id: '30days', label: getTranslatedText('Last 30 Days', 'ያለፉት 30 ቀናት') },
+    { id: 'custom', label: getTranslatedText('Custom Range', 'የራስ ክልል') },
   ];
 
   // Calculate highest daily value for dynamic chart scaling
@@ -100,25 +107,25 @@ export default function AdminStatistics() {
       {/* Header and Filter Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-black/5 dark:border-white/5">
         <div>
-          <h2 className="font-serif text-2xl font-bold text-nearblack dark:text-white flex items-center gap-2">
-            <TrendingUp size={22} className="text-gold" />
-            <span>Website Visit Statistics</span>
+          <h2 className="font-serif text-xl font-semibold text-nearblack dark:text-white flex items-center gap-2">
+            <TrendingUp size={20} className="text-gold" />
+            <span>{getTranslatedText('Website Visit Statistics', 'የድረ-ገጽ ጉብኝት ስታቲስቲክስ')}</span>
           </h2>
-          <p className="text-xs text-mediumgrey mt-1">
-            Anonymous Traffic Metrics · 90-Day Retention Window · UTC Reporting
+          <p className="text-sm text-mediumgrey mt-1">
+            {getTranslatedText('Visits are anonymous, kept for 90 days, and reported in UTC.', 'ጉብኝቶች ማንነት የማይታወቁ ናቸው፣ ለ90 ቀናት ይቆያሉ፣ በUTC ይዘገባሉ።')}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Preset Chips */}
-          <div className="inline-flex rounded-lg border border-black/10 dark:border-white/10 p-1 bg-white dark:bg-slate-900 shadow-2xs">
+          <div className="inline-flex rounded-lg border border-black/10 dark:border-white/10 p-1 bg-white dark:bg-slate-900">
             {presets.map((p) => (
               <button
                 key={p.id}
                 onClick={() => setRangePreset(p.id)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors cursor-pointer ${
                   rangePreset === p.id
-                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950 shadow-xs'
+                    ? 'bg-navy text-white dark:bg-gold dark:text-slate-950'
                     : 'text-mediumgrey hover:text-nearblack dark:hover:text-white'
                 }`}
               >
@@ -132,7 +139,7 @@ export default function AdminStatistics() {
             onClick={fetchReport}
             disabled={isLoading}
             className="p-2 rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-mediumgrey hover:text-nearblack dark:hover:text-white transition-colors cursor-pointer"
-            title="Refresh Statistics"
+            title={getTranslatedText('Refresh Statistics', 'ስታቲስቲክስን አድስ')}
           >
             <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
           </button>
@@ -143,28 +150,28 @@ export default function AdminStatistics() {
       {rangePreset === 'custom' && (
         <div className="p-4 bg-slate-50 dark:bg-slate-900/60 border border-black/5 dark:border-white/5 rounded-xl flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-mediumgrey">From:</span>
+            <span className="text-sm font-semibold text-mediumgrey">{getTranslatedText('From:', 'ከ፦')}</span>
             <input
               type="date"
               value={customFrom}
               onChange={(e) => setCustomFrom(e.target.value)}
-              className="px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-black/10 dark:border-white/10 rounded-lg text-nearblack dark:text-white"
+              className="px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-black/10 dark:border-white/10 rounded-lg text-nearblack dark:text-white"
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-mediumgrey">To:</span>
+            <span className="text-sm font-semibold text-mediumgrey">{getTranslatedText('To:', 'እስከ፦')}</span>
             <input
               type="date"
               value={customTo}
               onChange={(e) => setCustomTo(e.target.value)}
-              className="px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-black/10 dark:border-white/10 rounded-lg text-nearblack dark:text-white"
+              className="px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border border-black/10 dark:border-white/10 rounded-lg text-nearblack dark:text-white"
             />
           </div>
           <button
             onClick={fetchReport}
-            className="px-3 py-1.5 bg-navy text-white dark:bg-gold dark:text-slate-950 text-xs font-semibold rounded-lg cursor-pointer"
+            className="px-3 py-1.5 bg-navy text-white dark:bg-gold dark:text-slate-950 text-sm font-semibold rounded-lg cursor-pointer"
           >
-            Apply Range
+            {getTranslatedText('Apply Range', 'ክልሉን ተግብር')}
           </button>
         </div>
       )}
@@ -188,13 +195,13 @@ export default function AdminStatistics() {
         <div className="p-6 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 rounded-xl flex items-start gap-3 text-red-700 dark:text-red-300">
           <AlertCircle size={20} className="shrink-0 mt-0.5" />
           <div>
-            <h4 className="font-semibold text-sm">Failed to Load Statistics</h4>
-            <p className="text-xs mt-1">{error}</p>
+            <h4 className="font-semibold text-sm">{getTranslatedText('Failed To Load Statistics', 'ስታቲስቲክስን መጫን አልተቻለም')}</h4>
+            <p className="text-sm mt-1">{error}</p>
             <button
               onClick={fetchReport}
-              className="mt-3 px-3 py-1 bg-red-100 dark:bg-red-900/50 hover:bg-red-200 rounded text-xs font-semibold transition-colors cursor-pointer"
+              className="mt-3 px-3 py-1 bg-red-100 dark:bg-red-900/50 hover:bg-red-200 rounded text-sm font-semibold transition-colors cursor-pointer"
             >
-              Retry Loading
+              {getTranslatedText('Retry Loading', 'እንደገና ጫን')}
             </button>
           </div>
         </div>
@@ -204,67 +211,67 @@ export default function AdminStatistics() {
           {/* Summary Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {/* 1. Page Views Card */}
-            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 shadow-2xs space-y-2">
+            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 space-y-2">
               <div className="flex items-center justify-between text-mediumgrey">
-                <span className="text-xs font-semibold tracking-wide">Page Views</span>
+                <span className="text-sm font-semibold">{getTranslatedText('Page Views', 'የገጽ እይታዎች')}</span>
                 <Eye size={17} className="text-gold" />
               </div>
-              <div className="text-2xl font-bold font-serif text-nearblack dark:text-white">
+              <div className="text-2xl font-semibold font-serif tabular-nums text-nearblack dark:text-white">
                 {report.summary.pageViews.toLocaleString()}
               </div>
-              <p className="text-[11px] text-mediumgrey">
-                Total accepted page views in period
+              <p className="text-xs text-mediumgrey">
+                {getTranslatedText('Total Page Views In This Period', 'በዚህ ጊዜ ውስጥ ጠቅላላ የገጽ እይታዎች')}
               </p>
             </div>
 
             {/* 2. Visits Card */}
-            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 shadow-2xs space-y-2">
+            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 space-y-2">
               <div className="flex items-center justify-between text-mediumgrey">
-                <span className="text-xs font-semibold tracking-wide">Visits</span>
+                <span className="text-sm font-semibold">{getTranslatedText('Visits', 'ጉብኝቶች')}</span>
                 <Clock size={17} className="text-gold" />
               </div>
-              <div className="text-2xl font-bold font-serif text-nearblack dark:text-white">
+              <div className="text-2xl font-semibold font-serif tabular-nums text-nearblack dark:text-white">
                 {report.summary.visits.toLocaleString()}
               </div>
-              <p className="text-[11px] text-mediumgrey">
-                Distinct sessions (30-minute inactivity boundary)
+              <p className="text-xs text-mediumgrey">
+                {getTranslatedText('Separate Visits, Ending After 30 Minutes Of Inactivity', 'ከ30 ደቂቃ እንቅስቃሴ-አልባነት በኋላ የሚያበቁ የተለዩ ጉብኝቶች')}
               </p>
             </div>
 
             {/* 3. Unique Visitors Card */}
-            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 shadow-2xs space-y-2">
+            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 space-y-2">
               <div className="flex items-center justify-between text-mediumgrey">
-                <span className="text-xs font-semibold tracking-wide">Unique Visitors</span>
+                <span className="text-sm font-semibold">{getTranslatedText('Unique Visitors', 'ልዩ ጎብኚዎች')}</span>
                 <Users size={17} className="text-gold" />
               </div>
-              <div className="text-2xl font-bold font-serif text-nearblack dark:text-white">
+              <div className="text-2xl font-semibold font-serif tabular-nums text-nearblack dark:text-white">
                 {report.summary.uniqueVisitors.toLocaleString()}
               </div>
-              <p className="text-[11px] text-mediumgrey">
-                Estimated distinct consenting browser devices
+              <p className="text-xs text-mediumgrey">
+                {getTranslatedText('Estimated Number Of Different Browsers', 'የተለያዩ አሳሾች ግምታዊ ቁጥር')}
               </p>
             </div>
           </div>
 
           {/* Daily Traffic Visual Chart */}
-          <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 shadow-2xs space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-6 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h3 className="font-serif text-base font-bold text-nearblack dark:text-white flex items-center gap-2">
                   <BarChart3 size={17} className="text-gold" />
-                  <span>Daily Traffic</span>
+                  <span>{getTranslatedText('Daily Traffic', 'ዕለታዊ ጉብኝት')}</span>
                 </h3>
-                <p className="text-xs text-mediumgrey">Daily page views and visits in UTC</p>
+                <p className="text-sm text-mediumgrey">{getTranslatedText('Daily Page Views And Visits In UTC', 'ዕለታዊ የገጽ እይታዎችና ጉብኝቶች በUTC')}</p>
               </div>
               {/* Chart Legend */}
-              <div className="flex items-center gap-4 text-xs font-medium text-mediumgrey">
+              <div className="flex items-center gap-4 text-sm font-medium text-mediumgrey">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-sm bg-navy dark:bg-gold" />
-                  <span>Page Views</span>
+                  <span>{getTranslatedText('Page Views', 'የገጽ እይታዎች')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-sm bg-slate-400 dark:bg-slate-600" />
-                  <span>Visits</span>
+                  <span>{getTranslatedText('Visits', 'ጉብኝቶች')}</span>
                 </div>
               </div>
             </div>
@@ -287,9 +294,9 @@ export default function AdminStatistics() {
                       >
                         {/* Hover Tooltip Box */}
                         {isHovered && (
-                          <div className="absolute -top-14 z-20 bg-slate-900 text-white dark:bg-white dark:text-slate-950 text-[10px] px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap pointer-events-none animate-fade-in font-mono">
+                          <div className="absolute -top-14 z-20 bg-slate-900 text-white dark:bg-white dark:text-slate-950 text-xs px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap pointer-events-none animate-fade-in tabular-nums">
                             <p className="font-bold">{day.date}</p>
-                            <p className="text-gold font-sans">{day.pageViews} Page Views · {day.visits} Visits</p>
+                            <p className="text-gold font-sans">{day.pageViews} {getTranslatedText('Page Views', 'የገጽ እይታዎች')} · {day.visits} {getTranslatedText('Visits', 'ጉብኝቶች')}</p>
                           </div>
                         )}
 
@@ -298,12 +305,12 @@ export default function AdminStatistics() {
                           {/* Page Views Bar */}
                           <div
                             style={{ height: `${viewHeightPercent}%` }}
-                            className="w-1/2 bg-navy dark:bg-gold rounded-t-sm transition-all duration-300 group-hover:opacity-80"
+                            className="w-1/2 bg-navy dark:bg-gold rounded-t-sm group-hover:opacity-80"
                           />
                           {/* Visits Bar */}
                           <div
                             style={{ height: `${visitHeightPercent}%` }}
-                            className="w-1/2 bg-slate-300 dark:bg-slate-700 rounded-t-sm transition-all duration-300 group-hover:opacity-80"
+                            className="w-1/2 bg-slate-300 dark:bg-slate-700 rounded-t-sm group-hover:opacity-80"
                           />
                         </div>
                       </div>
@@ -312,31 +319,31 @@ export default function AdminStatistics() {
                 </div>
 
                 {/* Date Axis Snippet */}
-                <div className="flex justify-between text-[10px] font-mono text-mediumgrey pt-1">
+                <div className="flex justify-between text-xs tabular-nums text-mediumgrey pt-1">
                   <span>{report.dailyTraffic[0]?.date}</span>
                   <span>{report.dailyTraffic[Math.floor(report.dailyTraffic.length / 2)]?.date}</span>
                   <span>{report.dailyTraffic[report.dailyTraffic.length - 1]?.date}</span>
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-mediumgrey py-6 text-center">No traffic recorded for this period.</p>
+              <p className="text-sm text-mediumgrey py-6 text-center">{getTranslatedText('No traffic recorded for this period.', 'በዚህ ጊዜ ምንም ጉብኝት አልተመዘገበም።')}</p>
             )}
           </div>
 
           {/* Breakdown Tables (Popular Pages, Articles, Traffic Sources) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* 1. Popular Pages Table */}
-            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 shadow-2xs space-y-4 flex flex-col justify-between">
+            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 space-y-4 flex flex-col justify-between">
               <div>
                 <h4 className="font-serif text-sm font-bold text-nearblack dark:text-white flex items-center gap-2 mb-3">
                   <Layers size={16} className="text-gold" />
-                  <span>Popular Pages</span>
+                  <span>{getTranslatedText('Popular Pages', 'ተወዳጅ ገጾች')}</span>
                 </h4>
                 {report.popularPages.length > 0 ? (
-                  <div className="divide-y divide-black/5 dark:divide-white/5 text-xs">
+                  <div className="divide-y divide-black/5 dark:divide-white/5 text-sm">
                     {report.popularPages.map((page) => (
                       <div key={page.path} className="py-2.5 flex items-center justify-between gap-3">
-                        <span className="font-mono text-[11px] truncate text-nearblack dark:text-gray-200" title={page.path}>
+                        <span className="tabular-nums text-xs truncate text-nearblack dark:text-gray-200" title={page.path}>
                           {page.path}
                         </span>
                         <span className="font-semibold text-gold shrink-0">
@@ -346,24 +353,24 @@ export default function AdminStatistics() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-mediumgrey py-4 text-center">No page traffic recorded.</p>
+                  <p className="text-sm text-mediumgrey py-4 text-center">{getTranslatedText('No page traffic recorded.', 'ምንም የገጽ ጉብኝት አልተመዘገበም።')}</p>
                 )}
               </div>
             </div>
 
             {/* 2. Popular Articles Table */}
-            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 shadow-2xs space-y-4 flex flex-col justify-between">
+            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 space-y-4 flex flex-col justify-between">
               <div>
                 <h4 className="font-serif text-sm font-bold text-nearblack dark:text-white flex items-center gap-2 mb-3">
                   <FileText size={16} className="text-gold" />
-                  <span>Popular Articles</span>
+                  <span>{getTranslatedText('Popular Articles', 'ተወዳጅ ጽሑፎች')}</span>
                 </h4>
                 {report.popularArticles.length > 0 ? (
-                  <div className="divide-y divide-black/5 dark:divide-white/5 text-xs">
+                  <div className="divide-y divide-black/5 dark:divide-white/5 text-sm">
                     {report.popularArticles.map((art) => (
                       <div key={art.slug} className="py-2.5 flex items-center justify-between gap-3">
-                        <span className="font-serif text-xs truncate text-nearblack dark:text-gray-200" title={art.slug}>
-                          {art.slug}
+                        <span className="font-serif text-sm truncate text-nearblack dark:text-gray-200" title={art.slug}>
+                          {titleForSlug(art.slug)}
                         </span>
                         <span className="font-semibold text-gold shrink-0">
                           {art.views.toLocaleString()}
@@ -372,24 +379,24 @@ export default function AdminStatistics() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-mediumgrey py-4 text-center">No article readings recorded.</p>
+                  <p className="text-sm text-mediumgrey py-4 text-center">{getTranslatedText('No article readings recorded.', 'ምንም የጽሑፍ ንባብ አልተመዘገበም።')}</p>
                 )}
               </div>
             </div>
 
             {/* 3. Traffic Sources Table */}
-            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 shadow-2xs space-y-4 flex flex-col justify-between">
+            <div className="bg-white dark:bg-slate-900 border border-black/5 dark:border-white/5 rounded-xl p-5 space-y-4 flex flex-col justify-between">
               <div>
                 <h4 className="font-serif text-sm font-bold text-nearblack dark:text-white flex items-center gap-2 mb-3">
                   <Globe size={16} className="text-gold" />
-                  <span>Traffic Sources</span>
+                  <span>{getTranslatedText('Traffic Sources', 'የጉብኝት ምንጮች')}</span>
                 </h4>
                 {report.trafficSources.length > 0 ? (
-                  <div className="divide-y divide-black/5 dark:divide-white/5 text-xs">
+                  <div className="divide-y divide-black/5 dark:divide-white/5 text-sm">
                     {report.trafficSources.map((source) => (
                       <div key={source.source} className="py-2.5 flex items-center justify-between gap-3">
                         <span className="font-medium text-nearblack dark:text-gray-200">
-                          {source.source === 'direct' ? 'Direct / Unknown' : source.source}
+                          {source.source === 'direct' ? getTranslatedText('Direct / Unknown', 'ቀጥታ / ያልታወቀ') : source.source}
                         </span>
                         <span className="font-semibold text-gold shrink-0">
                           {source.visits.toLocaleString()}
@@ -398,7 +405,7 @@ export default function AdminStatistics() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-mediumgrey py-4 text-center">No referrer sources recorded.</p>
+                  <p className="text-sm text-mediumgrey py-4 text-center">{getTranslatedText('No referrer sources recorded.', 'ምንም የምንጭ መረጃ አልተመዘገበም።')}</p>
                 )}
               </div>
             </div>

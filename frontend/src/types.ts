@@ -54,6 +54,8 @@ export interface Article {
     position: number; // 1-indexed step
   };
   views: number;
+  // Server-stored reader reaction counts
+  reactions?: { helpful: number; insightful: number; rigorous: number };
   coverImage?: string;
   seoTitle?: string;
   seoDescription?: string;
@@ -72,7 +74,6 @@ export interface Question {
   articleSlug: string;
   articleTitle: string;
   articleTitleAm?: string;
-  commonScore: number; // 0-100 for ranking popular questions
   addedDate: string; // for "recently added"
 }
 

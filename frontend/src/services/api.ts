@@ -21,17 +21,13 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Intercept unauthorized responses
+// A rejected token on any protected route tells the app to sign out (AppContext listens for this event)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // If unauthorized on a protected route, remove expired token
-      const isAuthLogin = error.config?.url?.includes('/auth/login');
-      if (!isAuthLogin) {
-        localStorage.removeItem('hokhma_token');
-        localStorage.setItem('hokhma_is_admin', 'false');
-      }
+    const isAuthLogin = error.config?.url?.includes('/auth/login');
+    if (error.response?.status === 401 && !isAuthLogin) {
+      window.dispatchEvent(new Event('hokhma:unauthorized'));
     }
     return Promise.reject(error);
   }

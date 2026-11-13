@@ -52,8 +52,7 @@ export const submitContactMessage = async (req: Request, res: Response): Promise
       email: email.trim().toLowerCase(),
       subject: subject.trim(),
       message: message.trim(),
-      submittedAt: new Date().toISOString(),
-      isRead: false
+      submittedAt: new Date().toISOString()
     });
 
     // Attempt optional email notification in background
@@ -77,28 +76,6 @@ export const getAllContactMessages = async (_req: Request, res: Response): Promi
   } catch (error) {
     const err = error as Error;
     res.status(500).json({ message: 'Failed to retrieve contact messages.', error: err.message });
-  }
-};
-
-// Toggle or update the read/unread status of a contact inquiry (admin authenticated)
-export const toggleReadStatus = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const message = await ContactMessage.findById(id);
-
-    // Return 404 if message not found
-    if (!message) {
-      res.status(404).json({ message: 'Contact message not found.' });
-      return;
-    }
-
-    message.isRead = !message.isRead;
-    await message.save();
-
-    res.status(200).json({ message: 'Status updated successfully.', data: message });
-  } catch (error) {
-    const err = error as Error;
-    res.status(500).json({ message: 'Failed to update message status.', error: err.message });
   }
 };
 

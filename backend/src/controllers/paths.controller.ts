@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { LearningPath } from '../models/LearningPath.js';
+import { derivePathFields } from '../utils/pathSteps.js';
 
 // Retrieve all structured learning paths
 export const getAllPaths = async (_req: Request, res: Response): Promise<void> => {
@@ -9,25 +10,6 @@ export const getAllPaths = async (_req: Request, res: Response): Promise<void> =
   } catch (error) {
     const err = error as Error;
     res.status(500).json({ message: 'Failed to retrieve learning paths.', error: err.message });
-  }
-};
-
-// Retrieve a single learning path by its URL slug
-export const getPathBySlug = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { slug } = req.params;
-    const path = await LearningPath.findOne({ slug });
-
-    // Return 404 if path not found
-    if (!path) {
-      res.status(404).json({ message: 'Learning path not found.' });
-      return;
-    }
-
-    res.status(200).json(path);
-  } catch (error) {
-    const err = error as Error;
-    res.status(500).json({ message: 'Failed to retrieve learning path.', error: err.message });
   }
 };
 
@@ -43,7 +25,7 @@ export const createPath = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const newPath = await LearningPath.create(pathData);
+    const newPath = await LearningPath.create({ ...pathData, ...(Array.isArray(pathData.steps) ? await derivePathFields(pathData.steps) : {}) });
     res.status(201).json(newPath);
   } catch (error) {
     const err = error as Error;
@@ -55,7 +37,11 @@ export const createPath = async (req: Request, res: Response): Promise<void> => 
 export const updatePath = async (req: Request, res: Response): Promise<void> => {
   try {
     const { slug } = req.params;
-    const updated = await LearningPath.findOneAndUpdate({ slug }, req.body, { new: true, runValidators: true });
+    const updated = await LearningPath.findOneAndUpdate(
+      { slug },
+      { ...req.body, ...(Array.isArray(req.body.steps) ? await derivePathFields(req.body.steps) : {}) },
+      { new: true, runValidators: true }
+    );
 
     // Return 404 if path not found
     if (!updated) {

@@ -1,36 +1,23 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
 import {
   submitContactMessage,
   getAllContactMessages,
-  toggleReadStatus,
   deleteContactMessage
 } from '../controllers/contact.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
-// Import express-validator contact form payload validation rules
 import { validateContactMessage } from '../middleware/validation.middleware.js';
+import { makeLimiter } from '../middleware/rateLimit.js';
 
 const router = Router();
 
-// Rate limiter for contact inquiries to protect against inbox flooding
-const contactLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 messages per IP per 15 minutes
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: 'Too many contact submissions. Please try again after 15 minutes.' }
-});
-
-// Submit a contact inquiry with rate limiting and payload validation (public)
-router.post('/', contactLimiter, validateContactMessage, submitContactMessage);
-
-// Retrieve all contact inquiries (admin only)
+// Public contact form (5 per 15 minutes per IP) and admin-only inbox management.
+router.post(
+  '/',
+  makeLimiter(15 * 60 * 1000, 5, 'Too many contact submissions. Please try again after 15 minutes.'),
+  validateContactMessage,
+  submitContactMessage
+);
 router.get('/', verifyToken, getAllContactMessages);
-
-// Toggle read status on a contact inquiry (admin only)
-router.patch('/:id/read', verifyToken, toggleReadStatus);
-
-// Delete a contact inquiry (admin only)
 router.delete('/:id', verifyToken, deleteContactMessage);
 
 export default router;

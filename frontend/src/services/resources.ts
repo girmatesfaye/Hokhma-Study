@@ -7,12 +7,6 @@ export const getResources = async (params?: { category?: string }): Promise<Reso
   return response.data;
 };
 
-// Retrieve a single resource by its ID
-export const getResourceById = async (id: string): Promise<Resource> => {
-  const response = await api.get<Resource>(`/resources/${id}`);
-  return response.data;
-};
-
 // Create a new reference resource (admin only)
 export const createResource = async (resource: Partial<Resource>): Promise<Resource> => {
   const response = await api.post<Resource>('/resources', resource);

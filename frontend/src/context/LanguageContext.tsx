@@ -47,7 +47,6 @@ export const uiTranslations: TranslationDictionary = {
   'admin.comments': { en: 'Comments', am: 'አስተያየቶች' },
   'admin.settings': { en: 'Settings', am: 'ቅንብሮች' },
   'admin.totalArticles': { en: 'Total Articles', am: 'አጠቃላይ ጽሑፎች' },
-  'admin.monthlyReads': { en: 'Monthly Reads', am: 'የወር ንባቦች' },
   'admin.pendingComments': { en: 'Pending Comments', am: 'የሚጠበቁ አስተያየቶች' },
   'admin.quickActions': { en: 'Quick Workspace Actions', am: 'ፈጣን የሥራ ቦታ እርምጃዎች' },
   'admin.writeArticle': { en: 'Write new article', am: 'አዲስ ጽሑፍ ጻፍ' },

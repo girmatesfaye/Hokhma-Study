@@ -11,6 +11,26 @@ interface JwtPayload {
   email: string;
 }
 
+// Resolves the admin from a Bearer token and returns null when the token is missing or invalid.
+const resolveAdmin = async (authHeader?: string): Promise<IAdmin | null> => {
+  const secret = process.env.JWT_SECRET;
+  if (!authHeader || !authHeader.startsWith('Bearer ') || !secret) return null;
+  try {
+    const decoded = jwt.verify(authHeader.split(' ')[1], secret) as JwtPayload;
+    const admin = decoded?.id ? await Admin.findById(decoded.id) : null;
+    return admin && admin.isActive ? admin : null;
+  } catch {
+    return null;
+  }
+};
+
+// Never rejects: sets req.admin when a valid token is present so public routes can serve admin-only data.
+export const optionalAuth = async (req: AuthRequest, _res: Response, next: NextFunction): Promise<void> => {
+  const admin = await resolveAdmin(req.headers.authorization);
+  if (admin) req.admin = admin;
+  next();
+};
+
 export const verifyToken = async (
   req: AuthRequest,
   res: Response,

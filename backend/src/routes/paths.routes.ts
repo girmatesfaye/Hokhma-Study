@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import {
   getAllPaths,
-  getPathBySlug,
   createPath,
   updatePath,
   deletePath
@@ -12,9 +11,6 @@ const router = Router();
 
 // Retrieve all learning paths
 router.get('/', getAllPaths);
-
-// Retrieve a single learning path by slug
-router.get('/:slug', getPathBySlug);
 
 // Create a new learning path (admin only)
 router.post('/', verifyToken, createPath);

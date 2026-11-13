@@ -3,173 +3,122 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { Lock, Eye, EyeOff, Check, Loader2 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 import authService from '../services/auth';
+import { Button, Field, inputClass, Panel } from '../components/admin/ui';
 
+// Author sign-in: one form on a plain page that follows the site's light or dark theme.
 export default function AdminLogin() {
   const { loginAdmin, navigateTo, isAdmin } = useApp();
-  
+  const { getTranslatedText: t } = useLanguage();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPass, setShowPass] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
-  // If already logged in, redirect straight to dashboard
-  if (isAdmin) {
-    setTimeout(() => navigateTo('/admin'), 100);
-  }
+  // Someone who is already signed in goes straight to the workroom
+  useEffect(() => {
+    if (isAdmin) navigateTo('/admin');
+  }, [isAdmin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!email.trim() || !password.trim()) {
-      setErrorMsg('Please enter both your email address and password.');
+    if (!email.trim() || !password) {
+      setErrorMsg(t('Enter both your email address and your password.', 'የኢሜይል አድራሻዎን እና የይለፍ ቃልዎን ያስገቡ።'));
       return;
     }
 
     try {
       setIsLoading(true);
-      const data = await authService.login(email.trim(), password.trim());
-      setSuccess(true);
+      const data = await authService.login(email.trim(), password);
       loginAdmin(data.token);
-      setTimeout(() => {
-        navigateTo('/admin');
-      }, 750);
+      navigateTo('/admin');
     } catch (err: any) {
-      const serverMessage =
+      setErrorMsg(
         err?.response?.data?.message ||
-        'Unable to connect to authentication server. Please check your credentials.';
-      setErrorMsg(serverMessage);
+          t('The server could not be reached. Check your connection and try again.', 'አገልጋዩን ማግኘት አልተቻለም። ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።')
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="absolute inset-0 bg-[#0F1117] flex justify-center items-center z-50 p-4">
-      {/* Background visual graphics */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-1/3 left-1/3 w-96 h-96 rounded-full border border-white" />
-        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 rounded-full border border-white" />
-      </div>
+    <div className="flex min-h-dvh items-center justify-center bg-slate-50 p-4 dark:bg-dark-bg">
+      <Panel className="w-full max-w-sm p-8">
+        <a href="#/" className="font-serif text-2xl font-semibold text-nearblack dark:text-white">
+          Hokhma Study
+        </a>
+        <h1 className="mt-6 font-serif text-3xl font-semibold text-nearblack dark:text-white">{t('Sign In', 'ግባ')}</h1>
+        <p className="mt-1 text-sm text-mediumgrey dark:text-gray-400">
+          {t('This area is for the site author. There is no public registration.', 'ይህ ቦታ ለጣቢያው ደራሲ ብቻ ነው። ይፋዊ ምዝገባ የለም።')}
+        </p>
 
-      <div className="bg-[#1A1D24] border border-white/5 rounded-2xl max-w-md w-full p-8 space-y-7 shadow-2xl relative z-10">
-        
-        {/* Top Wordmark */}
-        <div className="text-center space-y-2">
-          <a href="#/" className="font-serif text-3xl font-bold text-white tracking-tight inline-flex items-center gap-1">
-            Hokhma Study<span className="text-gold">.</span>
-          </a>
-          <p className="text-xs text-gold tracking-wide font-semibold">
-            Author Workroom Access
-          </p>
-          <div className="w-10 h-0.5 bg-gold mx-auto rounded" />
-        </div>
-
-        {success ? (
-          <div className="p-6 text-center space-y-4 animate-fade-in">
-            <div className="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-500/30">
-              <Check size={24} className="stroke-[3]" />
-            </div>
-            <div className="space-y-1 text-center">
-              <h4 className="font-serif text-lg font-bold text-white">Authorship Certified</h4>
-              <p className="text-xs text-gray-400">Opening your writing workspace...</p>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            
-            <div className="bg-red-950/20 border border-red-900/40 rounded p-4 flex gap-3 text-red-400 text-xs">
-              <Lock size={16} className="shrink-0 text-gold my-auto" />
-              <div className="space-y-0.5 leading-relaxed">
-                <p className="font-bold tracking-wider text-[10px] text-gold">Security Notice</p>
-                <p className="font-serif text-gray-300">
-                  This portal is reserved for ministry administrators. Public registration is disabled.
-                </p>
-              </div>
-            </div>
-
-            {errorMsg && (
-              <div className="p-3 bg-red-900/20 border border-red-500/30 text-rose-400 text-xs rounded">
-                {errorMsg}
-              </div>
-            )}
-
-            <div className="space-y-4">
-              {/* Email */}
-              <div>
-                <label className="block text-[11px] tracking-wider font-semibold text-gray-400 mb-1.5 font-sans">
-                  Account Email
-                </label>
-                <input
-                  type="email"
-                  required
-                  placeholder="admin@hokhma.org"
-                  value={email}
-                  disabled={isLoading}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-white/10 rounded focus:outline-none focus:border-gold text-sm text-white font-sans disabled:opacity-50"
-                />
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="block text-[11px] tracking-wider font-semibold text-gray-400 mb-1.5 font-sans">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPass ? 'text' : 'password'}
-                    required
-                    placeholder="••••••••••••"
-                    value={password}
-                    disabled={isLoading}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3.5 py-2.5 pr-10 bg-slate-900 border border-white/10 rounded focus:outline-none focus:border-gold text-sm text-white font-sans disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPass(!showPass)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-white"
-                  >
-                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="submit"
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <Field label={t('Email', 'ኢሜይል')}>
+            <input
+              type="email"
+              required
+              autoComplete="username"
+              autoFocus
+              value={email}
               disabled={isLoading}
-              className="w-full py-3 bg-gold text-slate-950 hover:bg-gold/90 transition-all font-bold tracking-wider text-xs rounded shadow mt-2 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>Authenticating...</span>
-                </>
-              ) : (
-                <span>Sign In to Workroom</span>
-              )}
-            </button>
-            
-            <div className="text-center">
-              <a
-                href="#/"
-                className="text-[11px] text-gray-400 hover:text-white transition-colors underline decoration-dotted offset-2 block"
-              >
-                ← Return to Public Website
-              </a>
-            </div>
-          </form>
-        )}
+              onChange={(e) => setEmail(e.target.value)}
+              className={inputClass}
+            />
+          </Field>
 
-      </div>
+          <Field label={t('Password', 'የይለፍ ቃል')}>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                autoComplete="current-password"
+                value={password}
+                disabled={isLoading}
+                onChange={(e) => setPassword(e.target.value)}
+                className={`${inputClass} pr-11`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? t('Hide Password', 'የይለፍ ቃል ደብቅ') : t('Show Password', 'የይለፍ ቃል አሳይ')}
+                className="absolute inset-y-0 right-0 flex w-10 cursor-pointer items-center justify-center text-mediumgrey hover:text-nearblack focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold dark:hover:text-white"
+              >
+                {showPassword ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
+              </button>
+            </div>
+          </Field>
+
+          {errorMsg && (
+            <p role="alert" className="rounded-md border border-rose-300 bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200">
+              {errorMsg}
+            </p>
+          )}
+
+          <Button type="submit" variant="primary" disabled={isLoading} className="w-full">
+            {isLoading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                {t('Signing In', 'በመግባት ላይ')}
+              </>
+            ) : (
+              t('Sign In', 'ግባ')
+            )}
+          </Button>
+        </form>
+
+        <a href="#/" className="mt-6 block text-center text-sm text-mediumgrey underline underline-offset-4 hover:text-nearblack dark:text-gray-400 dark:hover:text-white">
+          {t('Back To The Public Site', 'ወደ ይፋዊው ድረ-ገጽ ተመለስ')}
+        </a>
+      </Panel>
     </div>
   );
 }
